@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -14,7 +14,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     full_name: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=lambda: datetime.now(timezone.utc)
     )
 
     goals: Mapped[list["Goal"]] = relationship(back_populates="user")
@@ -30,7 +30,7 @@ class Goal(Base):
     target_physique: Mapped[str | None] = mapped_column(String(120), nullable=True)
     diet_preference: Mapped[str | None] = mapped_column(String(120), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=lambda: datetime.now(timezone.utc)
     )
 
     user: Mapped[User] = relationship(back_populates="goals")
@@ -46,7 +46,7 @@ class Workout(Base):
     level: Mapped[str] = mapped_column(String(80))
     calories_burned: Mapped[float | None] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=lambda: datetime.now(timezone.utc)
     )
 
 
@@ -61,7 +61,7 @@ class Meal(Base):
     carbs: Mapped[float] = mapped_column(Float)
     fats: Mapped[float] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=lambda: datetime.now(timezone.utc)
     )
 
 
@@ -94,7 +94,7 @@ class AIRecommendation(Base):
     category: Mapped[str] = mapped_column(String(120))
     message: Mapped[str] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=lambda: datetime.now(timezone.utc)
     )
 
 
