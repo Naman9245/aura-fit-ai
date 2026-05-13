@@ -29,32 +29,41 @@ def calculate_bmr(weight_kg: float, height_cm: float, age: int, gender: str) -> 
 
 
 def activity_multiplier(activity_level: str) -> float:
-    return {
+    multiplier = {
         "sedentary": 1.2,
         "lightly active": 1.375,
         "active": 1.55,
         "athlete": 1.725,
-    }[activity_level]
+    }.get(activity_level)
+    if multiplier is None:
+        raise ValueError(f"Unsupported activity level: {activity_level}")
+    return multiplier
 
 
 def goal_adjustment(goal: str) -> int:
-    return {
+    adjustment = {
         "Gain Muscle": 300,
         "Lose Fat": -500,
         "Maintain Weight": 0,
         "Body Recomposition": -200,
         "Athletic Performance": 250,
-    }[goal]
+    }.get(goal)
+    if adjustment is None:
+        raise ValueError(f"Unsupported goal: {goal}")
+    return adjustment
 
 
 def protein_multiplier(goal: str) -> float:
-    return {
+    multiplier = {
         "Gain Muscle": 2.2,
         "Lose Fat": 1.8,
         "Maintain Weight": 1.6,
         "Body Recomposition": 2.0,
         "Athletic Performance": 1.8,
-    }[goal]
+    }.get(goal)
+    if multiplier is None:
+        raise ValueError(f"Unsupported goal: {goal}")
+    return multiplier
 
 
 def calculate_metrics(
