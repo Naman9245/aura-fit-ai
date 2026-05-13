@@ -1,6 +1,766 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Fitness System</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #07090f;
+        --bg-soft: #0f1422;
+        --card: #151b2f;
+        --card-strong: #1d2440;
+        --text: #e6e9f2;
+        --muted: #9aa3c7;
+        --accent: #7b6cff;
+        --accent-2: #2dd4bf;
+        --glow: rgba(123, 108, 255, 0.4);
+        --radius: 22px;
+        --transition: 0.35s ease;
+      }
 
-<p> hello world(dropdown)</p>
-<p> hello world (button)</p>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
+      html {
+        scroll-behavior: smooth;
+      }
 
+      body {
+        font-family: "Space Grotesk", sans-serif;
+        background: radial-gradient(circle at top, #131a2e 0%, #07090f 55%);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
 
+      body.has-custom-cursor {
+        cursor: none;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      img {
+        max-width: 100%;
+        display: block;
+      }
+
+      .page {
+        position: relative;
+      }
+
+      .orb {
+        position: absolute;
+        border-radius: 999px;
+        filter: blur(0px);
+        opacity: 0.55;
+        mix-blend-mode: screen;
+      }
+
+      .orb.one {
+        width: 420px;
+        height: 420px;
+        background: radial-gradient(circle, rgba(123, 108, 255, 0.6), transparent 70%);
+        top: -140px;
+        right: -120px;
+        animation: float 8s ease-in-out infinite;
+      }
+
+      .orb.two {
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(45, 212, 191, 0.5), transparent 70%);
+        bottom: 120px;
+        left: -120px;
+        animation: float 10s ease-in-out infinite 1s;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(12px);
+        background: rgba(7, 9, 15, 0.8);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .nav {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 1.4rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .logo {
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .logo span {
+        display: inline-flex;
+        width: 38px;
+        height: 38px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #05060b;
+        font-weight: 700;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 1.4rem;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+
+      .nav-links a {
+        transition: color var(--transition);
+      }
+
+      .nav-links a:hover {
+        color: var(--text);
+      }
+
+      .btn {
+        border: 1px solid transparent;
+        padding: 0.7rem 1.5rem;
+        border-radius: 999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: transform var(--transition), box-shadow var(--transition), background var(--transition), border var(--transition);
+      }
+
+      .btn.primary {
+        background: linear-gradient(130deg, var(--accent), #9f7bff 60%);
+        color: #05060b;
+        box-shadow: 0 12px 35px var(--glow);
+      }
+
+      .btn.primary:hover {
+        transform: translateY(-2px) scale(1.02);
+      }
+
+      .btn.ghost {
+        background: transparent;
+        border-color: rgba(255, 255, 255, 0.2);
+        color: var(--text);
+      }
+
+      .btn.ghost:hover {
+        border-color: var(--accent-2);
+        box-shadow: 0 10px 24px rgba(45, 212, 191, 0.25);
+      }
+
+      main {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 0 1.5rem 5rem;
+      }
+
+      section {
+        padding: 5.5rem 0;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 3rem;
+        align-items: center;
+        padding-top: 5rem;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(123, 108, 255, 0.15);
+        color: #c7c0ff;
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        border: 1px solid rgba(123, 108, 255, 0.4);
+      }
+
+      .hero h1 {
+        font-size: clamp(2.4rem, 4vw, 3.6rem);
+        margin: 1.2rem 0;
+        line-height: 1.1;
+        background: linear-gradient(110deg, #ffffff 0%, #b4c2ff 35%, #7b6cff 75%);
+        -webkit-background-clip: text;
+        color: transparent;
+        animation: gradientShift 8s ease infinite;
+        background-size: 200% 200%;
+      }
+
+      .hero p {
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.7;
+      }
+
+      .hero-actions {
+        margin: 2rem 0 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .hero-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.8rem;
+        margin-top: 2.2rem;
+        color: var(--muted);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 1.6rem;
+        color: var(--text);
+      }
+
+      .hero-card {
+        background: linear-gradient(160deg, rgba(21, 27, 47, 0.95), rgba(13, 17, 30, 0.95));
+        border-radius: var(--radius);
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 24px 60px rgba(5, 6, 11, 0.6);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 10% 20%, rgba(123, 108, 255, 0.25), transparent 55%);
+      }
+
+      .hero-card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 1.2rem;
+      }
+
+      .pulse {
+        width: 100%;
+        height: 12px;
+        background: linear-gradient(90deg, rgba(123, 108, 255, 0.6), rgba(45, 212, 191, 0.6));
+        border-radius: 999px;
+        position: relative;
+        overflow: hidden;
+        margin: 1.4rem 0;
+      }
+
+      .pulse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -40%;
+        width: 40%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.4);
+        filter: blur(8px);
+        animation: pulse 2.5s ease-in-out infinite;
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 1.8rem;
+      }
+
+      .card {
+        background: var(--card);
+        padding: 1.8rem;
+        border-radius: var(--radius);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: transform var(--transition), box-shadow var(--transition), border var(--transition);
+      }
+
+      .card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(123, 108, 255, 0.5);
+        box-shadow: 0 18px 40px rgba(10, 12, 20, 0.7);
+      }
+
+      .card h4 {
+        margin: 0.8rem 0 0.6rem;
+        font-size: 1.1rem;
+      }
+
+      .card p {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .section-title {
+        max-width: 720px;
+        margin-bottom: 3rem;
+      }
+
+      .section-title h2 {
+        font-size: clamp(1.9rem, 3vw, 2.6rem);
+        margin-bottom: 0.8rem;
+      }
+
+      .section-title p {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 1.6rem;
+      }
+
+      .timeline-item {
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        gap: 1.4rem;
+        align-items: start;
+      }
+
+      .timeline-step {
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
+        background: rgba(123, 108, 255, 0.15);
+        border: 1px solid rgba(123, 108, 255, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #c7c0ff;
+      }
+
+      .highlight {
+        background: linear-gradient(135deg, rgba(123, 108, 255, 0.2), rgba(45, 212, 191, 0.2));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius);
+        padding: 2.2rem;
+        display: grid;
+        gap: 2rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .highlight strong {
+        font-size: 1.6rem;
+        display: block;
+        margin-bottom: 0.3rem;
+      }
+
+      .testimonial {
+        background: var(--card-strong);
+        border-radius: var(--radius);
+        padding: 2.2rem;
+        display: grid;
+        gap: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .cta {
+        background: linear-gradient(120deg, rgba(123, 108, 255, 0.25), rgba(45, 212, 191, 0.2));
+        border-radius: var(--radius);
+        padding: 3rem;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      footer {
+        text-align: center;
+        padding: 2.5rem 1.5rem 3.5rem;
+        color: var(--muted);
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.8s ease, transform 0.8s ease;
+      }
+
+      .reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .cursor-ring,
+      .cursor-dot {
+        position: fixed;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 9999;
+        transition: transform 0.18s ease, opacity 0.2s ease;
+      }
+
+      .cursor-ring {
+        width: 36px;
+        height: 36px;
+        border: 1px solid rgba(123, 108, 255, 0.7);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 20px rgba(123, 108, 255, 0.4);
+      }
+
+      .cursor-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        transform: translate(-50%, -50%);
+      }
+
+      .cursor-ring.hover {
+        transform: translate(-50%, -50%) scale(1.6);
+        border-color: rgba(45, 212, 191, 0.8);
+      }
+
+      @media (max-width: 900px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero-actions {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .timeline-item {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+
+        .reveal {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: translateX(0%);
+        }
+        100% {
+          transform: translateX(220%);
+        }
+      }
+
+      @keyframes gradientShift {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="orb one"></div>
+      <div class="orb two"></div>
+
+      <header>
+        <nav class="nav">
+          <div class="logo">
+            <span>AI</span>
+            AI Fitness System
+          </div>
+          <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#program">Program</a>
+            <a href="#community">Community</a>
+            <a href="#insights">Insights</a>
+          </div>
+          <a class="btn primary" href="#start">Get Started</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-text reveal" data-reveal>
+            <span class="tag">AI Guided • Adaptive • Smart</span>
+            <h1>Train like tomorrow is engineered for you.</h1>
+            <p>
+              Meet the AI Fitness System — a dark, futuristic coaching platform that adapts workouts, recovery, and
+              nutrition using live biometrics. Smooth visuals. Precise insights. Real transformation.
+            </p>
+            <div class="hero-actions">
+              <a class="btn primary" href="#program">Start your program</a>
+              <a class="btn ghost" href="#features">Explore the system</a>
+            </div>
+            <div class="hero-stats">
+              <div class="stat">
+                <strong>96%</strong>
+                Session adherence
+              </div>
+              <div class="stat">
+                <strong>24/7</strong>
+                Adaptive AI guidance
+              </div>
+              <div class="stat">
+                <strong>+31%</strong>
+                Strength gains
+              </div>
+            </div>
+          </div>
+          <div class="hero-card reveal" data-reveal>
+            <h3>Live Performance Sync</h3>
+            <p>Connect wearables, track recovery, and tune training intensity automatically.</p>
+            <div class="pulse"></div>
+            <div class="card-grid">
+              <div>
+                <strong>Recover</strong>
+                <p>AI sleep scoring</p>
+              </div>
+              <div>
+                <strong>Fuel</strong>
+                <p>Smart nutrition</p>
+              </div>
+              <div>
+                <strong>Lift</strong>
+                <p>Adaptive load</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="features">
+          <div class="section-title reveal" data-reveal>
+            <h2>Dark theme, smooth UX, and precision coaching.</h2>
+            <p>
+              A calm, cinematic interface that keeps you locked in. Every interaction is smooth, every module is
+              optimized for clarity and speed.
+            </p>
+          </div>
+          <div class="card-grid">
+            <article class="card reveal" data-reveal>
+              <h4>Neural Program Builder</h4>
+              <p>Instantly generate split plans based on goals, equipment, and recovery scores.</p>
+            </article>
+            <article class="card reveal" data-reveal>
+              <h4>Motion Coaching</h4>
+              <p>Animated form cues and tempo guidance keep lifts controlled and efficient.</p>
+            </article>
+            <article class="card reveal" data-reveal>
+              <h4>Recovery Forecast</h4>
+              <p>AI predicts when to push, deload, or switch focus to avoid fatigue spikes.</p>
+            </article>
+            <article class="card reveal" data-reveal>
+              <h4>Focus Mode</h4>
+              <p>Distraction-free workout screens with ambient glow and immersive visuals.</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="program">
+          <div class="section-title reveal" data-reveal>
+            <h2>How the system works</h2>
+            <p>Four intelligent layers keep your training on track and your mind in flow.</p>
+          </div>
+          <div class="timeline">
+            <div class="timeline-item reveal" data-reveal>
+              <div class="timeline-step">01</div>
+              <div>
+                <h4>Profile Scan</h4>
+                <p>AI maps your goals, schedule, and recovery data to create a personal blueprint.</p>
+              </div>
+            </div>
+            <div class="timeline-item reveal" data-reveal>
+              <div class="timeline-step">02</div>
+              <div>
+                <h4>Adaptive Sessions</h4>
+                <p>Workouts update in real time based on strength readiness and energy levels.</p>
+              </div>
+            </div>
+            <div class="timeline-item reveal" data-reveal>
+              <div class="timeline-step">03</div>
+              <div>
+                <h4>Recovery Loop</h4>
+                <p>Sleep and stress signals feed into the system to keep your progression safe.</p>
+              </div>
+            </div>
+            <div class="timeline-item reveal" data-reveal>
+              <div class="timeline-step">04</div>
+              <div>
+                <h4>Insights Dashboard</h4>
+                <p>Track strength, endurance, and performance with sleek weekly reports.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="community">
+          <div class="section-title reveal" data-reveal>
+            <h2>Built for athletes, creators, and late-night grinders.</h2>
+            <p>Find your rhythm with a global community that trains in sync with the system.</p>
+          </div>
+          <div class="highlight reveal" data-reveal>
+            <div>
+              <strong>48k+</strong>
+              Active lifters
+              <p>Daily sessions synced with the AI engine.</p>
+            </div>
+            <div>
+              <strong>130+</strong>
+              Elite programs
+              <p>From hypertrophy to mobility and endurance.</p>
+            </div>
+            <div>
+              <strong>24/7</strong>
+              Live coaching
+              <p>Always-on support when you need it most.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="insights">
+          <div class="section-title reveal" data-reveal>
+            <h2>What members are saying</h2>
+            <p>Immersive feedback from athletes using the AI Fitness System every day.</p>
+          </div>
+          <div class="card-grid">
+            <div class="testimonial reveal" data-reveal>
+              <p>
+                “The visuals keep me focused and the AI adjusts my load perfectly. It feels like a personal coach.”
+              </p>
+              <strong>— Rhea, powerlifter</strong>
+            </div>
+            <div class="testimonial reveal" data-reveal>
+              <p>
+                “Recovery insights and smooth animations make every session feel premium. No more guesswork.”
+              </p>
+              <strong>— Jonah, triathlete</strong>
+            </div>
+            <div class="testimonial reveal" data-reveal>
+              <p>
+                “I love the dark UI and the custom cursor — it feels futuristic and calming.”
+              </p>
+              <strong>— Alya, creator</strong>
+            </div>
+          </div>
+        </section>
+
+        <section id="start">
+          <div class="cta reveal" data-reveal>
+            <h2>Ready to enter the system?</h2>
+            <p>Join the next wave of athletes training with AI precision.</p>
+            <div class="hero-actions" style="justify-content: center;">
+              <a class="btn primary" href="#">Launch demo</a>
+              <a class="btn ghost" href="#">Book a tour</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>© 2026 AI Fitness System. Crafted for dark mode performance.</footer>
+    </div>
+
+    <div class="cursor-ring" id="cursorRing"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <script>
+      const cursorRing = document.getElementById("cursorRing");
+      const cursorDot = document.getElementById("cursorDot");
+      const enableCustomCursor = window.matchMedia("(pointer: fine)").matches;
+
+      if (enableCustomCursor) {
+        document.body.classList.add("has-custom-cursor");
+        let ringX = window.innerWidth / 2;
+        let ringY = window.innerHeight / 2;
+        let targetX = ringX;
+        let targetY = ringY;
+
+        const updateDot = (x, y) => {
+          cursorDot.style.left = `${x}px`;
+          cursorDot.style.top = `${y}px`;
+        };
+
+        window.addEventListener("mousemove", (event) => {
+          targetX = event.clientX;
+          targetY = event.clientY;
+          updateDot(targetX, targetY);
+        });
+
+        const render = () => {
+          ringX += (targetX - ringX) * 0.15;
+          ringY += (targetY - ringY) * 0.15;
+          cursorRing.style.left = `${ringX}px`;
+          cursorRing.style.top = `${ringY}px`;
+          requestAnimationFrame(render);
+        };
+
+        updateDot(targetX, targetY);
+        cursorRing.style.left = `${ringX}px`;
+        cursorRing.style.top = `${ringY}px`;
+        render();
+
+        const hoverTargets = document.querySelectorAll("a, button, .card, .timeline-item");
+        hoverTargets.forEach((el) => {
+          el.addEventListener("mouseenter", () => cursorRing.classList.add("hover"));
+          el.addEventListener("mouseleave", () => cursorRing.classList.remove("hover"));
+        });
+      } else {
+        cursorRing.style.display = "none";
+        cursorDot.style.display = "none";
+      }
+
+      const reveals = document.querySelectorAll("[data-reveal]");
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+            }
+          });
+        },
+        { threshold: 0.2 }
+      );
+
+      reveals.forEach((el) => observer.observe(el));
+    </script>
+  </body>
+</html>

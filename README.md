@@ -1,5 +1,61 @@
-HELLO MY NAME IS NAMANDEEP WELCOME TO MY GITHUB REPOSITORY OPEN THE FILE INTRO FOR GETTING KNOW ME THANKYOU 
+# AURA FIT AI
 
-WELCOME TO MY GITHUB  FAMILY I AM HERE TO SAVE THE WORLD
+A full-stack futuristic AI fitness operating system with cinematic onboarding, glassmorphism UI, and AI-driven insights.
 
+## Tech Stack
 
+**Frontend**
+- Next.js 15 + TypeScript + Tailwind CSS
+- Framer Motion, Recharts, Lucide Icons
+- shadcn/ui-inspired components
+
+**Backend**
+- FastAPI (Python)
+- PostgreSQL (Supabase-compatible)
+- JWT authentication
+- Gemini Vision integration (optional)
+
+## Project Structure
+
+```
+frontend/   # Next.js application
+backend/    # FastAPI application
+```
+
+## Environment Setup
+
+### Frontend
+
+```
+cp frontend/.env.example frontend/.env.local
+```
+
+### Backend
+
+```
+cp backend/.env.example backend/.env
+```
+
+## Run Locally
+
+### Frontend
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend
+
+```
+cd backend
+python -m pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+## Notes
+
+- Configure `GEMINI_API_KEY` for Gemini Vision food analysis.
+- Configure `GOOGLE_CLIENT_ID` to enable Google OAuth login.
+- Update `DATABASE_URL` to your Supabase PostgreSQL connection string.
