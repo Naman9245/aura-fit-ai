@@ -714,19 +714,28 @@
         let targetX = ringX;
         let targetY = ringY;
 
+        const updateDot = (x, y) => {
+          cursorDot.style.left = `${x}px`;
+          cursorDot.style.top = `${y}px`;
+        };
+
         window.addEventListener("mousemove", (event) => {
           targetX = event.clientX;
           targetY = event.clientY;
-          cursorDot.style.transform = `translate(${targetX}px, ${targetY}px)`;
+          updateDot(targetX, targetY);
         });
 
         const render = () => {
           ringX += (targetX - ringX) * 0.15;
           ringY += (targetY - ringY) * 0.15;
-          cursorRing.style.transform = `translate(${ringX}px, ${ringY}px)`;
+          cursorRing.style.left = `${ringX}px`;
+          cursorRing.style.top = `${ringY}px`;
           requestAnimationFrame(render);
         };
 
+        updateDot(targetX, targetY);
+        cursorRing.style.left = `${ringX}px`;
+        cursorRing.style.top = `${ringY}px`;
         render();
 
         const hoverTargets = document.querySelectorAll("a, button, .card, .timeline-item");
