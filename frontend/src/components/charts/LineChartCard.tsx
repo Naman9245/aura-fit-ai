@@ -1,5 +1,7 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
+import { motion } from "framer-motion";
 import {
   Line,
   LineChart,
@@ -8,7 +10,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { motion } from "framer-motion";
 
 interface LineChartCardProps {
   title: string;
@@ -16,6 +17,12 @@ interface LineChartCardProps {
 }
 
 export default function LineChartCard({ title, data }: LineChartCardProps) {
+  const isClient = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -28,26 +35,30 @@ export default function LineChartCard({ title, data }: LineChartCardProps) {
         <span className="text-xs text-white/50">Last 7 days</span>
       </div>
       <div className="mt-6 h-40">
-        <ResponsiveContainer width="100%" height="100%" minHeight={160}>
-          <LineChart data={data}>
-            <XAxis dataKey="name" tick={{ fill: "#8b93b3" }} axisLine={false} />
-            <YAxis hide domain={[0, "dataMax + 10"]} />
-            <Tooltip
-              contentStyle={{
-                background: "rgba(5,8,22,0.85)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "12px",
-              }}
-            />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="#FF7A00"
-              strokeWidth={3}
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        {isClient ? (
+          <ResponsiveContainer width="100%" height="100%" minHeight={160}>
+            <LineChart data={data}>
+              <XAxis dataKey="name" tick={{ fill: "#8b93b3" }} axisLine={false} />
+              <YAxis hide domain={[0, "dataMax + 10"]} />
+              <Tooltip
+                contentStyle={{
+                  background: "rgba(5,8,22,0.85)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "12px",
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#FF7A00"
+                strokeWidth={3}
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-full rounded-xl bg-white/[0.03]" />
+        )}
       </div>
     </motion.div>
   );
