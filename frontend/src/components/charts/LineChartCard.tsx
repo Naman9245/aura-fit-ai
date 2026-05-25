@@ -57,7 +57,7 @@ export default function LineChartCard({ title, data }: LineChartCardProps) {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full rounded-xl bg-white/[0.03]" />
+          <div className="h-full rounded-xl bg-white/3" />
         )}
       </div>
     </motion.div>
