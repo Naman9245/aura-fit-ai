@@ -1,3 +1,5 @@
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -14,6 +16,27 @@ class Settings(BaseSettings):
     google_client_id: str | None = None
     gemini_api_key: str | None = None
     cors_origins: list[str] | str = ["http://localhost:3000"]
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        """Drop Prisma-only query options that psycopg2 cannot parse."""
+        if not isinstance(value, str):
+            return value
+
+        parts = urlsplit(value)
+        if parts.scheme.startswith("sqlite"):
+            return value
+
+        query = [
+            (key, item_value)
+            for key, item_value in parse_qsl(parts.query, keep_blank_values=True)
+            if key != "pgbouncer"
+        ]
+
+        return urlunsplit(
+            (parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment)
+        )
 
     @field_validator("cors_origins", mode="before")
     @classmethod

@@ -42,6 +42,19 @@ body {
   color: var(--aura-foreground);
 }
 
+body::-webkit-scrollbar {
+  width: 10px;
+}
+
+body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 159, 67, 0.9), rgba(255, 122, 0, 0.7));
+}
+
 ::selection {
   background: rgba(255, 122, 0, 0.35);
   color: #fff;
@@ -83,6 +96,11 @@ body {
       linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 80px 80px;
   }
+
+  .marquee-track {
+    width: max-content;
+    animation: marquee 26s linear infinite;
+  }
 }
 
 @keyframes float {
@@ -119,5 +137,14 @@ body {
   100% {
     transform: translateY(120px);
     opacity: 0;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
   }
 }
