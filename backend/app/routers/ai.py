@@ -1,4 +1,6 @@
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile
+
+from app.deps import get_current_user
 
 from app.schemas import ChatRequest, ChatResponse, MealScanResponse
 from app.services.ai import analyze_meal_image, generate_chat_reply
@@ -7,13 +9,13 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 
 
 @router.post("/chat", response_model=ChatResponse)
-def chat(payload: ChatRequest):
+def chat(payload: ChatRequest, user=Depends(get_current_user)):
     reply = generate_chat_reply(payload.message, payload.context)
     return ChatResponse(reply=reply)
 
 
 @router.post("/meal-scan", response_model=MealScanResponse)
-async def meal_scan(image: UploadFile = File(...)):
+async def meal_scan(image: UploadFile = File(...), user=Depends(get_current_user)):
     image_bytes = await image.read()
     analysis = analyze_meal_image(image_bytes)
 

@@ -61,6 +61,14 @@ class OnboardingResponse(BaseModel):
     metrics: OnboardingMetrics
 
 
+class MealCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    calories: float = Field(ge=0)
+    protein: float = Field(default=0, ge=0)
+    carbs: float = Field(default=0, ge=0)
+    fats: float = Field(default=0, ge=0)
+
+
 class MealScanResponse(BaseModel):
     items: list[dict]
     total_calories: float
