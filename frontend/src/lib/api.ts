@@ -35,9 +35,15 @@ export async function signup(payload: {
   email: string;
   password: string;
 }) {
+  // The API expects snake_case field names.
   return apiRequest("/auth/signup", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      first_name: payload.firstName,
+      last_name: payload.lastName,
+      email: payload.email,
+      password: payload.password,
+    }),
   });
 }
 
