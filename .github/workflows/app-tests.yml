@@ -1,0 +1,62 @@
+name: app tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  flutter:
+    name: Flutter app
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.9
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      # Style is settled by the formatter, not in review.
+      - run: dart format --output=none --set-exit-if-changed lib test tool
+      - run: flutter analyze --fatal-infos
+      # Unit, database and widget tests, with an in-memory SQLite database;
+      # no secrets or network needed.
+      - run: flutter test
+
+  database:
+    name: Supabase migrations and security
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v5
+      # Plain Postgres plus the shim stands in for Supabase. Every migration
+      # is applied in order, then the security checks run in a transaction
+      # that's rolled back.
+      - name: Apply the migrations and run the security checks
+        run: |
+          psql -v ON_ERROR_STOP=1 -q -f supabase/tests/supabase_shim.sql
+          for migration in supabase/migrations/*.sql; do
+            echo "Applying $migration"
+            psql -v ON_ERROR_STOP=1 -q -f "$migration"
+          done
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/security_test.sql
