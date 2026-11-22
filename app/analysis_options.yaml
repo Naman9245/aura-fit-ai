@@ -1,0 +1,19 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  # No implicit dynamic anywhere: a wrong type is a compile error, not a
+  # crash on someone's phone.
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  exclude:
+    - build/**
+    - android/**
+
+linter:
+  rules:
+    avoid_dynamic_calls: true
+    prefer_final_locals: true
+    prefer_single_quotes: true
+    unawaited_futures: true
