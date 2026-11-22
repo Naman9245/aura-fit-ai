@@ -1,16 +1,26 @@
+import 'package:aurafit/app.dart';
+import 'package:aurafit/core/router.dart';
+import 'package:aurafit/data/providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
-  runApp(const MainApp());
-}
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  // Light status-bar icons on the dark background.
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Hello World!'))),
-    );
-  }
+  // Decide the first screen before the first frame, from the phone's own
+  // database, so it never waits on the network.
+  final container = ProviderContainer();
+  final hasProfile = await container
+      .read(profileRepositoryProvider)
+      .hasProfile();
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: AuraApp(startAt: hasProfile ? Routes.targets : Routes.onboarding),
+    ),
+  );
 }
