@@ -14,7 +14,12 @@ A fitness app for Indians who cook at home and train at a gym or at home: log a 
 - **The Supabase schema** in `supabase/migrations/`: profiles, goals, weigh-ins, meal entries and health samples with row-level security and sync columns, a shared food catalogue, and daily AI limits. `supabase/tests/security_test.sql` checks the rules.
 - **CI** runs the formatter, the analyzer and 102 app tests, and applies the migrations to Postgres and runs the security checks.
 
-**Next, in January 2027:** sign-in with Supabase Auth, food search and logging, water and steps, and today's dashboard. The Supabase project `aura-fit` (Mumbai, free plan) has every migration applied and passes the security checks; CI also checks them on plain Postgres.
+**January 2027 milestone, "Core loop works end to end": in progress**
+
+- **Sign-in and sync** (the first of four pull requests). Sign in with Google, or with an email and password confirmed by a 6-digit code. The plan made during onboarding moves into the account, and every change goes up to Supabase a few seconds after it's made, or within a minute of the network coming back while the app is open. Another phone's changes come down, the newer edit of a row wins, and the app never waits on the network.
+- **Next:** food search and typed logging, then repeat and favourites, water and steps, and today's dashboard.
+
+The Supabase project `aura-fit` (Mumbai, free plan) has every migration applied and passes the security and sync checks; CI also checks them on plain Postgres.
 
 **Being retired:** `backend/` (FastAPI, 45 tests) goes once the January milestone works; its maths and tests have moved to Dart. `frontend/` (Next.js) shows sample data and isn't connected to anything; it will become the landing page.
 
@@ -33,13 +38,13 @@ A fitness app for Indians who cook at home and train at a gym or at home: log a 
 ```
 app/                       Flutter app
 ├── lib/services/targets.dart   the calorie maths, formula v1
-├── lib/data/              the phone's database and what reads and writes it
-├── lib/features/          onboarding, targets
+├── lib/data/              the phone's database, sign-in, and sync with the account
+├── lib/features/          onboarding, targets, signing in
 ├── test/                  unit, database and widget tests
 └── tool/                  the Python parity export, screenshots
 supabase/
 ├── migrations/            the schema, one SQL file per change
-└── tests/                 security checks, and a shim to run them on plain Postgres
+└── tests/                 security and sync checks, and a shim to run them on plain Postgres
 docs/adr/                  why the big decisions were made
 backend/                   FastAPI, being retired
 frontend/                  Next.js, becoming the landing page
@@ -47,16 +52,18 @@ frontend/                  Next.js, becoming the landing page
 
 ## Run the app
 
+The app finds its server through `app/env/supabase.json`, which stays out of git. Copy `app/env/supabase.example.json` there and fill in the project's URL, its publishable key and Google's Web client ID. All three are public by design; row-level security guards everything behind them. A build without the file runs, but can't sign in, and says so.
+
 ```bash
 cd app
 flutter pub get
-flutter run            # with an Android phone connected, or an emulator
+flutter run --dart-define-from-file=env/supabase.json   # with an Android phone connected, or an emulator
 ```
 
 To install on a phone without a cable session, build an APK and copy it over:
 
 ```bash
-flutter build apk --release --split-per-abi
+flutter build apk --release --split-per-abi --dart-define-from-file=env/supabase.json
 # build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
 ```
 
@@ -64,11 +71,11 @@ flutter build apk --release --split-per-abi
 
 ```bash
 cd app
-flutter test                              # 102 tests, no network needed
+flutter test                              # 141 tests, no network needed
 flutter test tool/screenshots_test.dart   # draws every screen to build/screenshots/
 ```
 
-The database checks run in CI on Postgres. On a Supabase project, apply the migrations in order and paste `supabase/tests/security_test.sql` into the SQL editor; it rolls itself back.
+The database checks run in CI on Postgres. On a Supabase project, apply the migrations in order and paste `supabase/tests/security_test.sql`, then `supabase/tests/sync_test.sql`, into the SQL editor; each rolls itself back.
 
 The old backend's tests still run until it is removed:
 

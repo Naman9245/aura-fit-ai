@@ -1,8 +1,10 @@
 import 'package:aurafit/core/format.dart';
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
+import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/db/app_database.dart';
 import 'package:aurafit/data/providers.dart';
+import 'package:aurafit/features/account/account_sheet.dart';
 import 'package:aurafit/services/targets.dart';
 import 'package:aurafit/widgets/aura_background.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +18,10 @@ class TargetsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final explained = ref.watch(explainedGoalProvider);
+    // Signed in now, or the plan already belongs to an account.
+    final inAccount =
+        ref.watch(accountProvider).value != null ||
+        ref.watch(phoneOwnerProvider).value != null;
     return Scaffold(
       body: AuraBackground(
         child: SafeArea(
@@ -23,6 +29,7 @@ class TargetsScreen extends ConsumerWidget {
             AsyncData(value: final e?) => _Targets(
               goal: e.goal,
               targets: e.targets,
+              inAccount: inAccount,
             ),
             AsyncData() => const _NoGoal(),
             AsyncError(:final error) => Center(
@@ -40,10 +47,17 @@ class TargetsScreen extends ConsumerWidget {
 }
 
 class _Targets extends StatelessWidget {
-  const _Targets({required this.goal, required this.targets});
+  const _Targets({
+    required this.goal,
+    required this.targets,
+    required this.inAccount,
+  });
 
   final GoalRow goal;
   final Targets targets;
+
+  /// Whether the plan is kept in an account, or so far only on this phone.
+  final bool inAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +65,21 @@ class _Targets extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
       children: [
-        Semantics(
-          header: true,
-          child: Text('Your daily targets', style: text.headlineSmall),
+        Row(
+          children: [
+            Expanded(
+              child: Semantics(
+                header: true,
+                child: Text('Your daily targets', style: text.headlineSmall),
+              ),
+            ),
+            if (inAccount)
+              IconButton(
+                onPressed: () => showAccountSheet(context),
+                tooltip: 'Account',
+                icon: const Icon(Icons.account_circle_outlined),
+              ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(
@@ -99,10 +125,21 @@ class _Targets extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 24),
-        FilledButton(
-          onPressed: () => context.push(Routes.howWeCalculated),
-          child: const Text('How we calculated this'),
-        ),
+        if (!inAccount) ...[
+          FilledButton(
+            onPressed: () => context.push(Routes.signIn),
+            child: const Text('Save my plan'),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: () => context.push(Routes.howWeCalculated),
+            child: const Text('How we calculated this'),
+          ),
+        ] else
+          FilledButton(
+            onPressed: () => context.push(Routes.howWeCalculated),
+            child: const Text('How we calculated this'),
+          ),
         const SizedBox(height: 12),
         OutlinedButton(
           onPressed: () => context.push(Routes.editDetails),
