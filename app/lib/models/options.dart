@@ -122,6 +122,63 @@ enum TrainingPlace implements StoredOption {
   final String label;
 }
 
+/// Which meal an entry belongs to, so a whole meal can be logged again.
+enum Meal implements StoredOption {
+  breakfast('breakfast', 'Breakfast'),
+  lunch('lunch', 'Lunch'),
+  dinner('dinner', 'Dinner'),
+  snack('snack', 'Snack');
+
+  const Meal(this.storage, this.label);
+
+  @override
+  final String storage;
+  @override
+  final String label;
+}
+
+/// How a meal entry was logged.
+enum EntrySource implements StoredOption {
+  search('search', 'Search'),
+  text('text', 'Typed'),
+  photo('photo', 'Photo'),
+  repeat('repeat', 'Repeated'),
+  manual('manual', 'Entered by hand');
+
+  const EntrySource(this.storage, this.label);
+
+  @override
+  final String storage;
+  @override
+  final String label;
+}
+
+/// What a health sample measures. The unit is part of the name, so no
+/// reading can be in the wrong one.
+enum HealthMetric implements StoredOption {
+  waterMl('water_ml', 'Water'),
+  steps('steps', 'Steps');
+
+  const HealthMetric(this.storage, this.label);
+
+  @override
+  final String storage;
+  @override
+  final String label;
+}
+
+/// Where a health sample came from. Health Connect joins after launch.
+enum SampleSource implements StoredOption {
+  manual('manual', 'Entered by hand');
+
+  const SampleSource(this.storage, this.label);
+
+  @override
+  final String storage;
+  @override
+  final String label;
+}
+
 enum Experience implements StoredOption {
   beginner('beginner', 'New to training'),
   intermediate('intermediate', 'Training for a year or more'),

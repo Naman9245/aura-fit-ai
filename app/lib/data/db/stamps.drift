@@ -1,0 +1,42 @@
+import 'tables.dart';
+
+-- An edit made on this phone always moves its row's stamp forward, to at
+-- least a second past the stamp it replaces. So a later edit here wins on
+-- the server even when two land in the same second, or when this phone's
+-- clock is behind the edit it replaces. Rows that sync writes aren't
+-- marked to send, so they keep the server's stamp as it is. (Penny learned
+-- this the hard way; here it is in from the start.)
+
+CREATE TRIGGER profiles_stamp_forward AFTER UPDATE OF updated_at ON profiles
+  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE profiles SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER goals_stamp_forward AFTER UPDATE OF updated_at ON goals
+  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE goals SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER weight_logs_stamp_forward
+  AFTER UPDATE OF updated_at ON weight_logs
+  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE weight_logs SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER meal_entries_stamp_forward
+  AFTER UPDATE OF updated_at ON meal_entries
+  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE meal_entries SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER health_samples_stamp_forward
+  AFTER UPDATE OF updated_at ON health_samples
+  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE health_samples SET updated_at = OLD.updated_at + 1
+    WHERE id = NEW.id;
+END;
