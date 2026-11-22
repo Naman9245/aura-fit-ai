@@ -1,0 +1,4 @@
+# Supabase CLI settings. The live project ("aura-fit", Mumbai) isn't
+# created yet; when it is, the files in migrations/ are applied to it in
+# order, and tests/security_test.sql is run in its SQL editor.
+project_id = "aura-fit"
