@@ -274,6 +274,8 @@ begin
 end;
 $$;
 
-select 'All security checks passed' as result;
-
 rollback;
+
+-- Only reached when every check above passed, and after the rollback, so
+-- it is the last thing a run shows.
+select 'All security checks passed' as result;

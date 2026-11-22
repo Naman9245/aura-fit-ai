@@ -14,7 +14,7 @@ A fitness app for Indians who cook at home and train at a gym or at home: log a 
 - **The Supabase schema** in `supabase/migrations/`: profiles, goals, weigh-ins, meal entries and health samples with row-level security and sync columns, a shared food catalogue, and daily AI limits. `supabase/tests/security_test.sql` checks the rules.
 - **CI** runs the formatter, the analyzer and 102 app tests, and applies the migrations to Postgres and runs the security checks.
 
-**Next, in January 2027:** sign-in with Supabase Auth, food search and logging, water and steps, and today's dashboard. The live Supabase project doesn't exist yet; until it does, CI checks the migrations on plain Postgres.
+**Next, in January 2027:** sign-in with Supabase Auth, food search and logging, water and steps, and today's dashboard. The Supabase project `aura-fit` (Mumbai, free plan) has every migration applied and passes the security checks; CI also checks them on plain Postgres.
 
 **Being retired:** `backend/` (FastAPI, 45 tests) goes once the January milestone works; its maths and tests have moved to Dart. `frontend/` (Next.js) shows sample data and isn't connected to anything; it will become the landing page.
 
