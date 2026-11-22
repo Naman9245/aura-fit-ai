@@ -1,0 +1,662 @@
+[
+  {
+    "why": "the Python tests' profile",
+    "input": {
+      "weight_kg": 70,
+      "height_cm": 175,
+      "age": 25,
+      "gender": "male",
+      "goal": "Gain Muscle",
+      "activity_level": "active"
+    },
+    "output": {
+      "bmi": 22.86,
+      "bmr": 1673.75,
+      "maintenance_calories": 2594.31,
+      "calorie_goal": 2894.31,
+      "protein_grams": 154.0,
+      "carbs_grams": 388.7,
+      "fats_grams": 80.4,
+      "water_liters": 2.95,
+      "daily_step_target": 11000
+    }
+  },
+  {
+    "why": "the Python tests' profile",
+    "input": {
+      "weight_kg": 70,
+      "height_cm": 175,
+      "age": 25,
+      "gender": "male",
+      "goal": "Lose Fat",
+      "activity_level": "active"
+    },
+    "output": {
+      "bmi": 22.86,
+      "bmr": 1673.75,
+      "maintenance_calories": 2594.31,
+      "calorie_goal": 2094.31,
+      "protein_grams": 126.0,
+      "carbs_grams": 266.7,
+      "fats_grams": 58.2,
+      "water_liters": 2.95,
+      "daily_step_target": 11000
+    }
+  },
+  {
+    "why": "the Python tests' profile",
+    "input": {
+      "weight_kg": 70,
+      "height_cm": 175,
+      "age": 25,
+      "gender": "male",
+      "goal": "Maintain Weight",
+      "activity_level": "active"
+    },
+    "output": {
+      "bmi": 22.86,
+      "bmr": 1673.75,
+      "maintenance_calories": 2594.31,
+      "calorie_goal": 2594.31,
+      "protein_grams": 112.0,
+      "carbs_grams": 374.4,
+      "fats_grams": 72.1,
+      "water_liters": 2.95,
+      "daily_step_target": 11000
+    }
+  },
+  {
+    "why": "the Python tests' profile",
+    "input": {
+      "weight_kg": 70,
+      "height_cm": 175,
+      "age": 25,
+      "gender": "male",
+      "goal": "Body Recomposition",
+      "activity_level": "active"
+    },
+    "output": {
+      "bmi": 22.86,
+      "bmr": 1673.75,
+      "maintenance_calories": 2594.31,
+      "calorie_goal": 2394.31,
+      "protein_grams": 140.0,
+      "carbs_grams": 308.9,
+      "fats_grams": 66.5,
+      "water_liters": 2.95,
+      "daily_step_target": 11000
+    }
+  },
+  {
+    "why": "the Python tests' profile",
+    "input": {
+      "weight_kg": 70,
+      "height_cm": 175,
+      "age": 25,
+      "gender": "male",
+      "goal": "Athletic Performance",
+      "activity_level": "active"
+    },
+    "output": {
+      "bmi": 22.86,
+      "bmr": 1673.75,
+      "maintenance_calories": 2594.31,
+      "calorie_goal": 2844.31,
+      "protein_grams": 126.0,
+      "carbs_grams": 407.3,
+      "fats_grams": 79.0,
+      "water_liters": 2.95,
+      "daily_step_target": 11000
+    }
+  },
+  {
+    "why": "floor, female",
+    "input": {
+      "weight_kg": 50,
+      "height_cm": 155,
+      "age": 30,
+      "gender": "female",
+      "goal": "Lose Fat",
+      "activity_level": "sedentary"
+    },
+    "output": {
+      "bmi": 20.81,
+      "bmr": 1157.75,
+      "maintenance_calories": 1389.3,
+      "calorie_goal": 889.3,
+      "protein_grams": 90.0,
+      "carbs_grams": 76.7,
+      "fats_grams": 24.7,
+      "water_liters": 1.75,
+      "daily_step_target": 8000
+    }
+  },
+  {
+    "why": "floor, male",
+    "input": {
+      "weight_kg": 50,
+      "height_cm": 160,
+      "age": 60,
+      "gender": "male",
+      "goal": "Lose Fat",
+      "activity_level": "sedentary"
+    },
+    "output": {
+      "bmi": 19.53,
+      "bmr": 1205.0,
+      "maintenance_calories": 1446.0,
+      "calorie_goal": 946.0,
+      "protein_grams": 90.0,
+      "carbs_grams": 87.4,
+      "fats_grams": 26.3,
+      "water_liters": 1.75,
+      "daily_step_target": 8000
+    }
+  },
+  {
+    "why": "floor, sex not given",
+    "input": {
+      "weight_kg": 48,
+      "height_cm": 150,
+      "age": 45,
+      "gender": "other",
+      "goal": "Lose Fat",
+      "activity_level": "sedentary"
+    },
+    "output": {
+      "bmi": 21.33,
+      "bmr": 1114.5,
+      "maintenance_calories": 1337.4,
+      "calorie_goal": 837.4,
+      "protein_grams": 86.4,
+      "carbs_grams": 70.6,
+      "fats_grams": 23.3,
+      "water_liters": 1.68,
+      "daily_step_target": 8000
+    }
+  },
+  {
+    "why": "floor, older",
+    "input": {
+      "weight_kg": 45,
+      "height_cm": 150,
+      "age": 70,
+      "gender": "female",
+      "goal": "Body Recomposition",
+      "activity_level": "lightly active"
+    },
+    "output": {
+      "bmi": 20.0,
+      "bmr": 876.5,
+      "maintenance_calories": 1205.19,
+      "calorie_goal": 1005.19,
+      "protein_grams": 90.0,
+      "carbs_grams": 98.5,
+      "fats_grams": 27.9,
+      "water_liters": 1.57,
+      "daily_step_target": 9000
+    }
+  },
+  {
+    "why": "rounding tie",
+    "input": {
+      "weight_kg": 70,
+      "height_cm": 176,
+      "age": 26,
+      "gender": "male",
+      "goal": "Maintain Weight",
+      "activity_level": "lightly active"
+    },
+    "output": {
+      "bmi": 22.6,
+      "bmr": 1675.0,
+      "maintenance_calories": 2303.12,
+      "calorie_goal": 2303.12,
+      "protein_grams": 112.0,
+      "carbs_grams": 319.8,
+      "fats_grams": 64.0,
+      "water_liters": 2.45,
+      "daily_step_target": 9000
+    }
+  },
+  {
+    "why": "rounding tie",
+    "input": {
+      "weight_kg": 70,
+      "height_cm": 176,
+      "age": 26,
+      "gender": "male",
+      "goal": "Gain Muscle",
+      "activity_level": "lightly active"
+    },
+    "output": {
+      "bmi": 22.6,
+      "bmr": 1675.0,
+      "maintenance_calories": 2303.12,
+      "calorie_goal": 2603.12,
+      "protein_grams": 154.0,
+      "carbs_grams": 334.1,
+      "fats_grams": 72.3,
+      "water_liters": 2.45,
+      "daily_step_target": 9000
+    }
+  },
+  {
+    "why": "decimals",
+    "input": {
+      "weight_kg": 55.5,
+      "height_cm": 160.5,
+      "age": 22,
+      "gender": "female",
+      "goal": "Maintain Weight",
+      "activity_level": "lightly active"
+    },
+    "output": {
+      "bmi": 21.54,
+      "bmr": 1287.12,
+      "maintenance_calories": 1769.8,
+      "calorie_goal": 1769.8,
+      "protein_grams": 88.8,
+      "carbs_grams": 243.0,
+      "fats_grams": 49.2,
+      "water_liters": 1.94,
+      "daily_step_target": 9000
+    }
+  },
+  {
+    "why": "decimals",
+    "input": {
+      "weight_kg": 62.3,
+      "height_cm": 168.2,
+      "age": 28,
+      "gender": "female",
+      "goal": "Lose Fat",
+      "activity_level": "active"
+    },
+    "output": {
+      "bmi": 22.02,
+      "bmr": 1373.25,
+      "maintenance_calories": 2128.54,
+      "calorie_goal": 1628.54,
+      "protein_grams": 112.1,
+      "carbs_grams": 193.2,
+      "fats_grams": 45.2,
+      "water_liters": 2.68,
+      "daily_step_target": 11000
+    }
+  },
+  {
+    "why": "decimals",
+    "input": {
+      "weight_kg": 70.4,
+      "height_cm": 172.7,
+      "age": 33,
+      "gender": "male",
+      "goal": "Body Recomposition",
+      "activity_level": "athlete"
+    },
+    "output": {
+      "bmi": 23.6,
+      "bmr": 1623.38,
+      "maintenance_calories": 2800.32,
+      "calorie_goal": 2600.32,
+      "protein_grams": 140.8,
+      "carbs_grams": 346.8,
+      "fats_grams": 72.2,
+      "water_liters": 2.96,
+      "daily_step_target": 13000
+    }
+  },
+  {
+    "why": "decimals",
+    "input": {
+      "weight_kg": 92.3,
+      "height_cm": 181.4,
+      "age": 41,
+      "gender": "male",
+      "goal": "Lose Fat",
+      "activity_level": "lightly active"
+    },
+    "output": {
+      "bmi": 28.05,
+      "bmr": 1856.75,
+      "maintenance_calories": 2553.03,
+      "calorie_goal": 2053.03,
+      "protein_grams": 166.1,
+      "carbs_grams": 218.8,
+      "fats_grams": 57.0,
+      "water_liters": 3.23,
+      "daily_step_target": 9000
+    }
+  },
+  {
+    "why": "decimals, sex not given",
+    "input": {
+      "weight_kg": 78.9,
+      "height_cm": 177.8,
+      "age": 19,
+      "gender": "other",
+      "goal": "Athletic Performance",
+      "activity_level": "active"
+    },
+    "output": {
+      "bmi": 24.96,
+      "bmr": 1727.25,
+      "maintenance_calories": 2677.24,
+      "calorie_goal": 2927.24,
+      "protein_grams": 142.0,
+      "carbs_grams": 406.8,
+      "fats_grams": 81.3,
+      "water_liters": 3.26,
+      "daily_step_target": 11000
+    }
+  },
+  {
+    "why": "youngest allowed",
+    "input": {
+      "weight_kg": 58,
+      "height_cm": 158,
+      "age": 18,
+      "gender": "female",
+      "goal": "Gain Muscle",
+      "activity_level": "sedentary"
+    },
+    "output": {
+      "bmi": 23.23,
+      "bmr": 1316.5,
+      "maintenance_calories": 1579.8,
+      "calorie_goal": 1879.8,
+      "protein_grams": 127.6,
+      "carbs_grams": 224.9,
+      "fats_grams": 52.2,
+      "water_liters": 2.03,
+      "daily_step_target": 8000
+    }
+  },
+  {
+    "why": "athlete",
+    "input": {
+      "weight_kg": 65,
+      "height_cm": 162,
+      "age": 35,
+      "gender": "female",
+      "goal": "Athletic Performance",
+      "activity_level": "athlete"
+    },
+    "output": {
+      "bmi": 24.77,
+      "bmr": 1326.5,
+      "maintenance_calories": 2288.21,
+      "calorie_goal": 2538.21,
+      "protein_grams": 117.0,
+      "carbs_grams": 358.9,
+      "fats_grams": 70.5,
+      "water_liters": 2.77,
+      "daily_step_target": 13000
+    }
+  },
+  {
+    "why": "sedentary",
+    "input": {
+      "weight_kg": 85,
+      "height_cm": 183,
+      "age": 42,
+      "gender": "male",
+      "goal": "Maintain Weight",
+      "activity_level": "sedentary"
+    },
+    "output": {
+      "bmi": 25.38,
+      "bmr": 1788.75,
+      "maintenance_calories": 2146.5,
+      "calorie_goal": 2146.5,
+      "protein_grams": 136.0,
+      "carbs_grams": 266.5,
+      "fats_grams": 59.6,
+      "water_liters": 2.98,
+      "daily_step_target": 8000
+    }
+  },
+  {
+    "why": "heavy",
+    "input": {
+      "weight_kg": 100,
+      "height_cm": 190,
+      "age": 47,
+      "gender": "male",
+      "goal": "Lose Fat",
+      "activity_level": "active"
+    },
+    "output": {
+      "bmi": 27.7,
+      "bmr": 1957.5,
+      "maintenance_calories": 3034.12,
+      "calorie_goal": 2534.12,
+      "protein_grams": 180.0,
+      "carbs_grams": 295.1,
+      "fats_grams": 70.4,
+      "water_liters": 4.0,
+      "daily_step_target": 11000
+    }
+  },
+  {
+    "why": "heaviest",
+    "input": {
+      "weight_kg": 120,
+      "height_cm": 185,
+      "age": 29,
+      "gender": "male",
+      "goal": "Gain Muscle",
+      "activity_level": "athlete"
+    },
+    "output": {
+      "bmi": 35.06,
+      "bmr": 2216.25,
+      "maintenance_calories": 3823.03,
+      "calorie_goal": 4123.03,
+      "protein_grams": 264.0,
+      "carbs_grams": 509.1,
+      "fats_grams": 114.5,
+      "water_liters": 4.7,
+      "daily_step_target": 13000
+    }
+  },
+  {
+    "why": "older",
+    "input": {
+      "weight_kg": 72,
+      "height_cm": 165,
+      "age": 55,
+      "gender": "female",
+      "goal": "Lose Fat",
+      "activity_level": "lightly active"
+    },
+    "output": {
+      "bmi": 26.45,
+      "bmr": 1315.25,
+      "maintenance_calories": 1808.47,
+      "calorie_goal": 1308.47,
+      "protein_grams": 129.6,
+      "carbs_grams": 115.7,
+      "fats_grams": 36.3,
+      "water_liters": 2.52,
+      "daily_step_target": 9000
+    }
+  },
+  {
+    "why": "older, sex not given",
+    "input": {
+      "weight_kg": 68,
+      "height_cm": 170,
+      "age": 63,
+      "gender": "other",
+      "goal": "Maintain Weight",
+      "activity_level": "lightly active"
+    },
+    "output": {
+      "bmi": 23.53,
+      "bmr": 1349.5,
+      "maintenance_calories": 1855.56,
+      "calorie_goal": 1855.56,
+      "protein_grams": 108.8,
+      "carbs_grams": 239.1,
+      "fats_grams": 51.5,
+      "water_liters": 2.38,
+      "daily_step_target": 9000
+    }
+  },
+  {
+    "why": "very old",
+    "input": {
+      "weight_kg": 60,
+      "height_cm": 152,
+      "age": 90,
+      "gender": "female",
+      "goal": "Maintain Weight",
+      "activity_level": "sedentary"
+    },
+    "output": {
+      "bmi": 25.97,
+      "bmr": 939.0,
+      "maintenance_calories": 1126.8,
+      "calorie_goal": 1126.8,
+      "protein_grams": 96.0,
+      "carbs_grams": 115.3,
+      "fats_grams": 31.3,
+      "water_liters": 2.1,
+      "daily_step_target": 8000
+    }
+  },
+  {
+    "why": "oldest allowed",
+    "input": {
+      "weight_kg": 75,
+      "height_cm": 178,
+      "age": 100,
+      "gender": "male",
+      "goal": "Lose Fat",
+      "activity_level": "sedentary"
+    },
+    "output": {
+      "bmi": 23.67,
+      "bmr": 1367.5,
+      "maintenance_calories": 1641.0,
+      "calorie_goal": 1141.0,
+      "protein_grams": 135.0,
+      "carbs_grams": 78.9,
+      "fats_grams": 31.7,
+      "water_liters": 2.62,
+      "daily_step_target": 8000
+    }
+  },
+  {
+    "why": "short",
+    "input": {
+      "weight_kg": 52,
+      "height_cm": 148,
+      "age": 24,
+      "gender": "female",
+      "goal": "Body Recomposition",
+      "activity_level": "active"
+    },
+    "output": {
+      "bmi": 23.74,
+      "bmr": 1164.0,
+      "maintenance_calories": 1804.2,
+      "calorie_goal": 1604.2,
+      "protein_grams": 104.0,
+      "carbs_grams": 196.8,
+      "fats_grams": 44.6,
+      "water_liters": 2.32,
+      "daily_step_target": 11000
+    }
+  },
+  {
+    "why": "tall",
+    "input": {
+      "weight_kg": 88,
+      "height_cm": 201,
+      "age": 26,
+      "gender": "male",
+      "goal": "Athletic Performance",
+      "activity_level": "athlete"
+    },
+    "output": {
+      "bmi": 21.78,
+      "bmr": 2011.25,
+      "maintenance_calories": 3469.41,
+      "calorie_goal": 3719.41,
+      "protein_grams": 158.4,
+      "carbs_grams": 539.0,
+      "fats_grams": 103.3,
+      "water_liters": 3.58,
+      "daily_step_target": 13000
+    }
+  },
+  {
+    "why": "repeating decimals",
+    "input": {
+      "weight_kg": 66.6,
+      "height_cm": 171.1,
+      "age": 31,
+      "gender": "male",
+      "goal": "Body Recomposition",
+      "activity_level": "sedentary"
+    },
+    "output": {
+      "bmi": 22.75,
+      "bmr": 1585.38,
+      "maintenance_calories": 1902.45,
+      "calorie_goal": 1702.45,
+      "protein_grams": 133.2,
+      "carbs_grams": 186.0,
+      "fats_grams": 47.3,
+      "water_liters": 2.33,
+      "daily_step_target": 8000
+    }
+  },
+  {
+    "why": "gaining, female",
+    "input": {
+      "weight_kg": 80,
+      "height_cm": 175,
+      "age": 38,
+      "gender": "female",
+      "goal": "Gain Muscle",
+      "activity_level": "active"
+    },
+    "output": {
+      "bmi": 26.12,
+      "bmr": 1542.75,
+      "maintenance_calories": 2391.26,
+      "calorie_goal": 2691.26,
+      "protein_grams": 176.0,
+      "carbs_grams": 328.6,
+      "fats_grams": 74.8,
+      "water_liters": 3.3,
+      "daily_step_target": 11000
+    }
+  },
+  {
+    "why": "carbs below zero",
+    "input": {
+      "weight_kg": 150,
+      "height_cm": 120,
+      "age": 100,
+      "gender": "female",
+      "goal": "Lose Fat",
+      "activity_level": "sedentary"
+    },
+    "output": {
+      "bmi": 104.17,
+      "bmr": 1589.0,
+      "maintenance_calories": 1906.8,
+      "calorie_goal": 1406.8,
+      "protein_grams": 270.0,
+      "carbs_grams": -6.2,
+      "fats_grams": 39.1,
+      "water_liters": 5.25,
+      "daily_step_target": 8000
+    }
+  }
+]

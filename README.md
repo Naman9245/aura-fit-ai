@@ -1,88 +1,79 @@
 # AURA FIT AI
 
+[![app tests](https://github.com/Naman9245/aura-fit-ai/actions/workflows/app-tests.yml/badge.svg)](https://github.com/Naman9245/aura-fit-ai/actions/workflows/app-tests.yml)
 [![backend tests](https://github.com/Naman9245/aura-fit-ai/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/Naman9245/aura-fit-ai/actions/workflows/backend-tests.yml)
 
-A fitness app with a Next.js front end and a FastAPI back end. Users sign up, answer an onboarding questionnaire, and get a personalised calorie goal and macro split. Meal logging is private to each user, and an optional Gemini integration powers a chat assistant and meal-photo analysis.
+A fitness app for Indians who cook at home and train at a gym or at home: log a day of meals in under a minute, and get daily targets that are personal and safe. It is being built as an Android app in Flutter on Supabase ([why](docs/adr/001-flutter-and-supabase.md)), with the first Play Store release planned for May 2027.
 
 ## Project status
 
-**Working and covered by tests (45 pytest cases, run in GitHub Actions)**
+**Foundation (the December 2026 milestone): done**
 
-- **Authentication** — sign-up and login with bcrypt-hashed passwords and HS256 JWTs. Missing, malformed, forged and expired tokens are rejected, and so are tokens for accounts that no longer exist. Wrong-password and unknown-email logins return identical responses, so the login form can't be used to find out who has an account.
-- **Onboarding metrics** — BMI, BMR (Mifflin–St Jeor), maintenance calories with an activity multiplier, a goal-based calorie adjustment, and a macro split that adds back up to the calorie goal.
-- **Meals** — validated input (no negative calories, no empty names); each user can only see their own meals.
-- **AI endpoints** — require login, because they spend the Gemini quota. Without `GEMINI_API_KEY` they return an offline message or a sample result instead of failing.
+- **The Flutter app** in `app/`. Onboarding asks for the goal, birth date, sex, height and weight, activity level, diet and training, then shows daily targets for calories, protein, carbs, fat, water and steps, and a "How we calculated this" screen. Everything is saved on the phone, so it works with no network.
+- **Calorie maths in Dart**, ported from the Python backend with three fixes: calories never go below 1,200 kcal for women or 1,500 kcal for men, carbs never go negative, and age comes from the birth date. It gives exactly the Python's numbers on 30 recorded profiles, apart from where the fixes deliberately change them.
+- **The Supabase schema** in `supabase/migrations/`: profiles, goals, weigh-ins, meal entries and health samples with row-level security and sync columns, a shared food catalogue, and daily AI limits. `supabase/tests/security_test.sql` checks the rules.
+- **CI** runs the formatter, the analyzer and 102 app tests, and applies the migrations to Postgres and runs the security checks.
 
-**Not done yet**
+**Next, in January 2027:** sign-in with Supabase Auth, food search and logging, water and steps, and today's dashboard. The Supabase project `aura-fit` (Mumbai, free plan) has every migration applied and passes the security checks; CI also checks them on plain Postgres.
 
-- The frontend pages show sample data and aren't connected to the API yet. The client functions are in `frontend/src/lib/api.ts`.
-- `/dashboard/daily` and `/workouts/plan` return fixed sample data.
-- The Gemini integration uses the deprecated `google-generativeai` package and needs migrating to `google-genai` before it's switched on.
+**Being retired:** `backend/` (FastAPI, 45 tests) goes once the January milestone works; its maths and tests have moved to Dart. `frontend/` (Next.js) shows sample data and isn't connected to anything; it will become the landing page.
 
 ## Tech stack
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js 15, TypeScript, Tailwind CSS, Framer Motion, Recharts |
-| Backend | FastAPI, SQLAlchemy 2, Pydantic v2, python-jose (JWT), passlib + bcrypt |
-| Database | PostgreSQL in production (Supabase-compatible), SQLite for local development and tests |
-| AI | Google Gemini (optional) |
-| CI | GitHub Actions runs the backend test suite on every push and pull request |
+| App | Flutter, Android first; Riverpod, go_router |
+| On the phone | Drift (SQLite): the app reads and writes here, so it works offline |
+| Server | Supabase: Postgres with row-level security, Auth, Edge Functions for AI |
+| Website | Next.js, as the landing page |
+| CI | GitHub Actions |
 
 ## Project structure
 
 ```
-backend/
-├── app/
-│   ├── main.py            # FastAPI app, CORS, router wiring
-│   ├── core/config.py     # settings from environment; refuses the default JWT secret in production
-│   ├── deps.py            # get_current_user: token → user, or 401
-│   ├── routers/           # auth, onboarding, meals, workouts, dashboard, ai
-│   ├── services/          # password hashing + JWTs, Gemini calls
-│   └── utils/calculations.py  # BMI, BMR, calorie goal and macros
-└── tests/                 # pytest suite against an in-memory SQLite database
-frontend/
-└── src/                   # Next.js app router pages, components, API client
+app/                       Flutter app
+├── lib/services/targets.dart   the calorie maths, formula v1
+├── lib/data/              the phone's database and what reads and writes it
+├── lib/features/          onboarding, targets
+├── test/                  unit, database and widget tests
+└── tool/                  the Python parity export, screenshots
+supabase/
+├── migrations/            the schema, one SQL file per change
+└── tests/                 security checks, and a shim to run them on plain Postgres
+docs/adr/                  why the big decisions were made
+backend/                   FastAPI, being retired
+frontend/                  Next.js, becoming the landing page
 ```
 
-## Run locally
-
-### Backend
+## Run the app
 
 ```bash
-cd backend
-cp .env.example .env        # set JWT_SECRET; DATABASE_URL can be sqlite:///./aura_fit_ai.db
-python -m pip install -r requirements.txt
-uvicorn app.main:app --reload
+cd app
+flutter pub get
+flutter run            # with an Android phone connected, or an emulator
 ```
 
-API docs are then at http://localhost:8000/docs.
-
-### Frontend
+To install on a phone without a cable session, build an APK and copy it over:
 
 ```bash
-cd frontend
-cp .env.example .env.local
-npm install
-npm run dev
+flutter build apk --release --split-per-abi
+# build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
 ```
 
 ## Run the tests
+
+```bash
+cd app
+flutter test                              # 102 tests, no network needed
+flutter test tool/screenshots_test.dart   # draws every screen to build/screenshots/
+```
+
+The database checks run in CI on Postgres. On a Supabase project, apply the migrations in order and paste `supabase/tests/security_test.sql` into the SQL editor; it rolls itself back.
+
+The old backend's tests still run until it is removed:
 
 ```bash
 cd backend
 python -m pip install -r requirements-dev.txt
 pytest
 ```
-
-The tests use an in-memory SQLite database and need no API keys or network access.
-
-## Configuration
-
-| Variable | Purpose |
-|----------|---------|
-| `DATABASE_URL` | Any SQLAlchemy URL — PostgreSQL in production, SQLite locally |
-| `JWT_SECRET` | Signing key for access tokens; must be changed when `ENVIRONMENT=production` |
-| `GEMINI_API_KEY` | Optional; enables the AI chat and meal-photo analysis |
-| `GOOGLE_CLIENT_ID` | Optional; enables Google sign-in |
-| `CORS_ORIGINS` | Comma-separated list of allowed frontend origins |

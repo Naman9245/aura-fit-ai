@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The app's background (AuraColors.black), shown before Flutter draws
+         its first frame so the app never flashes white. -->
+    <color name="aura_black">#050816</color>
+</resources>

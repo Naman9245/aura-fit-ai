@@ -1,0 +1,5 @@
+# Supabase CLI settings. The live project ("aura-fit", Mumbai, ref
+# yaavsztvqrvbsmirohrm) was created on 22 Nov 2026. Each file in
+# migrations/ is named by the version Supabase recorded when it was
+# applied, so the CLI and the project agree on what has run.
+project_id = "aura-fit"
