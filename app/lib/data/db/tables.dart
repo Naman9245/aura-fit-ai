@@ -136,6 +136,34 @@ class MealEntries extends Table with Synced {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+/// How far this phone has read each table of the account's copy: the last
+/// change number it applied.
+@DataClassName('SyncCursorRow')
+class SyncCursors extends Table {
+  /// The table, by its name on both sides.
+  TextColumn get kind => text()();
+  IntColumn get seq => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {kind};
+}
+
+/// The account this phone's data belongs to, once it has synced with one.
+/// Signing out removes it along with the data, so the next account starts
+/// from nothing; until then no other account can sync these rows.
+@DataClassName('SyncAccountRow')
+class SyncAccount extends Table {
+  /// Always 1: a phone's data belongs to one account at a time.
+  IntColumn get id =>
+      integer().withDefault(const Constant(1)).check(id.equals(1))();
+  TextColumn get accountId => text()();
+  TextColumn get email => text().nullable()();
+  DateTimeColumn get boundAt => dateTime()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 /// Water and steps, one row per reading. Logging starts in January.
 @DataClassName('HealthSampleRow')
 @TableIndex(name: 'health_samples_metric_time', columns: {#metric, #measuredAt})

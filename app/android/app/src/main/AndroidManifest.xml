@@ -1,8 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sign-in and sync with the account's copy on Supabase. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- The account is the backup. Android's own backup and phone-to-phone
+         transfer would carry a stale copy of the data and the sign-in to
+         another phone, so they take nothing. -->
     <application
         android:label="AURA FIT AI"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -1,0 +1,172 @@
+import 'package:aurafit/core/router.dart';
+import 'package:aurafit/core/theme/aura_colors.dart';
+import 'package:aurafit/data/account.dart';
+import 'package:aurafit/data/providers.dart';
+import 'package:aurafit/data/sync/sync_controller.dart';
+import 'package:aurafit/data/sync/sync_engine.dart';
+import 'package:aurafit/features/account/sign_in_screen.dart';
+import 'package:clock/clock.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+/// The account, where sync stands, and signing out.
+Future<void> showAccountSheet(BuildContext context) =>
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      showDragHandle: true,
+      backgroundColor: AuraColors.surface,
+      builder: (context) => const _AccountSheet(),
+    );
+
+/// Where sync stands, in a line: what's saved, and what's still waiting.
+String syncLine(SyncStatus status, int waiting, DateTime now) {
+  final changes = waiting == 1 ? '1 change' : '$waiting changes';
+  return switch (status.phase) {
+    SyncPhase.syncing => 'Saving to your account…',
+    SyncPhase.synced when waiting > 0 => '$changes waiting to be saved',
+    SyncPhase.synced => switch (status.lastSynced) {
+      final at? => 'Everything is saved to your account, ${_ago(at, now)}',
+      null => 'Everything is saved to your account',
+    },
+    SyncPhase.offline when waiting > 0 =>
+      '$changes waiting: you\'re offline. They go up once you\'re back.',
+    SyncPhase.offline => 'You\'re offline.',
+    SyncPhase.failed when waiting > 0 =>
+      '$changes waiting: your account didn\'t take them. Trying again soon.',
+    SyncPhase.failed => 'Couldn\'t reach your account. Trying again soon.',
+    SyncPhase.otherAccount =>
+      'This phone\'s plan belongs to another account, so it isn\'t saved '
+          'to this one.',
+    SyncPhase.off => 'Not saving to an account.',
+  };
+}
+
+String _ago(DateTime at, DateTime now) {
+  final minutes = now.difference(at).inMinutes;
+  if (minutes < 1) return 'just now';
+  if (minutes == 1) return '1 min ago';
+  if (minutes < 60) return '$minutes min ago';
+  final hours = minutes ~/ 60;
+  return hours == 1 ? '1 hour ago' : '$hours hours ago';
+}
+
+class _AccountSheet extends ConsumerWidget {
+  const _AccountSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final text = Theme.of(context).textTheme;
+    final account = ref.watch(accountProvider).value;
+    final owner = ref.watch(phoneOwnerProvider).value;
+    final status = ref.watch(syncControllerProvider);
+    final waiting = ref.watch(syncWaitingProvider).value ?? 0;
+
+    final children = account == null
+        ? [
+            Text('Signed out', style: text.titleLarge),
+            const SizedBox(height: 8),
+            Text(
+              'Your session ended. Sign in again to keep saving to your '
+              'account; everything on this phone stays here meanwhile.',
+              style: text.bodyLarge?.copyWith(color: AuraColors.muted),
+            ),
+            const SizedBox(height: 24),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.go(
+                  Routes.signIn,
+                  extra: SignInArgs(
+                    reason: SignInReason.expired,
+                    email: owner?.email,
+                  ),
+                );
+              },
+              child: const Text('Sign in again'),
+            ),
+          ]
+        : [
+            Text(account.email ?? 'Signed in', style: text.titleLarge),
+            const SizedBox(height: 8),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                syncLine(status, waiting, clock.now()),
+                style: text.bodyLarge?.copyWith(color: AuraColors.muted),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: status.phase == SyncPhase.syncing
+                  ? null
+                  : () => ref.read(syncControllerProvider.notifier).syncNow(),
+              child: const Text('Sync now'),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () => signOut(context, ref),
+              child: const Text('Sign out'),
+            ),
+          ];
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
+        ),
+      ),
+    );
+  }
+}
+
+/// Signs out after checking, and takes the account's data off this phone:
+/// the next account starts from nothing. Changes that haven't reached the
+/// account are named first, since signing out loses them.
+Future<void> signOut(BuildContext context, WidgetRef ref) async {
+  final db = ref.read(appDatabaseProvider);
+  final waiting = await SyncEngine.watchWaiting(db).first;
+  if (!context.mounted) return;
+  final changes = waiting == 1
+      ? '1 change hasn\'t'
+      : '$waiting changes haven\'t';
+  final sure = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Sign out?'),
+      content: Text(
+        waiting > 0
+            ? '$changes reached your account yet. Signing out now loses '
+                  '${waiting == 1 ? 'it' : 'them'}.'
+            : 'Your plan stays in your account and comes back when you sign '
+                  'in. It leaves this phone.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(waiting > 0 ? 'Stay signed in' : 'Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(waiting > 0 ? 'Sign out anyway' : 'Sign out'),
+        ),
+      ],
+    ),
+  );
+  if (sure != true || !context.mounted) return;
+  // The sheet closes now, and its ref with it, so take what's needed first.
+  final router = GoRouter.of(context);
+  final sync = ref.read(syncControllerProvider.notifier);
+  final data = ref.read(accountDataProvider);
+  final service = ref.read(accountServiceProvider);
+  Navigator.of(context).pop();
+  // Nothing syncs while the data comes off, and it comes off before the
+  // session ends, so nothing mistakes this for a session that lapsed.
+  await sync.stop();
+  await data.removeAll();
+  await service.signOut();
+  router.go(Routes.onboarding);
+}

@@ -1,6 +1,8 @@
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
+import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/providers.dart';
+import 'package:aurafit/features/account/sign_in_screen.dart';
 import 'package:aurafit/features/onboarding/onboarding_controller.dart';
 import 'package:aurafit/features/onboarding/onboarding_steps.dart';
 import 'package:aurafit/widgets/aura_background.dart';
@@ -85,6 +87,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final draft = ref.watch(onboardingProvider);
     final step = draft.step;
     final first = step.index == 0;
+    // Someone with an account from another phone signs in instead.
+    final canSignIn =
+        ref.watch(accountServiceProvider).canSignIn &&
+        ref.watch(accountProvider).value == null;
     final last = step.index == OnboardingStep.values.length - 1;
 
     return PopScope(
@@ -133,6 +139,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               TextButton(
                                 onPressed: _saving ? null : _skip,
                                 child: const Text('Skip'),
+                              ),
+                            if (first && !widget.editing && canSignIn)
+                              TextButton(
+                                onPressed: () => context.push(
+                                  Routes.signIn,
+                                  extra: const SignInArgs(
+                                    reason: SignInReason.returning,
+                                  ),
+                                ),
+                                child: const Text('I already have an account'),
                               ),
                           ],
                         ),

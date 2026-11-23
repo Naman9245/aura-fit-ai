@@ -8,8 +8,7 @@ environment:
   sdk: ^3.13.7
 
 # The same packages and versions as Penny, which already runs them in
-# production. supabase_flutter joins with sign-in in January, when something
-# first uses it; until then it would only add size.
+# production.
 dependencies:
   flutter:
     sdk: flutter
@@ -18,6 +17,8 @@ dependencies:
   drift_flutter: ^0.3.1
   flutter_riverpod: ^3.4.3
   go_router: ^18.1.2
+  google_sign_in: ^7.2.0
+  supabase_flutter: ^2.18.3
   uuid: ^4.6.0
 
 dev_dependencies:

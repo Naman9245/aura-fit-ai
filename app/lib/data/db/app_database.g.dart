@@ -3569,6 +3569,513 @@ class HealthSamplesCompanion extends UpdateCompanion<HealthSampleRow> {
   }
 }
 
+class $SyncCursorsTable extends SyncCursors
+    with TableInfo<$SyncCursorsTable, SyncCursorRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncCursorsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _seqMeta = const VerificationMeta('seq');
+  @override
+  late final GeneratedColumn<int> seq = GeneratedColumn<int>(
+    'seq',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [kind, seq];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_cursors';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncCursorRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('seq')) {
+      context.handle(
+        _seqMeta,
+        seq.isAcceptableOrUnknown(data['seq']!, _seqMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_seqMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {kind};
+  @override
+  SyncCursorRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncCursorRow(
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      seq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}seq'],
+      )!,
+    );
+  }
+
+  @override
+  $SyncCursorsTable createAlias(String alias) {
+    return $SyncCursorsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncCursorRow extends DataClass implements Insertable<SyncCursorRow> {
+  /// The table, by its name on both sides.
+  final String kind;
+  final int seq;
+  const SyncCursorRow({required this.kind, required this.seq});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['kind'] = Variable<String>(kind);
+    map['seq'] = Variable<int>(seq);
+    return map;
+  }
+
+  SyncCursorsCompanion toCompanion(bool nullToAbsent) {
+    return SyncCursorsCompanion(kind: Value(kind), seq: Value(seq));
+  }
+
+  factory SyncCursorRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncCursorRow(
+      kind: serializer.fromJson<String>(json['kind']),
+      seq: serializer.fromJson<int>(json['seq']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'kind': serializer.toJson<String>(kind),
+      'seq': serializer.toJson<int>(seq),
+    };
+  }
+
+  SyncCursorRow copyWith({String? kind, int? seq}) =>
+      SyncCursorRow(kind: kind ?? this.kind, seq: seq ?? this.seq);
+  SyncCursorRow copyWithCompanion(SyncCursorsCompanion data) {
+    return SyncCursorRow(
+      kind: data.kind.present ? data.kind.value : this.kind,
+      seq: data.seq.present ? data.seq.value : this.seq,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncCursorRow(')
+          ..write('kind: $kind, ')
+          ..write('seq: $seq')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(kind, seq);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncCursorRow &&
+          other.kind == this.kind &&
+          other.seq == this.seq);
+}
+
+class SyncCursorsCompanion extends UpdateCompanion<SyncCursorRow> {
+  final Value<String> kind;
+  final Value<int> seq;
+  final Value<int> rowid;
+  const SyncCursorsCompanion({
+    this.kind = const Value.absent(),
+    this.seq = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncCursorsCompanion.insert({
+    required String kind,
+    required int seq,
+    this.rowid = const Value.absent(),
+  }) : kind = Value(kind),
+       seq = Value(seq);
+  static Insertable<SyncCursorRow> custom({
+    Expression<String>? kind,
+    Expression<int>? seq,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (kind != null) 'kind': kind,
+      if (seq != null) 'seq': seq,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncCursorsCompanion copyWith({
+    Value<String>? kind,
+    Value<int>? seq,
+    Value<int>? rowid,
+  }) {
+    return SyncCursorsCompanion(
+      kind: kind ?? this.kind,
+      seq: seq ?? this.seq,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (seq.present) {
+      map['seq'] = Variable<int>(seq.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncCursorsCompanion(')
+          ..write('kind: $kind, ')
+          ..write('seq: $seq, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncAccountTable extends SyncAccount
+    with TableInfo<$SyncAccountTable, SyncAccountRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncAccountTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    check: () => id.equals(1),
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _accountIdMeta = const VerificationMeta(
+    'accountId',
+  );
+  @override
+  late final GeneratedColumn<String> accountId = GeneratedColumn<String>(
+    'account_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+    'email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _boundAtMeta = const VerificationMeta(
+    'boundAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> boundAt = GeneratedColumn<DateTime>(
+    'bound_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, accountId, email, boundAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_account';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncAccountRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('account_id')) {
+      context.handle(
+        _accountIdMeta,
+        accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_accountIdMeta);
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+        _emailMeta,
+        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
+      );
+    }
+    if (data.containsKey('bound_at')) {
+      context.handle(
+        _boundAtMeta,
+        boundAt.isAcceptableOrUnknown(data['bound_at']!, _boundAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_boundAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncAccountRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncAccountRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      accountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account_id'],
+      )!,
+      email: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}email'],
+      ),
+      boundAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}bound_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SyncAccountTable createAlias(String alias) {
+    return $SyncAccountTable(attachedDatabase, alias);
+  }
+}
+
+class SyncAccountRow extends DataClass implements Insertable<SyncAccountRow> {
+  /// Always 1: a phone's data belongs to one account at a time.
+  final int id;
+  final String accountId;
+  final String? email;
+  final DateTime boundAt;
+  const SyncAccountRow({
+    required this.id,
+    required this.accountId,
+    this.email,
+    required this.boundAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['account_id'] = Variable<String>(accountId);
+    if (!nullToAbsent || email != null) {
+      map['email'] = Variable<String>(email);
+    }
+    map['bound_at'] = Variable<DateTime>(boundAt);
+    return map;
+  }
+
+  SyncAccountCompanion toCompanion(bool nullToAbsent) {
+    return SyncAccountCompanion(
+      id: Value(id),
+      accountId: Value(accountId),
+      email: email == null && nullToAbsent
+          ? const Value.absent()
+          : Value(email),
+      boundAt: Value(boundAt),
+    );
+  }
+
+  factory SyncAccountRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncAccountRow(
+      id: serializer.fromJson<int>(json['id']),
+      accountId: serializer.fromJson<String>(json['accountId']),
+      email: serializer.fromJson<String?>(json['email']),
+      boundAt: serializer.fromJson<DateTime>(json['boundAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'accountId': serializer.toJson<String>(accountId),
+      'email': serializer.toJson<String?>(email),
+      'boundAt': serializer.toJson<DateTime>(boundAt),
+    };
+  }
+
+  SyncAccountRow copyWith({
+    int? id,
+    String? accountId,
+    Value<String?> email = const Value.absent(),
+    DateTime? boundAt,
+  }) => SyncAccountRow(
+    id: id ?? this.id,
+    accountId: accountId ?? this.accountId,
+    email: email.present ? email.value : this.email,
+    boundAt: boundAt ?? this.boundAt,
+  );
+  SyncAccountRow copyWithCompanion(SyncAccountCompanion data) {
+    return SyncAccountRow(
+      id: data.id.present ? data.id.value : this.id,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      email: data.email.present ? data.email.value : this.email,
+      boundAt: data.boundAt.present ? data.boundAt.value : this.boundAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncAccountRow(')
+          ..write('id: $id, ')
+          ..write('accountId: $accountId, ')
+          ..write('email: $email, ')
+          ..write('boundAt: $boundAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, accountId, email, boundAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncAccountRow &&
+          other.id == this.id &&
+          other.accountId == this.accountId &&
+          other.email == this.email &&
+          other.boundAt == this.boundAt);
+}
+
+class SyncAccountCompanion extends UpdateCompanion<SyncAccountRow> {
+  final Value<int> id;
+  final Value<String> accountId;
+  final Value<String?> email;
+  final Value<DateTime> boundAt;
+  const SyncAccountCompanion({
+    this.id = const Value.absent(),
+    this.accountId = const Value.absent(),
+    this.email = const Value.absent(),
+    this.boundAt = const Value.absent(),
+  });
+  SyncAccountCompanion.insert({
+    this.id = const Value.absent(),
+    required String accountId,
+    this.email = const Value.absent(),
+    required DateTime boundAt,
+  }) : accountId = Value(accountId),
+       boundAt = Value(boundAt);
+  static Insertable<SyncAccountRow> custom({
+    Expression<int>? id,
+    Expression<String>? accountId,
+    Expression<String>? email,
+    Expression<DateTime>? boundAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (accountId != null) 'account_id': accountId,
+      if (email != null) 'email': email,
+      if (boundAt != null) 'bound_at': boundAt,
+    });
+  }
+
+  SyncAccountCompanion copyWith({
+    Value<int>? id,
+    Value<String>? accountId,
+    Value<String?>? email,
+    Value<DateTime>? boundAt,
+  }) {
+    return SyncAccountCompanion(
+      id: id ?? this.id,
+      accountId: accountId ?? this.accountId,
+      email: email ?? this.email,
+      boundAt: boundAt ?? this.boundAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (accountId.present) {
+      map['account_id'] = Variable<String>(accountId.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
+    if (boundAt.present) {
+      map['bound_at'] = Variable<DateTime>(boundAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncAccountCompanion(')
+          ..write('id: $id, ')
+          ..write('accountId: $accountId, ')
+          ..write('email: $email, ')
+          ..write('boundAt: $boundAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3597,6 +4104,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'CREATE TRIGGER health_samples_stamp_forward AFTER UPDATE OF updated_at ON health_samples WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE health_samples SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END',
     'health_samples_stamp_forward',
   );
+  late final $SyncCursorsTable syncCursors = $SyncCursorsTable(this);
+  late final $SyncAccountTable syncAccount = $SyncAccountTable(this);
   late final Index goalsOneActive = Index(
     'goals_one_active',
     'CREATE UNIQUE INDEX goals_one_active ON goals ((ended_at IS NULL)) WHERE ended_at IS NULL AND deleted_at IS NULL',
@@ -3628,6 +4137,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     mealEntriesStampForward,
     healthSamples,
     healthSamplesStampForward,
+    syncCursors,
+    syncAccount,
     goalsOneActive,
     weightLogsOneADay,
     mealEntriesEatenAt,
@@ -5392,6 +5903,332 @@ typedef $$HealthSamplesTableProcessedTableManager =
       HealthSampleRow,
       PrefetchHooks Function()
     >;
+typedef $$SyncCursorsTableCreateCompanionBuilder =
+    SyncCursorsCompanion Function({
+      required String kind,
+      required int seq,
+      Value<int> rowid,
+    });
+typedef $$SyncCursorsTableUpdateCompanionBuilder =
+    SyncCursorsCompanion Function({
+      Value<String> kind,
+      Value<int> seq,
+      Value<int> rowid,
+    });
+
+class $$SyncCursorsTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncCursorsTable> {
+  $$SyncCursorsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncCursorsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncCursorsTable> {
+  $$SyncCursorsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncCursorsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncCursorsTable> {
+  $$SyncCursorsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<int> get seq =>
+      $composableBuilder(column: $table.seq, builder: (column) => column);
+}
+
+class $$SyncCursorsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncCursorsTable,
+          SyncCursorRow,
+          $$SyncCursorsTableFilterComposer,
+          $$SyncCursorsTableOrderingComposer,
+          $$SyncCursorsTableAnnotationComposer,
+          $$SyncCursorsTableCreateCompanionBuilder,
+          $$SyncCursorsTableUpdateCompanionBuilder,
+          (
+            SyncCursorRow,
+            BaseReferences<_$AppDatabase, $SyncCursorsTable, SyncCursorRow>,
+          ),
+          SyncCursorRow,
+          PrefetchHooks Function()
+        > {
+  $$SyncCursorsTableTableManager(_$AppDatabase db, $SyncCursorsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncCursorsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncCursorsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncCursorsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> kind = const Value.absent(),
+            Value<int> seq = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => SyncCursorsCompanion(kind: kind, seq: seq, rowid: rowid),
+          createCompanionCallback: ({
+            required String kind,
+            required int seq,
+            Value<int> rowid = const Value.absent(),
+          }) => SyncCursorsCompanion.insert(kind: kind, seq: seq, rowid: rowid),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SyncCursorsTable, SyncCursorRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $SyncCursorsTable,
+                    SyncCursorRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncCursorsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncCursorsTable,
+      SyncCursorRow,
+      $$SyncCursorsTableFilterComposer,
+      $$SyncCursorsTableOrderingComposer,
+      $$SyncCursorsTableAnnotationComposer,
+      $$SyncCursorsTableCreateCompanionBuilder,
+      $$SyncCursorsTableUpdateCompanionBuilder,
+      (
+        SyncCursorRow,
+        BaseReferences<_$AppDatabase, $SyncCursorsTable, SyncCursorRow>,
+      ),
+      SyncCursorRow,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncAccountTableCreateCompanionBuilder =
+    SyncAccountCompanion Function({
+      Value<int> id,
+      required String accountId,
+      Value<String?> email,
+      required DateTime boundAt,
+    });
+typedef $$SyncAccountTableUpdateCompanionBuilder =
+    SyncAccountCompanion Function({
+      Value<int> id,
+      Value<String> accountId,
+      Value<String?> email,
+      Value<DateTime> boundAt,
+    });
+
+class $$SyncAccountTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncAccountTable> {
+  $$SyncAccountTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get boundAt => $composableBuilder(
+    column: $table.boundAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncAccountTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncAccountTable> {
+  $$SyncAccountTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get accountId => $composableBuilder(
+    column: $table.accountId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get boundAt => $composableBuilder(
+    column: $table.boundAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncAccountTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncAccountTable> {
+  $$SyncAccountTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get accountId =>
+      $composableBuilder(column: $table.accountId, builder: (column) => column);
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get boundAt =>
+      $composableBuilder(column: $table.boundAt, builder: (column) => column);
+}
+
+class $$SyncAccountTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncAccountTable,
+          SyncAccountRow,
+          $$SyncAccountTableFilterComposer,
+          $$SyncAccountTableOrderingComposer,
+          $$SyncAccountTableAnnotationComposer,
+          $$SyncAccountTableCreateCompanionBuilder,
+          $$SyncAccountTableUpdateCompanionBuilder,
+          (
+            SyncAccountRow,
+            BaseReferences<_$AppDatabase, $SyncAccountTable, SyncAccountRow>,
+          ),
+          SyncAccountRow,
+          PrefetchHooks Function()
+        > {
+  $$SyncAccountTableTableManager(_$AppDatabase db, $SyncAccountTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncAccountTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncAccountTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncAccountTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> accountId = const Value.absent(),
+                Value<String?> email = const Value.absent(),
+                Value<DateTime> boundAt = const Value.absent(),
+              }) => SyncAccountCompanion(
+                id: id,
+                accountId: accountId,
+                email: email,
+                boundAt: boundAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String accountId,
+                Value<String?> email = const Value.absent(),
+                required DateTime boundAt,
+              }) => SyncAccountCompanion.insert(
+                id: id,
+                accountId: accountId,
+                email: email,
+                boundAt: boundAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SyncAccountTable, SyncAccountRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $SyncAccountTable,
+                    SyncAccountRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncAccountTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncAccountTable,
+      SyncAccountRow,
+      $$SyncAccountTableFilterComposer,
+      $$SyncAccountTableOrderingComposer,
+      $$SyncAccountTableAnnotationComposer,
+      $$SyncAccountTableCreateCompanionBuilder,
+      $$SyncAccountTableUpdateCompanionBuilder,
+      (
+        SyncAccountRow,
+        BaseReferences<_$AppDatabase, $SyncAccountTable, SyncAccountRow>,
+      ),
+      SyncAccountRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5406,4 +6243,8 @@ class $AppDatabaseManager {
       $$MealEntriesTableTableManager(_db, _db.mealEntries);
   $$HealthSamplesTableTableManager get healthSamples =>
       $$HealthSamplesTableTableManager(_db, _db.healthSamples);
+  $$SyncCursorsTableTableManager get syncCursors =>
+      $$SyncCursorsTableTableManager(_db, _db.syncCursors);
+  $$SyncAccountTableTableManager get syncAccount =>
+      $$SyncAccountTableTableManager(_db, _db.syncAccount);
 }

@@ -1,3 +1,4 @@
+import 'package:aurafit/data/db/app_database.steps.dart';
 import 'package:aurafit/data/db/converters.dart';
 import 'package:aurafit/data/db/tables.dart';
 import 'package:aurafit/models/options.dart';
@@ -9,7 +10,15 @@ part 'app_database.g.dart';
 /// Everything the app keeps on the phone. The app reads and writes only
 /// here, so it works the same with no network; the server gets a copy.
 @DriftDatabase(
-  tables: [Profiles, Goals, WeightLogs, MealEntries, HealthSamples],
+  tables: [
+    Profiles,
+    Goals,
+    WeightLogs,
+    MealEntries,
+    HealthSamples,
+    SyncCursors,
+    SyncAccount,
+  ],
   // Edits here always move a row's stamp forward.
   include: {'stamps.drift'},
 )
@@ -23,9 +32,17 @@ class AppDatabase extends _$AppDatabase {
   // To change the schema: bump this, add a step to [migration], then run
   // `dart run drift_dev make-migrations` so the new step gets a test.
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
-  MigrationStrategy get migration =>
-      MigrationStrategy(onCreate: (m) => m.createAll());
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: stepByStep(
+      // Sync: how far each table has been read, and whose data this is.
+      from1To2: (m, schema) async {
+        await m.createTable(schema.syncCursors);
+        await m.createTable(schema.syncAccount);
+      },
+    ),
+  );
 }

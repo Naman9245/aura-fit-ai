@@ -50,9 +50,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       # Plain Postgres plus the shim stands in for Supabase. Every migration
-      # is applied in order, then the security checks run in a transaction
-      # that's rolled back.
-      - name: Apply the migrations and run the security checks
+      # is applied in order, then the security and sync checks each run in
+      # a transaction that's rolled back.
+      - name: Apply the migrations and run the security and sync checks
         run: |
           psql -v ON_ERROR_STOP=1 -q -f supabase/tests/supabase_shim.sql
           for migration in supabase/migrations/*.sql; do
@@ -60,3 +60,4 @@ jobs:
             psql -v ON_ERROR_STOP=1 -q -f "$migration"
           done
           psql -v ON_ERROR_STOP=1 -f supabase/tests/security_test.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/sync_test.sql

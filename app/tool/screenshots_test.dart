@@ -3,8 +3,10 @@ import 'dart:ui' as ui;
 
 import 'package:aurafit/app.dart';
 import 'package:aurafit/core/router.dart';
+import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/db/app_database.dart';
 import 'package:aurafit/data/providers.dart';
+import 'package:aurafit/data/sync/sync_controller.dart';
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
@@ -13,6 +15,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../test/helpers/fake_account_service.dart';
+import '../test/helpers/fake_sync_remote.dart';
 
 // Draws every screen on a phone-sized screen with the phone's real font,
 // at normal and large text, to look the app over without a phone:
@@ -72,6 +77,24 @@ void main() {
         await _shot(tester, '12_how_more$suffix');
         await _scroll(tester, -1500);
         await _shot(tester, '13_how_end$suffix');
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+
+        await _tap(tester, 'Save my plan');
+        await _shot(tester, '14_sign_in$suffix');
+        await tester.tap(find.byType(Checkbox));
+        await tester.enterText(_field('Email'), 'priya@example.com');
+        await tester.enterText(_field('Password'), 'long-enough-password');
+        await _shot(tester, '15_sign_in_filled$suffix');
+        await _tap(tester, 'Create account');
+        await tester.enterText(_field('Code'), FakeAccountService.code);
+        await _shot(tester, '16_code$suffix');
+        await _tap(tester, 'Confirm');
+        await _shot(tester, '17_targets_saved$suffix');
+        await tester.tap(find.byTooltip('Account'));
+        await _shot(tester, '18_account$suffix');
+        await _tap(tester, 'Sign out');
+        await _shot(tester, '19_sign_out$suffix');
       });
     });
   }
@@ -106,7 +129,12 @@ Future<void> _pump(WidgetTester tester, double textScale) async {
     RepaintBoundary(
       key: _app,
       child: ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          // Signing in and syncing with stand-ins, so no network is needed.
+          accountServiceProvider.overrideWithValue(FakeAccountService()),
+          syncRemoteProvider.overrideWithValue(FakeSyncRemote()),
+        ],
         child: const AuraApp(startAt: Routes.onboarding),
       ),
     ),

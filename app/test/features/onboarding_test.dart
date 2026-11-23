@@ -233,6 +233,11 @@ void main() {
           await _continue(tester);
           await _tap(tester, 'Skip');
 
+          // The targets come back scrolled to where "Change my details" was.
+          await tester.ensureVisible(
+            find.text('Your daily targets', skipOffstage: false),
+          );
+          await tester.pumpAndSettle();
           expect(find.text('Your daily targets'), findsOneWidget);
           expect(find.text('108 g'), findsOneWidget, reason: '1.8 g × 60 kg');
           final goals = await tester.runAsync(() => db.select(db.goals).get());

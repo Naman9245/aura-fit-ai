@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# The server address and keys a build uses (copy env/supabase.example.json).
+# They're public by design, but each copy of the repo keeps its own.
+/env/supabase.json
