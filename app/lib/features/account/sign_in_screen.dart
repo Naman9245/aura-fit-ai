@@ -118,20 +118,21 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       setState(() => _error = 'Enter your password.');
       return;
     }
+    final service = _service;
     _run(() async {
       if (_creating) {
-        final account = await _service.createAccount(email, password);
+        final account = await service.createAccount(email, password);
         if (!mounted) return;
         if (account != null) return _finish(account);
         _enterCode(email, CodePurpose.confirm);
         return;
       }
       try {
-        final account = await _service.signIn(email, password);
+        final account = await service.signIn(email, password);
         if (mounted) await _finish(account);
       } on AccountException catch (error) {
         if (error.failure != AccountFailure.notConfirmed) rethrow;
-        await _service.sendNewCode(email);
+        await service.sendNewCode(email);
         if (mounted) _enterCode(email, CodePurpose.confirm);
       }
     });

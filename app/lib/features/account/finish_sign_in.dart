@@ -19,11 +19,16 @@ Future<void> finishSignIn(
   WidgetRef ref,
   Account account,
 ) async {
+  // Taken now: the screen can close while the sync runs, and its ref with
+  // it.
   final controller = ref.read(syncControllerProvider.notifier);
+  final data = ref.read(accountDataProvider);
+  final service = ref.read(accountServiceProvider);
+  final profiles = ref.read(profileRepositoryProvider);
+
   final status = await _firstSync(controller, account);
   if (status.phase == SyncPhase.otherAccount) {
-    if (!context.mounted) return;
-    final owner = await ref.read(accountDataProvider).owner();
+    final owner = await data.owner();
     if (!context.mounted) return;
     final remove = await showDialog<bool>(
       context: context,
@@ -31,7 +36,7 @@ Future<void> finishSignIn(
           _OtherAccountDialog(owner: owner?.email, signingIn: account.email),
     );
     if (remove != true) {
-      await ref.read(accountServiceProvider).signOut();
+      await service.signOut();
       if (context.mounted) {
         context.go(
           Routes.signIn,
@@ -40,10 +45,10 @@ Future<void> finishSignIn(
       }
       return;
     }
-    await ref.read(accountDataProvider).removeAll();
+    await data.removeAll();
     await _firstSync(controller, account);
   }
-  final hasProfile = await ref.read(profileRepositoryProvider).hasProfile();
+  final hasProfile = await profiles.hasProfile();
   if (context.mounted) {
     context.go(hasProfile ? Routes.targets : Routes.onboarding);
   }
