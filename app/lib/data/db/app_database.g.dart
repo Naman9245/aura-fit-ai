@@ -59,6 +59,7 @@ class $ProfilesTable extends Profiles
     'height_cm',
     aliasedName,
     false,
+    check: () => ComparableExpr(heightCm).isBetweenValues(100, 250),
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
@@ -767,6 +768,7 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalRow> {
     'target_weight_kg',
     aliasedName,
     true,
+    check: () => ComparableExpr(targetWeightKg).isBetweenValues(20, 400),
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
@@ -778,6 +780,7 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalRow> {
     'basis_weight_kg',
     aliasedName,
     false,
+    check: () => ComparableExpr(basisWeightKg).isBetweenValues(20, 400),
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
@@ -789,7 +792,7 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalRow> {
     'calories_kcal',
     aliasedName,
     false,
-    check: () => ComparableExpr(caloriesKcal).isBiggerOrEqualValue(1200),
+    check: () => ComparableExpr(caloriesKcal).isBetweenValues(1200, 10000),
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
@@ -801,6 +804,7 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalRow> {
     'protein_g',
     aliasedName,
     false,
+    check: () => ComparableExpr(proteinG).isBiggerOrEqualValue(0),
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
@@ -810,6 +814,7 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalRow> {
     'carbs_g',
     aliasedName,
     false,
+    check: () => ComparableExpr(carbsG).isBiggerOrEqualValue(0),
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
@@ -819,6 +824,7 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalRow> {
     'fat_g',
     aliasedName,
     false,
+    check: () => ComparableExpr(fatG).isBiggerOrEqualValue(0),
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
@@ -830,6 +836,7 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalRow> {
     'water_ml',
     aliasedName,
     false,
+    check: () => ComparableExpr(waterMl).isBiggerThanValue(0),
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
@@ -839,6 +846,7 @@ class $GoalsTable extends Goals with TableInfo<$GoalsTable, GoalRow> {
     'steps',
     aliasedName,
     false,
+    check: () => ComparableExpr(steps).isBiggerThanValue(0),
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
@@ -1739,6 +1747,7 @@ class $WeightLogsTable extends WeightLogs
     'weight_kg',
     aliasedName,
     false,
+    check: () => ComparableExpr(weightKg).isBetweenValues(20, 400),
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
@@ -2217,7 +2226,9 @@ class $MealEntriesTable extends MealEntries
     'grams',
     aliasedName,
     false,
-    check: () => ComparableExpr(grams).isBiggerThanValue(0),
+    check: () =>
+        ComparableExpr(grams).isBiggerThanValue(0) &
+        ComparableExpr(grams).isSmallerOrEqualValue(5000),
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
@@ -2227,7 +2238,7 @@ class $MealEntriesTable extends MealEntries
     'kcal',
     aliasedName,
     false,
-    check: () => ComparableExpr(kcal).isBiggerOrEqualValue(0),
+    check: () => ComparableExpr(kcal).isBetweenValues(0, 10000),
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );

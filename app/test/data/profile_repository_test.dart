@@ -204,6 +204,80 @@ void main() {
       );
     });
 
+    // Each of these the server's CHECK constraints would refuse, so a row
+    // like it could never sync. The phone refuses it first.
+    test('refuses what the server would refuse', () async {
+      final at = day1;
+      final tooMuch = <String, Future<void> Function()>{
+        'a 12,000 kcal goal': () =>
+            db.into(db.goals).insert(goal('high', kcal: 12000)),
+        '6 litres of water at once': () => db
+            .into(db.healthSamples)
+            .insert(
+              HealthSamplesCompanion.insert(
+                id: 'w',
+                metric: HealthMetric.waterMl,
+                value: 6000,
+                measuredAt: at,
+                source: SampleSource.manual,
+                createdAt: at,
+                updatedAt: at,
+              ),
+            ),
+        '6 kg of food in one entry': () => db
+            .into(db.mealEntries)
+            .insert(
+              MealEntriesCompanion.insert(
+                id: 'm',
+                name: 'Biryani',
+                meal: Meal.dinner,
+                grams: 6000,
+                kcal: 900,
+                proteinG: 30,
+                carbsG: 100,
+                fatG: 40,
+                eatenAt: at,
+                source: EntrySource.manual,
+                createdAt: at,
+                updatedAt: at,
+              ),
+            ),
+        'a 450 kg weigh-in': () => db
+            .into(db.weightLogs)
+            .insert(
+              WeightLogsCompanion.insert(
+                id: 'x',
+                day: DateTime(2026, 11, 22),
+                weightKg: 450,
+                createdAt: at,
+                updatedAt: at,
+              ),
+            ),
+      };
+      for (final MapEntry(key: what, value: insert) in tooMuch.entries) {
+        await expectLater(
+          insert,
+          throwsA(isA<SqliteException>()),
+          reason: what,
+        );
+      }
+
+      // 100,000 steps is a lot, but allowed.
+      await db
+          .into(db.healthSamples)
+          .insert(
+            HealthSamplesCompanion.insert(
+              id: 's',
+              metric: HealthMetric.steps,
+              value: 100000,
+              measuredAt: at,
+              source: SampleSource.manual,
+              createdAt: at,
+              updatedAt: at,
+            ),
+          );
+    });
+
     test('moves an edit\'s stamp forward past the one it replaces', () async {
       await db.into(db.goals).insert(goal('a'));
 
