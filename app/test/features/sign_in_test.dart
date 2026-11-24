@@ -365,6 +365,76 @@ void main() {
     });
   });
 
+  group('deleting the account', () {
+    const priya = Account(id: 'email-1', email: 'priya@example.com');
+
+    Future<AppDatabase> openSheet(WidgetTester tester) async {
+      final db = await pumpAura(
+        tester,
+        startAt: Routes.targets,
+        seed: _onboarded,
+        accounts: accounts..signInAs(priya),
+        remote: remote,
+      );
+      await tester.tap(find.byTooltip('Account'));
+      await tester.pumpAndSettle();
+      await _tap(tester, 'Delete account');
+      expect(find.textContaining('It can\'t be undone'), findsOneWidget);
+      return db;
+    }
+
+    testWidgets('removes it on the server and clears the phone', (
+      tester,
+    ) async {
+      await withClock(Clock.fixed(testNow), () async {
+        final db = await openSheet(tester);
+        await _tap(tester, 'Delete everything');
+
+        expect(accounts.deleted, ['email-1']);
+        expect(find.text('What\'s your main goal?'), findsOneWidget);
+        expect(
+          find.text('Your account and everything in it are deleted.'),
+          findsOneWidget,
+        );
+        final left = await tester.runAsync(
+          () async => [
+            ...await db.select(db.profiles).get(),
+            ...await db.select(db.goals).get(),
+            ...await db.select(db.weightLogs).get(),
+            ...await db.select(db.syncAccount).get(),
+          ],
+        );
+        expect(left, isEmpty);
+      });
+    });
+
+    testWidgets('offline, deletes nothing anywhere and says so', (
+      tester,
+    ) async {
+      await withClock(Clock.fixed(testNow), () async {
+        final db = await openSheet(tester);
+        accounts.offline = true;
+        await _tap(tester, 'Delete everything');
+
+        expect(accounts.deleted, isEmpty);
+        expect(find.textContaining('nothing was deleted'), findsOneWidget);
+        expect(find.text('priya@example.com'), findsOneWidget);
+        final goals = await tester.runAsync(() => db.select(db.goals).get());
+        expect(goals, hasLength(1));
+      });
+    });
+
+    testWidgets('Cancel leaves everything as it was', (tester) async {
+      await withClock(Clock.fixed(testNow), () async {
+        await openSheet(tester);
+        await _tap(tester, 'Cancel');
+
+        expect(accounts.deleted, isEmpty);
+        expect(find.text('priya@example.com'), findsOneWidget);
+      });
+    });
+  });
+
   group('the first screen', () {
     late AppDatabase db;
 

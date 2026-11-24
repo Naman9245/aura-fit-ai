@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
 import 'package:aurafit/data/account.dart';
@@ -109,6 +111,12 @@ class _AccountSheet extends ConsumerWidget {
               onPressed: () => signOut(context, ref),
               child: const Text('Sign out'),
             ),
+            const SizedBox(height: 8),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: AuraColors.error),
+              onPressed: () => deleteAccount(context, ref),
+              child: const Text('Delete account'),
+            ),
           ];
     return SafeArea(
       child: Padding(
@@ -169,4 +177,90 @@ Future<void> signOut(BuildContext context, WidgetRef ref) async {
   await data.removeAll();
   await service.signOut();
   router.go(Routes.onboarding);
+}
+
+/// Deletes the account on the server, with everything in it, after a
+/// clear warning, then clears this phone. If the server can't be reached,
+/// nothing is deleted anywhere and the person is told so.
+Future<void> deleteAccount(BuildContext context, WidgetRef ref) async {
+  final sure = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Delete your account?'),
+      content: const Text(
+        'This deletes your account and everything saved in it: your '
+        'profile, targets and weigh-ins. It clears this phone too. It can\'t '
+        'be undone.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(foregroundColor: AuraColors.error),
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Delete everything'),
+        ),
+      ],
+    ),
+  );
+  if (sure != true || !context.mounted) return;
+  // The sheet closes once it's done, and its ref with it, so take what's
+  // needed first.
+  final router = GoRouter.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  final navigator = Navigator.of(context, rootNavigator: true);
+  final sync = ref.read(syncControllerProvider.notifier);
+  final data = ref.read(accountDataProvider);
+  final service = ref.read(accountServiceProvider);
+
+  // Over the sheet, which stays if this fails.
+  unawaited(
+    showDialog<void>(
+      context: context,
+      useRootNavigator: true,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(width: 20),
+            Expanded(child: Text('Deleting your account…')),
+          ],
+        ),
+      ),
+    ),
+  );
+  try {
+    await service.deleteAccount();
+  } on AccountException catch (error) {
+    navigator.pop();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          error.failure == AccountFailure.offline
+              ? 'You\'re offline, so nothing was deleted. Try again once '
+                    'you\'re back online.'
+              : 'Your account couldn\'t be deleted, so nothing was. Please '
+                    'try again.',
+        ),
+      ),
+    );
+    return;
+  }
+  // Gone on the server. Now the phone's copy, before the session ends, so
+  // nothing mistakes this for a session that lapsed.
+  await sync.stop();
+  await data.removeAll();
+  await service.signOut();
+  navigator
+    ..pop() // the progress dialog
+    ..pop(); // the sheet
+  router.go(Routes.onboarding);
+  messenger.showSnackBar(
+    const SnackBar(
+      content: Text('Your account and everything in it are deleted.'),
+    ),
+  );
 }
