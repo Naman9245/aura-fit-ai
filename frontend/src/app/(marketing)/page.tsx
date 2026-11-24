@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Brain, Camera, Menu, Shield, X, Zap } from "lucide-react";
+import { ArrowRight, ArrowUp, Brain, Menu, Shield, X, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 const navLinks = [
@@ -33,10 +33,12 @@ const showcaseCards = [
   },
 ];
 
+// Only things that are true of the app. No user numbers until there are
+// real users to count.
 const stats = [
-  { label: "Active Members", value: "42K+" },
-  { label: "Avg Weekly Compliance", value: "84%" },
-  { label: "Coach Response Time", value: "< 3 sec" },
+  { label: "Daily target never goes below", value: "1,200 kcal" },
+  { label: "To log a meal: the aim", value: "< 20 sec" },
+  { label: "Times your data is sold", value: "Never" },
 ];
 
 export default function Home() {
@@ -268,7 +270,7 @@ export default function Home() {
         className="fixed bottom-5 right-5 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/80 text-zinc-200 backdrop-blur transition hover:bg-white hover:text-black"
         aria-label="Back to top"
       >
-        <Camera size={16} />
+        <ArrowUp size={16} />
       </a>
     </main>
   );
