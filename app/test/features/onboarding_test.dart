@@ -55,6 +55,7 @@ void main() {
       await _tap(tester, 'Female');
       await _continue(tester);
 
+      await _tap(tester, 'cm');
       await tester.enterText(_field('Height'), '155');
       await tester.enterText(_field('Weight'), '50');
       await tester.pumpAndSettle();
@@ -144,6 +145,7 @@ void main() {
       await _tap(tester, 'I\'d rather not say');
       await _continue(tester);
 
+      await _tap(tester, 'cm');
       await tester.enterText(_field('Height'), '300');
       await tester.enterText(_field('Weight'), '70.5');
       await tester.pumpAndSettle();
@@ -159,6 +161,43 @@ void main() {
       await tester.enterText(_field('Weight'), '70.55');
       await tester.pumpAndSettle();
       expect(find.text('70.5'), findsOneWidget);
+
+      // Switching to feet and inches carries the height across.
+      await _tap(tester, 'ft + in');
+      expect(find.text('= 172.5 cm'), findsOneWidget);
+    });
+  });
+
+  testWidgets('height can be given in feet and inches', (tester) async {
+    await withClock(Clock.fixed(testNow), () async {
+      final db = await pumpAura(tester, startAt: Routes.onboarding);
+      await _tap(tester, 'Lose fat');
+      await _continue(tester);
+      await _enterBirthDate(tester, '1', '1', '1995');
+      await _continue(tester);
+      await _tap(tester, 'Male');
+      await _continue(tester);
+
+      await tester.enterText(_field('Feet'), '5');
+      await tester.enterText(_field('Inches'), '13');
+      await tester.enterText(_field('Weight'), '70');
+      await tester.pumpAndSettle();
+      expect(find.text('Inches go up to 11'), findsOneWidget);
+      expect(_continueEnabled(tester), isFalse);
+
+      await tester.enterText(_field('Inches'), '7');
+      await tester.pumpAndSettle();
+      expect(find.text('= 170.2 cm'), findsOneWidget);
+      await _continue(tester);
+      await _tap(tester, 'Mostly sitting');
+      await _continue(tester);
+      await _continue(tester);
+      await _tap(tester, 'See my targets');
+
+      final profile = await tester.runAsync(
+        () => db.select(db.profiles).getSingle(),
+      );
+      expect(profile!.heightCm, 170.2);
     });
   });
 
@@ -225,13 +264,14 @@ void main() {
           expect(find.text('10 May 1996: you\'re 30.'), findsOneWidget);
           await _continue(tester);
           await _continue(tester);
-          expect(find.text('155'), findsOneWidget);
+          expect(find.text('= 155 cm'), findsOneWidget);
           await tester.enterText(_field('Weight'), '60');
           await tester.pumpAndSettle();
           await _continue(tester);
           await _continue(tester);
           await _continue(tester);
-          await _tap(tester, 'Skip');
+          // Training was skipped the first time; saving mustn't need Skip.
+          await _tap(tester, 'See my targets');
 
           // The targets come back scrolled to where "Change my details" was.
           await tester.ensureVisible(

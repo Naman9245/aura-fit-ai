@@ -97,6 +97,11 @@ abstract interface class AccountService {
   Future<Account> resetPassword(String email, String code, String newPassword);
 
   Future<void> signOut();
+
+  /// Deletes the signed-in account on the server, with everything it
+  /// synced. The session stays until [signOut], so the phone's own copy
+  /// can come off first.
+  Future<void> deleteAccount();
 }
 
 /// [AccountService] over Supabase Auth. Google's own sign-in on the phone
@@ -223,6 +228,19 @@ class SupabaseAccountService implements AccountService {
       } on Exception {
         // Google's own memory of the choice; nothing here depends on it.
       }
+    }
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    final client = await startSupabase();
+    try {
+      await client.functions.invoke('delete-account', method: HttpMethod.post);
+    } on FunctionException catch (error) {
+      throw AccountException(AccountFailure.failed, '${error.status}');
+    } on Exception catch (error) {
+      // No answer at all: no network, or the server is down.
+      throw AccountException(AccountFailure.offline, '$error');
     }
   }
 

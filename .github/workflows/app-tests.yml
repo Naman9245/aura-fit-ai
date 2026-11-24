@@ -28,6 +28,18 @@ jobs:
       # no secrets or network needed.
       - run: flutter test
 
+  functions:
+    name: Edge Functions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      # The handlers' tests, with fakes for Supabase; no secrets needed.
+      - run: deno test supabase/functions
+
   database:
     name: Supabase migrations and security
     runs-on: ubuntu-latest

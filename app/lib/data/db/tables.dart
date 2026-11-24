@@ -10,6 +10,9 @@ import 'package:drift/drift.dart';
 /// Postgres table in supabase/migrations, apart from user_id and seq,
 /// which only the server keeps: this phone holds one person's rows.
 ///
+/// Their CHECK limits match the server's too. A row the phone accepts but
+/// the server refuses could never sync, and would wait to be saved forever.
+///
 /// Rows are ready for sync from the start: ids are UUIDv7 made here, every
 /// change stamps updatedAt, and deletes only set deletedAt.
 mixin Synced on Table {
@@ -32,7 +35,7 @@ class Profiles extends Table with Synced {
   /// Null when the person would rather not say.
   TextColumn get sex =>
       text().nullable().map(const OptionConverter<Sex>(Sex.values))();
-  RealColumn get heightCm => real()();
+  RealColumn get heightCm => real().check(heightCm.isBetweenValues(100, 250))();
   TextColumn get activityLevel =>
       text().map(const OptionConverter<ActivityLevel>(ActivityLevel.values))();
 
@@ -66,20 +69,22 @@ class Goals extends Table with Synced {
   TextColumn get id => text()();
   TextColumn get goalType =>
       text().map(const OptionConverter<GoalType>(GoalType.values))();
-  RealColumn get targetWeightKg => real().nullable()();
+  RealColumn get targetWeightKg =>
+      real().nullable().check(targetWeightKg.isBetweenValues(20, 400))();
 
   /// The weight the targets were worked out from, so they can be
   /// explained later.
-  RealColumn get basisWeightKg => real()();
+  RealColumn get basisWeightKg =>
+      real().check(basisWeightKg.isBetweenValues(20, 400))();
 
   /// Never below the lowest floor, as on the server.
   IntColumn get caloriesKcal =>
-      integer().check(caloriesKcal.isBiggerOrEqualValue(1200))();
-  IntColumn get proteinG => integer()();
-  IntColumn get carbsG => integer()();
-  IntColumn get fatG => integer()();
-  IntColumn get waterMl => integer()();
-  IntColumn get steps => integer()();
+      integer().check(caloriesKcal.isBetweenValues(1200, 10000))();
+  IntColumn get proteinG => integer().check(proteinG.isBiggerOrEqualValue(0))();
+  IntColumn get carbsG => integer().check(carbsG.isBiggerOrEqualValue(0))();
+  IntColumn get fatG => integer().check(fatG.isBiggerOrEqualValue(0))();
+  IntColumn get waterMl => integer().check(waterMl.isBiggerThanValue(0))();
+  IntColumn get steps => integer().check(steps.isBiggerThanValue(0))();
   TextColumn get formulaVersion => text()();
   DateTimeColumn get startedAt => dateTime()();
   DateTimeColumn get endedAt => dateTime().nullable()();
@@ -100,7 +105,7 @@ class Goals extends Table with Synced {
 class WeightLogs extends Table with Synced {
   TextColumn get id => text()();
   TextColumn get day => text().map(const DateConverter())();
-  RealColumn get weightKg => real()();
+  RealColumn get weightKg => real().check(weightKg.isBetweenValues(20, 400))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get deletedAt => dateTime().nullable()();
@@ -120,8 +125,10 @@ class MealEntries extends Table with Synced {
   TextColumn get foodId => text().nullable()();
   TextColumn get name => text().withLength(min: 1, max: 200)();
   TextColumn get meal => text().map(const OptionConverter<Meal>(Meal.values))();
-  RealColumn get grams => real().check(grams.isBiggerThanValue(0))();
-  RealColumn get kcal => real().check(kcal.isBiggerOrEqualValue(0))();
+  RealColumn get grams => real().check(
+    grams.isBiggerThanValue(0) & grams.isSmallerOrEqualValue(5000),
+  )();
+  RealColumn get kcal => real().check(kcal.isBetweenValues(0, 10000))();
   RealColumn get proteinG => real().check(proteinG.isBiggerOrEqualValue(0))();
   RealColumn get carbsG => real().check(carbsG.isBiggerOrEqualValue(0))();
   RealColumn get fatG => real().check(fatG.isBiggerOrEqualValue(0))();
@@ -181,4 +188,12 @@ class HealthSamples extends Table with Synced {
 
   @override
   Set<Column<Object>> get primaryKey => {id};
+
+  /// The same ceiling per metric as the server, which catches a mistyped
+  /// extra zero.
+  @override
+  List<String> get customConstraints => [
+    "CHECK ((metric = 'water_ml' AND value <= 5000) "
+        "OR (metric = 'steps' AND value <= 100000))",
+  ];
 }

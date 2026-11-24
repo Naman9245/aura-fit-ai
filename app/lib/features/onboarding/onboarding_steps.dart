@@ -2,6 +2,7 @@ import 'package:aurafit/core/format.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
 import 'package:aurafit/features/onboarding/onboarding_controller.dart';
 import 'package:aurafit/models/options.dart';
+import 'package:aurafit/services/height.dart';
 import 'package:aurafit/services/targets.dart';
 import 'package:aurafit/widgets/choice_card.dart';
 import 'package:clock/clock.dart';
@@ -290,24 +291,153 @@ class BodyStep extends ConsumerStatefulWidget {
 }
 
 class _BodyStepState extends ConsumerState<BodyStep> {
+  // Most people in India know their height in feet and inches, so that
+  // comes first; it's stored in centimetres either way.
+  var _unit = HeightUnit.feetInches;
   late final TextEditingController _height;
+  late final TextEditingController _feet;
+  late final TextEditingController _inches;
   late final TextEditingController _weight;
+  final _inchesFocus = FocusNode();
   final _weightFocus = FocusNode();
 
   @override
   void initState() {
     super.initState();
     final draft = ref.read(onboardingProvider);
-    _height = TextEditingController(text: _show(draft.heightCm));
+    final cm = draft.heightCm;
+    final feetInches = cm == null ? null : feetInchesFromCm(cm);
+    _height = TextEditingController(text: _show(cm));
+    _feet = TextEditingController(text: feetInches?.feet.toString() ?? '');
+    _inches = TextEditingController(text: feetInches?.inches.toString() ?? '');
     _weight = TextEditingController(text: _show(draft.weightKg));
   }
 
   @override
   void dispose() {
     _height.dispose();
+    _feet.dispose();
+    _inches.dispose();
     _weight.dispose();
+    _inchesFocus.dispose();
     _weightFocus.dispose();
     super.dispose();
+  }
+
+  /// The height the feet and inches fields make, in cm, or null.
+  double? _feetInchesCm() {
+    final feet = int.tryParse(_feet.text);
+    final inches = _inches.text.isEmpty ? 0.0 : double.tryParse(_inches.text);
+    if (feet == null || inches == null || inches >= 12) return null;
+    return cmFromFeetInches(feet, inches);
+  }
+
+  String? _feetInchesProblem() {
+    if (_feet.text.isEmpty) return null;
+    final inches = _inches.text.isEmpty ? 0.0 : double.tryParse(_inches.text);
+    if (inches == null || inches >= 12) return 'Inches go up to 11';
+    final cm = _feetInchesCm();
+    if (cm == null || cm < minHeightCm || cm > maxHeightCm) {
+      final low = feetInchesFromCm(minHeightCm);
+      final high = feetInchesFromCm(maxHeightCm);
+      return 'Between ${low.feet} ft ${low.inches} in and '
+          '${high.feet} ft ${high.inches} in';
+    }
+    return null;
+  }
+
+  void _heightChanged() {
+    final double? cm;
+    if (_unit == HeightUnit.cm) {
+      cm = _inRange(_height.text, minHeightCm, maxHeightCm);
+    } else {
+      final typed = _feetInchesCm();
+      cm = typed != null && typed >= minHeightCm && typed <= maxHeightCm
+          ? typed
+          : null;
+    }
+    ref.read(onboardingProvider.notifier).setHeight(cm);
+    setState(() {});
+  }
+
+  void _switchUnit(HeightUnit unit) {
+    // A height already given carries across, so switching never loses it.
+    final cm = ref.read(onboardingProvider).heightCm;
+    if (cm != null) {
+      final feetInches = feetInchesFromCm(cm);
+      _height.text = _show(cm);
+      _feet.text = feetInches.feet.toString();
+      _inches.text = feetInches.inches.toString();
+    }
+    setState(() => _unit = unit);
+  }
+
+  /// The height in the unit not on show, so either can be checked.
+  String? _otherUnit(double? cm) {
+    if (cm == null) return null;
+    if (_unit == HeightUnit.feetInches) return '= ${formatDecimal(cm)} cm';
+    final f = feetInchesFromCm(cm);
+    return '= ${f.feet} ft ${f.inches} in';
+  }
+
+  Widget _heightFields() {
+    if (_unit == HeightUnit.cm) {
+      return TextField(
+        controller: _height,
+        decoration: InputDecoration(
+          labelText: 'Height',
+          suffixText: 'cm',
+          errorText: _problem(_height.text, minHeightCm, maxHeightCm, 'cm'),
+        ),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        textInputAction: TextInputAction.next,
+        inputFormatters: [_MeasurementFormatter()],
+        onChanged: (_) => _heightChanged(),
+        onSubmitted: (_) => _weightFocus.requestFocus(),
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _feet,
+            decoration: InputDecoration(
+              labelText: 'Feet',
+              suffixText: 'ft',
+              errorText: _feetInchesProblem(),
+              errorMaxLines: 2,
+            ),
+            keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.next,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(1),
+            ],
+            onChanged: (value) {
+              if (value.isNotEmpty) _inchesFocus.requestFocus();
+              _heightChanged();
+            },
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: TextField(
+            controller: _inches,
+            focusNode: _inchesFocus,
+            decoration: const InputDecoration(
+              labelText: 'Inches',
+              suffixText: 'in',
+            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            textInputAction: TextInputAction.next,
+            inputFormatters: [_MeasurementFormatter()],
+            onChanged: (_) => _heightChanged(),
+            onSubmitted: (_) => _weightFocus.requestFocus(),
+          ),
+        ),
+      ],
+    );
   }
 
   static String _show(double? x) =>
@@ -327,6 +457,9 @@ class _BodyStepState extends ConsumerState<BodyStep> {
   @override
   Widget build(BuildContext context) {
     final controller = ref.read(onboardingProvider.notifier);
+    final otherUnit = _otherUnit(
+      ref.watch(onboardingProvider.select((d) => d.heightCm)),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -335,22 +468,25 @@ class _BodyStepState extends ConsumerState<BodyStep> {
           subtitle:
               'Your weight sets your protein and water as well as calories.',
         ),
-        TextField(
-          controller: _height,
-          decoration: InputDecoration(
-            labelText: 'Height',
-            suffixText: 'cm',
-            errorText: _problem(_height.text, minHeightCm, maxHeightCm, 'cm'),
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          textInputAction: TextInputAction.next,
-          inputFormatters: [_MeasurementFormatter()],
-          onChanged: (text) {
-            controller.setHeight(_inRange(text, minHeightCm, maxHeightCm));
-            setState(() {});
-          },
-          onSubmitted: (_) => _weightFocus.requestFocus(),
+        SegmentedButton<HeightUnit>(
+          segments: const [
+            ButtonSegment(value: HeightUnit.feetInches, label: Text('ft + in')),
+            ButtonSegment(value: HeightUnit.cm, label: Text('cm')),
+          ],
+          selected: {_unit},
+          showSelectedIcon: false,
+          onSelectionChanged: (choice) => _switchUnit(choice.single),
         ),
+        const SizedBox(height: 16),
+        _heightFields(),
+        if (otherUnit != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            otherUnit,
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: AuraColors.muted),
+          ),
+        ],
         const SizedBox(height: 16),
         TextField(
           controller: _weight,

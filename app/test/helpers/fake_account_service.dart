@@ -45,6 +45,12 @@ class FakeAccountService implements AccountService {
     bool confirmed = true,
   }) => _accounts[email] = (id: id, password: password, confirmed: confirmed);
 
+  /// Signs in as [account] straight away, as if it signed in before.
+  void signInAs(Account account) {
+    addAccount(account.email!, 'a-password', id: account.id);
+    _current = account;
+  }
+
   /// Ends the session without signing out, as an expired one does.
   void expire() => _set(null);
 
@@ -142,6 +148,18 @@ class FakeAccountService implements AccountService {
 
   @override
   Future<void> signOut() async => _set(null);
+
+  /// Accounts deleted, by id, in order.
+  final deleted = <String>[];
+
+  @override
+  Future<void> deleteAccount() async {
+    _check();
+    final account = _current;
+    if (account == null) throw const AccountException(AccountFailure.failed);
+    deleted.add(account.id);
+    _accounts.removeWhere((_, a) => a.id == account.id);
+  }
 
   Account _signInAs(String id, String email) {
     final account = Account(id: id, email: email);

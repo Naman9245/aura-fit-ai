@@ -32,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   // To change the schema: bump this, add a step to [migration], then run
   // `dart run drift_dev make-migrations` so the new step gets a test.
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -42,6 +42,19 @@ class AppDatabase extends _$AppDatabase {
       from1To2: (m, schema) async {
         await m.createTable(schema.syncCursors);
         await m.createTable(schema.syncAccount);
+      },
+      // v3: the server's CHECK limits, so nothing is saved here that the
+      // server would refuse. Rebuilding a table keeps its rows.
+      from2To3: (m, schema) async {
+        for (final table in [
+          schema.profiles,
+          schema.goals,
+          schema.weightLogs,
+          schema.mealEntries,
+          schema.healthSamples,
+        ]) {
+          await m.alterTable(TableMigration(table));
+        }
       },
     ),
   );
