@@ -51,6 +51,10 @@ void main() {
         await _shot(tester, '04_sex$suffix');
         await _tap(tester, 'Continue');
 
+        await tester.enterText(_field('Feet'), '5');
+        await tester.enterText(_field('Inches'), '1');
+        await _shot(tester, '05a_body_feet$suffix');
+        await _tap(tester, 'cm');
         await tester.enterText(_field('Height'), '155');
         await tester.enterText(_field('Weight'), '50');
         await _shot(tester, '05_body$suffix');

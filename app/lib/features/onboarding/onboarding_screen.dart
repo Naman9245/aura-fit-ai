@@ -130,7 +130,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         child: Column(
                           children: [
                             FilledButton(
-                              onPressed: draft.isAnswered(step) && !_saving
+                              onPressed: draft.canContinue(step) && !_saving
                                   ? _continue
                                   : null,
                               child: Text(last ? 'See my targets' : 'Continue'),

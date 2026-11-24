@@ -74,6 +74,11 @@ class OnboardingDraft {
     OnboardingStep.training => trainingPlace != null || experience != null,
   };
 
+  /// Whether the main button can move on from [step]. An optional step
+  /// never holds it back: editing details someone skipped the first time
+  /// must still save without a hunt for "Skip".
+  bool canContinue(OnboardingStep step) => step.optional || isAnswered(step);
+
   /// All the answers, once every required question has one.
   ProfileAnswers? toAnswers() {
     final goal = this.goal;
