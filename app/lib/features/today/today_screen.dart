@@ -14,9 +14,10 @@ import 'package:aurafit/models/options.dart';
 import 'package:aurafit/services/coach_rules.dart';
 import 'package:aurafit/services/targets.dart';
 import 'package:aurafit/widgets/aura_background.dart';
+import 'package:aurafit/widgets/portion_wheel_picker.dart';
+import 'package:aurafit/data/food_repository.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -660,9 +661,7 @@ class _WaterStepsWeightSection extends ConsumerWidget {
         Card(
           child: InkWell(
             borderRadius: const BorderRadius.all(Radius.circular(24)),
-            onTap: summary.waterSamples.isEmpty
-                ? null
-                : () => _showWaterHistorySheet(context, ref),
+            onTap: () => _showWaterHistorySheet(context, ref),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
@@ -798,9 +797,134 @@ class _WaterStepsWeightSection extends ConsumerWidget {
   Future<void> _showWaterHistorySheet(BuildContext context, WidgetRef ref) =>
       showModalBottomSheet<void>(
         context: context,
+        isScrollControlled: true,
         showDragHandle: true,
         backgroundColor: AuraColors.surface,
-        builder: (sheetCtx) => SafeArea(
+        builder: (sheetCtx) {
+          final text = Theme.of(sheetCtx).textTheme;
+          const presets = <(int, String, IconData)>[
+            (150, 'Chai cup', Icons.local_cafe_outlined),
+            (250, 'Glass', Icons.local_drink_outlined),
+            (350, 'Mug', Icons.coffee_outlined),
+            (500, 'Bottle', Icons.water_drop_outlined),
+            (750, 'Shaker', Icons.fitness_center_outlined),
+            (1000, '1 L bottle', Icons.sports_bar_outlined),
+          ];
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('Log water', style: text.titleLarge),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Tap a container size to add at once.',
+                    style: text.bodySmall?.copyWith(color: AuraColors.muted),
+                  ),
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (final (ml, label, icon) in presets)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: InkWell(
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(16),
+                              ),
+                              onTap: () async {
+                                final nav = Navigator.of(sheetCtx);
+                                final undo = await ref
+                                    .read(logRepositoryProvider)
+                                    .addWater(day: day, ml: ml);
+                                nav.pop();
+                                onUndo(undo);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AuraColors.surfaceStrong,
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(16),
+                                  ),
+                                  border: Border.all(color: AuraColors.border),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      icon,
+                                      color: AuraColors.accentSoft,
+                                      size: 22,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text('+$ml ml', style: text.labelLarge),
+                                    Text(
+                                      label,
+                                      style: text.bodySmall?.copyWith(
+                                        color: AuraColors.muted,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (summary.waterSamples.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Text('Logged today', style: text.titleMedium),
+                    const SizedBox(height: 8),
+                    for (final sample in summary.waterSamples)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(
+                          Icons.water_drop_outlined,
+                          color: AuraColors.accentSoft,
+                        ),
+                        title: Text('${sample.value.round()} ml'),
+                        trailing: IconButton(
+                          tooltip: 'Remove glass',
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () async {
+                            final nav = Navigator.of(sheetCtx);
+                            final undo = await ref
+                                .read(logRepositoryProvider)
+                                .deleteHealthSample(sample);
+                            nav.pop();
+                            onUndo(undo);
+                          },
+                        ),
+                      ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
+      );
+
+  Future<void> _editStepsDialog(BuildContext context, WidgetRef ref) async {
+    var currentSteps = summary.steps > 0 ? summary.steps.toDouble() : 6000.0;
+    final stepTicks = <double>[
+      for (var s = 500; s <= 30000; s += 500) s.toDouble(),
+    ];
+    final action = await showModalBottomSheet<UndoAction>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: AuraColors.surface,
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setSheetState) => SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
             child: Column(
@@ -808,141 +932,149 @@ class _WaterStepsWeightSection extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Water entries',
+                  'Steps walked',
                   style: Theme.of(sheetCtx).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 12),
-                for (final sample in summary.waterSamples)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text('${sample.value.round()} ml'),
-                    trailing: IconButton(
-                      tooltip: 'Remove glass',
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () async {
-                        final nav = Navigator.of(sheetCtx);
-                        final undo = await ref
-                            .read(logRepositoryProvider)
-                            .deleteHealthSample(sample);
-                        nav.pop();
-                        onUndo(undo);
-                      },
-                    ),
+                _SimpleNumberWheel(
+                  unitLabel: 'steps',
+                  steps: stepTicks,
+                  value: currentSteps,
+                  maxExact: 100000,
+                  decimals: 0,
+                  onChanged: (v) => setSheetState(() => currentSteps = v),
+                ),
+                const SizedBox(height: 18),
+                FilledButton(
+                  onPressed: () async {
+                    final nav = Navigator.of(sheetCtx);
+                    final undo = await ref
+                        .read(logRepositoryProvider)
+                        .setStepsForDay(day: day, steps: currentSteps.round());
+                    nav.pop(undo);
+                  },
+                  child: const Text('Save steps'),
+                ),
+                if (summary.stepsSamples.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    onPressed: () async {
+                      final nav = Navigator.of(sheetCtx);
+                      final undo = await ref
+                          .read(logRepositoryProvider)
+                          .deleteHealthSample(summary.stepsSamples.first);
+                      nav.pop(undo);
+                    },
+                    child: const Text('Remove steps'),
                   ),
+                ],
               ],
             ),
           ),
         ),
-      );
-
-  Future<void> _editStepsDialog(BuildContext context, WidgetRef ref) async {
-    final ctrl = TextEditingController(
-      text: summary.steps > 0 ? '${summary.steps}' : '',
-    );
-    final action = await showDialog<UndoAction>(
-      context: context,
-      builder: (dlgCtx) => AlertDialog(
-        title: const Text('Steps walked'),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: const InputDecoration(
-            labelText: 'Steps',
-            helperText: 'Up to 1,00,000 steps',
-          ),
-        ),
-        actions: [
-          if (summary.stepsSamples.isNotEmpty)
-            TextButton(
-              onPressed: () async {
-                final nav = Navigator.of(dlgCtx);
-                final undo = await ref
-                    .read(logRepositoryProvider)
-                    .deleteHealthSample(summary.stepsSamples.first);
-                nav.pop(undo);
-              },
-              child: const Text('Remove'),
-            ),
-          TextButton(
-            onPressed: () => Navigator.of(dlgCtx).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final val = int.tryParse(ctrl.text.trim());
-              if (val == null || val < 0 || val > 100000) return;
-              final nav = Navigator.of(dlgCtx);
-              final undo = await ref
-                  .read(logRepositoryProvider)
-                  .setStepsForDay(day: day, steps: val);
-              nav.pop(undo);
-            },
-            child: const Text('Save'),
-          ),
-        ],
       ),
     );
-    ctrl.dispose();
     if (action != null) onUndo(action);
   }
 
   Future<void> _editWeightDialog(BuildContext context, WidgetRef ref) async {
     final existing = summary.weightLog;
-    final ctrl = TextEditingController(
-      text: existing != null ? formatDecimal(existing.weightKg, places: 1) : '',
-    );
-    final action = await showDialog<UndoAction>(
+    var currentKg = existing?.weightKg ?? goal.basisWeightKg;
+    final weightTicks = <double>[
+      for (var tenths = 350; tenths <= 1600; tenths += 5) tenths / 10.0,
+    ];
+    final action = await showModalBottomSheet<UndoAction>(
       context: context,
-      builder: (dlgCtx) => AlertDialog(
-        title: const Text('Weigh-in'),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}')),
-          ],
-          decoration: const InputDecoration(
-            labelText: 'Weight',
-            suffixText: 'kg',
-            helperText: 'Between 20 and 400 kg',
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: AuraColors.surface,
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setSheetState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Weigh-in',
+                  style: Theme.of(sheetCtx).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 12),
+                _SimpleNumberWheel(
+                  unitLabel: 'kg',
+                  steps: weightTicks,
+                  value: currentKg,
+                  minExact: 20,
+                  maxExact: 400,
+                  decimals: 1,
+                  onChanged: (v) => setSheetState(() => currentKg = v),
+                ),
+                const SizedBox(height: 18),
+                FilledButton(
+                  onPressed: () async {
+                    final nav = Navigator.of(sheetCtx);
+                    final undo = await ref
+                        .read(logRepositoryProvider)
+                        .saveWeightForDay(day: day, weightKg: currentKg);
+                    nav.pop(undo);
+                  },
+                  child: const Text('Save weight'),
+                ),
+                if (existing != null) ...[
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    onPressed: () async {
+                      final nav = Navigator.of(sheetCtx);
+                      final undo = await ref
+                          .read(logRepositoryProvider)
+                          .deleteWeightLog(existing);
+                      nav.pop(undo);
+                    },
+                    child: const Text('Remove weigh-in'),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
-        actions: [
-          if (existing != null)
-            TextButton(
-              onPressed: () async {
-                final nav = Navigator.of(dlgCtx);
-                final undo = await ref
-                    .read(logRepositoryProvider)
-                    .deleteWeightLog(existing);
-                nav.pop(undo);
-              },
-              child: const Text('Remove'),
-            ),
-          TextButton(
-            onPressed: () => Navigator.of(dlgCtx).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final val = double.tryParse(ctrl.text.trim());
-              if (val == null || val < 20 || val > 400) return;
-              final nav = Navigator.of(dlgCtx);
-              final undo = await ref
-                  .read(logRepositoryProvider)
-                  .saveWeightForDay(day: day, weightKg: val);
-              nav.pop(undo);
-            },
-            child: const Text('Save'),
-          ),
-        ],
       ),
     );
-    ctrl.dispose();
     if (action != null) onUndo(action);
+  }
+}
+
+class _SimpleNumberWheel extends StatelessWidget {
+  const _SimpleNumberWheel({
+    required this.unitLabel,
+    required this.steps,
+    required this.value,
+    this.minExact = 0,
+    required this.maxExact,
+    required this.decimals,
+    required this.onChanged,
+  });
+
+  final String unitLabel;
+  final List<double> steps;
+  final double value;
+  final double minExact;
+  final double maxExact;
+  final int decimals;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return PortionWheelPicker(
+      portions: [FoodPortion(unit: unitLabel, grams: 1)],
+      selectedUnit: unitLabel,
+      count: value.clamp(minExact > 0 ? minExact : steps.first, maxExact),
+      customSteps: steps,
+      showGramsSubtitle: false,
+      maxExactValue: maxExact,
+      onUnitChanged: (_) {},
+      onCountChanged: onChanged,
+    );
   }
 }
 

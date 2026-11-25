@@ -107,6 +107,11 @@ ThemeData buildAuraTheme() {
     snackBarTheme: const SnackBarThemeData(
       backgroundColor: AuraColors.surfaceStrong,
       contentTextStyle: TextStyle(color: AuraColors.foreground),
+      actionTextColor: AuraColors.accentSoft,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(14)),
+        side: BorderSide(color: AuraColors.border),
+      ),
       behavior: SnackBarBehavior.floating,
     ),
   );
