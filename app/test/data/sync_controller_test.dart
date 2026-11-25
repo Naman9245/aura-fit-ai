@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/db/app_database.dart';
+import 'package:aurafit/data/food_repository.dart';
 import 'package:aurafit/data/profile_repository.dart';
 import 'package:aurafit/data/providers.dart';
 import 'package:aurafit/data/sync/sync_controller.dart';
@@ -40,10 +41,11 @@ void main() {
 
   /// Real timers, shortened: settle after 20 ms, retry after 100 ms, so a
   /// test second stands for the app's minutes.
-  ProviderContainer start({Account? signedIn}) {
+  ProviderContainer start({Account? signedIn, FoodRepository? foods}) {
     final container = ProviderContainer(
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
+        if (foods != null) foodRepositoryProvider.overrideWithValue(foods),
         accountServiceProvider.overrideWithValue(
           FakeAccountService(signedIn: signedIn),
         ),
@@ -100,6 +102,38 @@ void main() {
     await until(container, SyncPhase.syncing);
     await until(container, SyncPhase.synced);
     expect(remote.rows('goals'), hasLength(2));
+  });
+
+  // The app never seeds the catalogue into SQLite: search reads the bundled
+  // file. So a phone has no 'foods' sync cursor, and a dish added or
+  // corrected on the server must still reach it.
+  test('a food added on the server reaches a phone with no catalogue '
+      'cursor', () async {
+    await onboard();
+    // An empty bundle, so the server's first catalogue row is new to it.
+    final foods = FoodRepository(db, loadSeedJson: () async => '[]');
+    remote.put('foods', {
+      'id': '019a9000-0000-7000-8000-000000009999',
+      'name': 'Kathal Sabzi',
+      'aliases': ['jackfruit curry'],
+      'kcal_per_100g': 110,
+      'protein_g_per_100g': 2.5,
+      'carbs_g_per_100g': 14,
+      'fat_g_per_100g': 5,
+      'portions': [
+        {'unit': 'katori', 'grams': 150},
+      ],
+      'assumption': 'Home style, 1 tsp oil a katori',
+      'source': 'recipe',
+      'updated_at': '2026-11-26T09:00:00Z',
+      'deleted_at': null,
+    });
+
+    final container = start(signedIn: me, foods: foods);
+    await until(container, SyncPhase.synced);
+
+    final found = await foods.search('kathal');
+    expect(found.map((f) => f.name), ['Kathal Sabzi']);
   });
 
   test('a log made offline goes up on the next retry once the network is '
