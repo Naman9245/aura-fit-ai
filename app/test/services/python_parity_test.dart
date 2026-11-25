@@ -27,7 +27,7 @@ void main() {
         (map[key]! as num).toDouble();
 
     test('case $index (${c['why']}) gives the Python numbers', () {
-      final t = calculateTargets(
+      final t = calculateTargetsV1(
         TargetInputs(
           age: input['age']! as int,
           sex: _sex(input['gender']),

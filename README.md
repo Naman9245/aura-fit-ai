@@ -14,10 +14,11 @@ A fitness app for Indians who cook at home and train at a gym or at home: log a 
 - **The Supabase schema** in `supabase/migrations/`: profiles, goals, weigh-ins, meal entries and health samples with row-level security and sync columns, a shared food catalogue, and daily AI limits. `supabase/tests/security_test.sql` checks the rules.
 - **CI** runs the formatter, the analyzer and 102 app tests, and applies the migrations to Postgres and runs the security checks.
 
-**January 2027 milestone, "Core loop works end to end": in progress**
+**May 2027 P0 Launch Scope: implemented**
 
-- **Sign-in and sync** (the first of four pull requests). Sign in with Google, or with an email and password confirmed by a 6-digit code. The plan made during onboarding moves into the account, and every change goes up to Supabase a few seconds after it's made, or within a minute of the network coming back while the app is open. Another phone's changes come down, the newer edit of a row wins, and the app never waits on the network.
-- **Next:** food search and typed logging, then repeat and favourites, water and steps, and today's dashboard.
+- **Sign-in, profile & sync (A1, A2, A4, A5, A6, N4).** Sign in with Google or email + 6-digit OTP; edit any profile detail on one screen (`My details`); export all data offline as JSON + CSV via the share sheet; delete the account and all server/phone data in-app; offline-first sequence sync across phones (including `saved_meals` and incremental `foods` updates).
+- **Formula v2 & multi-version maths (A3, A7).** Adjusted weight above BMI 30 (`w30 + 0.25 * (w - w30)`), maintenance-scaled deficits (`20%` capped at `500 kcal` for fat loss, `10%` capped at `200 kcal` for recomposition), `0.5 g/kg` fat minimum, `1,200` / `1,500 kcal` safe calorie floors, `v1` kept forever for existing `v1` goals, graceful handling of unknown future formula versions, and scientific citations on `How we calculated this`.
+- **Indian food logging & Today dashboard (N1–N5, N9, N11, N12, D1, D2, D4, C5).** 406 verified Indian foods bundled offline (USDA raw staples, recipe-calculated home/mess dishes with assumptions, packaged staples) with `<50 ms` Hinglish search, 1-tap oil/ghee levels, AI text logging (`supabase/functions/parse-meal`) with DB-first matching and offline fallback, 1-tap repeat yesterday & saved meal combos, `+250 ml` water & manual steps/weight, 1-tap `Undo` and soft-deletes, 7-day rolling averages, calm amber feedback (no red alarms), and rule-based diet-matched protein ideas.
 
 The Supabase project `aura-fit` (Mumbai, free plan) has every migration applied and passes the security and sync checks; CI also checks them on plain Postgres.
 
@@ -71,7 +72,7 @@ flutter build apk --release --split-per-abi --dart-define-from-file=env/supabase
 
 ```bash
 cd app
-flutter test                              # 141 tests, no network needed
+flutter test                              # 171 tests, no network needed
 flutter test tool/screenshots_test.dart   # draws every screen to build/screenshots/
 ```
 

@@ -33,6 +33,21 @@ BEGIN
   UPDATE meal_entries SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;
 END;
 
+CREATE TRIGGER saved_meals_stamp_forward
+  AFTER UPDATE OF updated_at ON saved_meals
+  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE saved_meals SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER saved_meal_items_stamp_forward
+  AFTER UPDATE OF updated_at ON saved_meal_items
+  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE saved_meal_items SET updated_at = OLD.updated_at + 1
+    WHERE id = NEW.id;
+END;
+
 CREATE TRIGGER health_samples_stamp_forward
   AFTER UPDATE OF updated_at ON health_samples
   WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at

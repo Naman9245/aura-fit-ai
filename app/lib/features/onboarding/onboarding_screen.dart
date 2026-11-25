@@ -1,3 +1,4 @@
+import 'package:aurafit/core/error_reporter.dart';
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
 import 'package:aurafit/data/account.dart';
@@ -65,13 +66,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       await ref.read(profileRepositoryProvider).saveProfile(answers);
       if (mounted) context.go(Routes.targets);
     } catch (error, stack) {
-      FlutterError.reportError(
-        FlutterErrorDetails(
-          exception: error,
-          stack: stack,
-          library: 'onboarding',
-        ),
-      );
+      reportAuraError(error, stack, where: 'onboarding.save');
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -168,7 +163,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     OnboardingStep.body => const BodyStep(),
     OnboardingStep.activity => const ActivityStep(),
     OnboardingStep.diet => const DietStep(),
-    OnboardingStep.training => const TrainingStep(),
   };
 }
 

@@ -67,7 +67,7 @@ enum GoalType implements StoredOption {
   loseFat(
     'lose_fat',
     'Lose fat',
-    'Eat a steady 500 kcal a day below maintenance',
+    'Eat 20% below maintenance, at most 500 kcal a day',
   ),
   gainMuscle(
     'gain_muscle',
@@ -77,7 +77,7 @@ enum GoalType implements StoredOption {
   recomposition(
     'recomposition',
     'Lose fat and build muscle',
-    'A gentle 200 kcal below maintenance, with plenty of protein',
+    'A gentle 10% below maintenance, with plenty of protein',
   ),
   maintain('maintain', 'Stay where I am', 'Eat what your body uses'),
   performance(
@@ -130,6 +130,20 @@ enum Meal implements StoredOption {
   snack('snack', 'Snack');
 
   const Meal(this.storage, this.label);
+
+  @override
+  final String storage;
+  @override
+  final String label;
+}
+
+/// How much oil or ghee a dish was made with (PRD N9).
+enum OilLevel implements StoredOption {
+  low('low', 'No ghee / low oil'),
+  home('home', 'Home style'),
+  extra('extra', 'Extra ghee / restaurant');
+
+  const OilLevel(this.storage, this.label);
 
   @override
   final String storage;

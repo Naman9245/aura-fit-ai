@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:aurafit/core/error_reporter.dart';
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
 import 'package:aurafit/data/account.dart';
@@ -7,6 +8,7 @@ import 'package:aurafit/data/providers.dart';
 import 'package:aurafit/data/sync/sync_controller.dart';
 import 'package:aurafit/data/sync/sync_engine.dart';
 import 'package:aurafit/features/account/sign_in_screen.dart';
+import 'package:aurafit/services/data_export.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +19,7 @@ Future<void> showAccountSheet(BuildContext context) =>
     showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
+      isScrollControlled: true,
       showDragHandle: true,
       backgroundColor: AuraColors.surface,
       builder: (context) => const _AccountSheet(),
@@ -88,6 +91,11 @@ class _AccountSheet extends ConsumerWidget {
               },
               child: const Text('Sign in again'),
             ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () => exportMyData(context, ref),
+              child: const Text('Export my data'),
+            ),
           ]
         : [
             Text(account.email ?? 'Signed in', style: text.titleLarge),
@@ -108,6 +116,11 @@ class _AccountSheet extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             OutlinedButton(
+              onPressed: () => exportMyData(context, ref),
+              child: const Text('Export my data'),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
               onPressed: () => signOut(context, ref),
               child: const Text('Sign out'),
             ),
@@ -119,7 +132,7 @@ class _AccountSheet extends ConsumerWidget {
             ),
           ];
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -189,8 +202,9 @@ Future<void> deleteAccount(BuildContext context, WidgetRef ref) async {
       title: const Text('Delete your account?'),
       content: const Text(
         'This deletes your account and everything saved in it: your '
-        'profile, targets and weigh-ins. It clears this phone too. It can\'t '
-        'be undone.',
+        'profile, targets, meals, water, steps and weigh-ins. Export your '
+        'data first if you want a copy. It clears this phone too. It '
+        'can\'t be undone.',
       ),
       actions: [
         TextButton(
@@ -263,4 +277,24 @@ Future<void> deleteAccount(BuildContext context, WidgetRef ref) async {
       content: Text('Your account and everything in it are deleted.'),
     ),
   );
+}
+
+/// Builds JSON and CSV exports from the phone's database and opens the share
+/// sheet (PRD A6). Works offline.
+Future<void> exportMyData(BuildContext context, WidgetRef ref) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final exporter = ref.read(dataExporterProvider);
+  final share = ref.read(shareServiceProvider);
+  try {
+    final files = await exporter.buildExport();
+    await share.shareFiles(files);
+  } catch (error, stack) {
+    reportAuraError(error, stack, where: 'account.export');
+    if (!context.mounted) return;
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Your export couldn\'t be prepared. Please try again.'),
+      ),
+    );
+  }
 }

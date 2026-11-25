@@ -23,6 +23,8 @@ class AccountData {
       _db.goals,
       _db.weightLogs,
       _db.mealEntries,
+      _db.savedMealItems,
+      _db.savedMeals,
       _db.healthSamples,
       _db.syncCursors,
       _db.syncAccount,

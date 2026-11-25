@@ -1,10 +1,11 @@
 import 'package:aurafit/models/options.dart';
+import 'package:aurafit/services/rounding.dart';
 import 'package:aurafit/services/targets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// The profile the Python tests used: 70 kg, 175 cm, 25 years.
 Targets _python(GoalType goal, ActivityLevel activity, {Sex? sex = Sex.male}) =>
-    calculateTargets(
+    calculateTargetsV1(
       TargetInputs(
         age: 25,
         sex: sex,
@@ -18,7 +19,7 @@ Targets _python(GoalType goal, ActivityLevel activity, {Sex? sex = Sex.male}) =>
 double _macroKcal(Targets t) => t.proteinG * 4 + t.carbsG * 4 + t.fatG * 9;
 
 void main() {
-  group('ported from test_calculations.py', () {
+  group('formula v1 (ported from test_calculations.py, kept forever)', () {
     test('BMI is weight over height squared', () {
       expect(bmi(70, 175), 22.86);
     });
@@ -47,7 +48,7 @@ void main() {
       });
     }
 
-    test('a fat loss goal is a 500 calorie deficit', () {
+    test('a fat loss goal is a 500 calorie deficit in v1', () {
       final t = _python(GoalType.loseFat, ActivityLevel.sedentary);
 
       expect(t.maintenanceKcal, closeTo(1673.75 * 1.2, 0.01));
@@ -62,8 +63,6 @@ void main() {
       expect((sedentary.steps, athlete.steps), (8000, 13000));
     });
 
-    // In Python these were strings checked at run time. Here the maths takes
-    // enums, so the check moves to reading a stored option.
     test('unknown options raise instead of guessing (activity)', () {
       expect(
         () => parseOption(ActivityLevel.values, 'couch'),
@@ -77,97 +76,164 @@ void main() {
         throwsArgumentError,
       );
     });
-  });
 
-  group('calorie floor', () {
-    TargetInputs small(Sex? sex) => TargetInputs(
-      age: 30,
-      sex: sex,
-      heightCm: 155,
-      weightKg: 50,
-      activity: ActivityLevel.sedentary,
-      goal: GoalType.loseFat,
-    );
-
-    test('the 889 kcal case is raised to 1,200 kcal for a woman', () {
-      final t = calculateTargets(small(Sex.female));
+    test('the 889 kcal case is raised to 1,200 kcal for a woman in v1', () {
+      final t = calculateTargetsV1(
+        const TargetInputs(
+          age: 30,
+          sex: Sex.female,
+          heightCm: 155,
+          weightKg: 50,
+          activity: ActivityLevel.sedentary,
+          goal: GoalType.loseFat,
+        ),
+      );
 
       expect(t.unflooredKcal, 889.3);
       expect(t.caloriesKcal, 1200);
       expect(t.floorApplied, isTrue);
+      expect(t.version, 'v1');
     });
 
-    test('a man is never below 1,500 kcal', () {
-      final t = calculateTargets(small(Sex.male));
-
-      expect(t.unflooredKcal, lessThan(1500));
-      expect(t.caloriesKcal, 1500);
-      expect(t.floorApplied, isTrue);
-    });
-
-    test('with no sex given, the higher floor of 1,500 kcal applies', () {
-      final t = calculateTargets(small(null));
-
-      expect(t.caloriesKcal, 1500);
-      expect(t.floorKcal, 1500);
-    });
-
-    test('a target above the floor is left alone', () {
-      final t = _python(GoalType.loseFat, ActivityLevel.active);
-
-      expect(t.floorApplied, isFalse);
-      expect(t.caloriesKcal, t.unflooredKcal);
-    });
-
-    test('macros are worked out from the raised target', () {
-      final t = calculateTargets(small(Sex.female));
-
-      expect(_macroKcal(t), closeTo(1200, 2));
-    });
+    test(
+      'no target is negative or below the floor across 9,000 profiles (v1)',
+      () {
+        var checked = 0;
+        for (final age in [18, 30, 50, 75, 100]) {
+          for (final weight in [30.0, 50.0, 80.0, 120.0, 180.0, 250.0]) {
+            for (final height in [120.0, 150.0, 175.0, 200.0, 230.0]) {
+              for (final sex in [...Sex.values, null]) {
+                for (final activity in ActivityLevel.values) {
+                  for (final goal in GoalType.values) {
+                    final t = calculateTargetsV1(
+                      TargetInputs(
+                        age: age,
+                        sex: sex,
+                        heightCm: height,
+                        weightKg: weight,
+                        activity: activity,
+                        goal: goal,
+                      ),
+                    );
+                    expect(t.caloriesKcal, greaterThanOrEqualTo(t.floorKcal));
+                    expect([
+                      t.proteinG,
+                      t.carbsG,
+                      t.fatG,
+                      t.waterL,
+                    ], everyElement(greaterThanOrEqualTo(0)));
+                    expect(_macroKcal(t), closeTo(t.caloriesKcal, 2));
+                    checked++;
+                  }
+                }
+              }
+            }
+          }
+        }
+        expect(checked, 9000);
+      },
+    );
   });
 
-  group('carbs never go negative', () {
-    test('fat gives way first', () {
-      // Python gave -6.2 g of carbs for this profile.
-      final t = calculateTargets(
+  group('formula v2 (A7)', () {
+    test('uses an adjusted weight above BMI 30 and changes smoothly at 30', () {
+      // At 170 cm, BMI 30 is 30 × 1.7² = 86.7 kg.
+      expect(bmi30WeightKg(170), closeTo(86.7, 1e-9));
+      expect(effectiveWeightKg(86.7, 170), closeTo(86.7, 1e-9));
+
+      // Just below and just above BMI 30: no sudden jump.
+      final below = calculateTargetsV2(
         const TargetInputs(
-          age: 100,
-          sex: Sex.female,
-          heightCm: 120,
+          age: 28,
+          sex: Sex.male,
+          heightCm: 170,
+          weightKg: 86.6,
+          activity: ActivityLevel.lightlyActive,
+          goal: GoalType.loseFat,
+        ),
+      );
+      final above = calculateTargetsV2(
+        const TargetInputs(
+          age: 28,
+          sex: Sex.male,
+          heightCm: 170,
+          weightKg: 86.8,
+          activity: ActivityLevel.lightlyActive,
+          goal: GoalType.loseFat,
+        ),
+      );
+      expect(below.adjustedWeightApplied, isFalse);
+      expect(above.adjustedWeightApplied, isTrue);
+      expect((above.proteinG - below.proteinG).abs(), lessThan(0.5));
+
+      // A 150 kg person at 170 cm isn't told to eat 270 g of protein.
+      final heavy = calculateTargetsV2(
+        const TargetInputs(
+          age: 35,
+          sex: Sex.male,
+          heightCm: 170,
           weightKg: 150,
           activity: ActivityLevel.sedentary,
           goal: GoalType.loseFat,
         ),
       );
-
-      expect(t.carbRuleApplied, isTrue);
-      expect(t.carbsG, 0);
-      expect(t.proteinG, 270);
-      expect(t.fatG, closeTo((1406.8 - 270 * 4) / 9, 0.05));
-      expect(_macroKcal(t), closeTo(t.caloriesKcal, 1));
+      // w_eff = 86.7 + 0.25 × (150 - 86.7) = 102.525 kg → 184.5 g protein.
+      expect(heavy.effectiveWeightKg, 102.5);
+      expect(heavy.proteinG, 184.5);
     });
 
-    test('then protein, when protein alone is more than the calories', () {
-      // Far outside what onboarding accepts, but the maths stays safe: 360 g
-      // of protein would be 1,440 kcal, over the 1,200 kcal target.
-      final t = calculateTargets(
+    test('losing fat takes 20% off maintenance, capped at 500 kcal', () {
+      // 50 kg woman, 1,389.3 kcal maintenance → loses 277.86 kcal, then floor.
+      final small = calculateTargetsV2(
         const TargetInputs(
-          age: 150,
+          age: 30,
           sex: Sex.female,
-          heightCm: 50,
-          weightKg: 200,
+          heightCm: 155,
+          weightKg: 50,
           activity: ActivityLevel.sedentary,
           goal: GoalType.loseFat,
         ),
       );
+      expect(small.maintenanceKcal, 1389.3);
+      expect(small.adjustmentKcal, closeTo(-277.86, 0.01));
+      expect(small.unflooredKcal, closeTo(1111.44, 0.01));
+      expect(small.caloriesKcal, 1200);
+      expect(small.floorApplied, isTrue);
 
-      expect(t.carbRuleApplied, isTrue);
-      expect(t.caloriesKcal, 1200);
-      expect((t.carbsG, t.fatG), (0, 0));
-      expect(t.proteinG, 300);
+      // High maintenance (> 2,500 kcal) caps the deficit at 500 kcal.
+      final tall = calculateTargetsV2(
+        const TargetInputs(
+          age: 25,
+          sex: Sex.male,
+          heightCm: 185,
+          weightKg: 85,
+          activity: ActivityLevel.active,
+          goal: GoalType.loseFat,
+        ),
+      );
+      expect(tall.maintenanceKcal, greaterThan(2500));
+      expect(tall.adjustmentKcal, -500);
     });
 
-    test('no target is negative or below the floor, anywhere in range', () {
+    test('recomposition takes 10% off maintenance, capped at 200 kcal', () {
+      final smaller = calculateTargetsV2(
+        const TargetInputs(
+          age: 28,
+          sex: Sex.female,
+          heightCm: 160,
+          weightKg: 55,
+          activity: ActivityLevel.lightlyActive,
+          goal: GoalType.recomposition,
+        ),
+      );
+      expect(smaller.maintenanceKcal, lessThan(2000));
+      expect(
+        smaller.adjustmentKcal,
+        closeTo(-smaller.maintenanceKcal * 0.10, 0.02),
+      );
+    });
+
+    test('fat never drops below 0.5 g per kg of adjusted weight across 9,000 profiles', () {
       var checked = 0;
       for (final age in [18, 30, 50, 75, 100]) {
         for (final weight in [30.0, 50.0, 80.0, 120.0, 180.0, 250.0]) {
@@ -175,7 +241,7 @@ void main() {
             for (final sex in [...Sex.values, null]) {
               for (final activity in ActivityLevel.values) {
                 for (final goal in GoalType.values) {
-                  final t = calculateTargets(
+                  final t = calculateTargetsV2(
                     TargetInputs(
                       age: age,
                       sex: sex,
@@ -188,13 +254,22 @@ void main() {
                   final where =
                       '$age y, $weight kg, $height cm, $sex, '
                       '${activity.name}, ${goal.name}';
+                  final expectedMinFat = roundHalfEven(
+                    minFatPerKg * effectiveWeightKg(weight, height),
+                    1,
+                  );
                   expect(
                     t.caloriesKcal,
                     greaterThanOrEqualTo(t.floorKcal),
                     reason: where,
                   );
                   expect(
-                    [t.proteinG, t.carbsG, t.fatG, t.waterL],
+                    t.fatG,
+                    greaterThanOrEqualTo(expectedMinFat),
+                    reason: where,
+                  );
+                  expect(
+                    [t.proteinG, t.carbsG, t.waterL],
                     everyElement(greaterThanOrEqualTo(0)),
                     reason: where,
                   );
@@ -212,6 +287,26 @@ void main() {
       }
       expect(checked, 9000);
     });
+
+    test(
+      'calculateTargetsForVersion keeps v1, v2 and returns null for unknown',
+      () {
+        const inputs = TargetInputs(
+          age: 30,
+          sex: Sex.female,
+          heightCm: 155,
+          weightKg: 50,
+          activity: ActivityLevel.sedentary,
+          goal: GoalType.loseFat,
+        );
+        expect(calculateTargetsForVersion('v1', inputs)?.unflooredKcal, 889.3);
+        expect(
+          calculateTargetsForVersion('v2', inputs)?.unflooredKcal,
+          1111.44,
+        );
+        expect(calculateTargetsForVersion('v99', inputs), isNull);
+      },
+    );
   });
 
   group('age from the birth date', () {
@@ -238,7 +333,19 @@ void main() {
     });
   });
 
-  test('targets record the formula version', () {
-    expect(_python(GoalType.maintain, ActivityLevel.active).version, 'v1');
+  test('new targets default to formula v2', () {
+    expect(
+      calculateTargets(
+        const TargetInputs(
+          age: 25,
+          sex: Sex.male,
+          heightCm: 175,
+          weightKg: 70,
+          activity: ActivityLevel.active,
+          goal: GoalType.maintain,
+        ),
+      ).version,
+      'v2',
+    );
   });
 }

@@ -145,6 +145,12 @@ class SyncController extends Notifier<SyncStatus> {
           remote,
           refused: _refused,
         ).sync(account.id, email: account.email);
+        final foodCursor = await (db.select(
+          db.syncCursors,
+        )..where((c) => c.kind.equals('foods'))).getSingleOrNull();
+        if (foodCursor != null && ref.mounted && !_stopped) {
+          await ref.read(foodRepositoryProvider).syncCatalogue(remote);
+        }
       } while (_again && ref.mounted && !_stopped);
       _last = clock.now();
     } on SyncException catch (error) {

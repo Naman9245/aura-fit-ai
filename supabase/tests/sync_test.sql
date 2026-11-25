@@ -191,12 +191,12 @@ $$;
 do $$
 begin
   insert into public.meal_entries (
-    id, food_id, name, meal, grams, kcal, protein_g, carbs_g, fat_g,
+    id, food_id, name, meal, day, grams, kcal, protein_g, carbs_g, fat_g,
     eaten_at, source, created_at, updated_at
   ) values (
     '019a8c3e-6a00-7000-8000-0000000000c5',
-    '019a8c3e-6a00-7000-8000-0000000000ff', 'Dal', 'lunch', 150, 180, 9, 25,
-    4, now(), 'search', now(), now()
+    '019a8c3e-6a00-7000-8000-0000000000ff', 'Dal', 'lunch', '2026-11-22',
+    150, 180, 9, 25, 4, now(), 'search', now(), now()
   );
   raise exception 'an entry naming a food the catalogue lacks should be refused';
 exception when foreign_key_violation then

@@ -69,10 +69,7 @@ void main() {
 
         await _tap(tester, 'Vegetarian');
         await _shot(tester, '08_diet$suffix');
-        await _tap(tester, 'Continue');
-
-        await _shot(tester, '09_training$suffix');
-        await _tap(tester, 'Skip');
+        await _tap(tester, 'See my targets');
 
         await _shot(tester, '10_targets_floor$suffix');
         await _tap(tester, 'How we calculated this');

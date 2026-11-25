@@ -153,9 +153,9 @@ void main() {
       await _type(tester, 'Code', FakeAccountService.code);
       await _tap(tester, 'Confirm');
 
-      expect(find.text('Your daily targets'), findsOneWidget);
+      expect(find.text('Today'), findsWidgets);
       expect(find.byTooltip('Account'), findsOneWidget);
-      expect(find.text('Save my plan'), findsNothing);
+      expect(find.text('Save plan'), findsNothing);
       expect(remote.rows('profiles'), hasLength(1));
       expect(remote.rows('goals').values.single['calories_kcal'], 1200);
       expect(remote.rows('weight_logs'), hasLength(1));
@@ -237,6 +237,8 @@ void main() {
       await _type(tester, 'Password', 'gym-every-day');
       await _tap(tester, 'Sign in');
 
+      expect(find.text('Today'), findsWidgets);
+      await _tap(tester, 'Targets');
       expect(find.text('Your daily targets'), findsOneWidget);
       expect(find.text('To gain muscle'), findsOneWidget);
       expect(find.text('2,950 kcal a day'), findsOneWidget);
@@ -483,12 +485,12 @@ void main() {
       expect(args.email, 'priya@example.com');
     });
 
-    test('is the targets when signed in', () async {
+    test('is Today when signed in', () async {
       await _onboarded(ProfileRepository(db));
       final (location, _) = await startFor(
         signedIn: const Account(id: 'email-1', email: 'priya@example.com'),
       );
-      expect(location, Routes.targets);
+      expect(location, Routes.today);
     });
   });
 }

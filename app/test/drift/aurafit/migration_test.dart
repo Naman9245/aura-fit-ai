@@ -1,6 +1,6 @@
 // dart format width=80
 // ignore_for_file: unused_local_variable, unused_import
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift_dev/api/migrations_native.dart';
 import 'package:aurafit/data/db/app_database.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +10,7 @@ import 'generated/schema.dart';
 import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
+import 'generated/schema_v4.dart' as v4;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -171,6 +172,61 @@ void main() {
         expect(await newDb.select(newDb.goals).get(), [
           v3.GoalsData.fromJson(goal.toJson()),
         ]);
+      },
+    );
+  });
+
+  test('v3 to v4 backfills diary day on meals and health samples', () async {
+    final when = DateTime(2026, 11, 22, 13, 15);
+    final stamp = when.millisecondsSinceEpoch ~/ 1000;
+    final meal = v3.MealEntriesData(
+      dirty: 1,
+      id: '019a8c3e-6a00-7000-8000-000000000010',
+      foodId: null,
+      name: 'Dal tadka',
+      meal: 'lunch',
+      grams: 150,
+      kcal: 180,
+      proteinG: 9,
+      carbsG: 24,
+      fatG: 5,
+      eatenAt: stamp,
+      source: 'manual',
+      createdAt: stamp,
+      updatedAt: stamp,
+      deletedAt: null,
+    );
+    final sample = v3.HealthSamplesData(
+      dirty: 1,
+      id: '019a8c3e-6a00-7000-8000-000000000011',
+      metric: 'water_ml',
+      value: 250,
+      measuredAt: stamp,
+      source: 'manual',
+      createdAt: stamp,
+      updatedAt: stamp,
+      deletedAt: null,
+    );
+
+    await verifier.testWithDataIntegrity(
+      oldVersion: 3,
+      newVersion: 4,
+      createOld: v3.DatabaseAtV3.new,
+      createNew: v4.DatabaseAtV4.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) {
+        batch.insert(oldDb.mealEntries, meal);
+        batch.insert(oldDb.healthSamples, sample);
+      },
+      validateItems: (newDb) async {
+        final meals = await newDb.select(newDb.mealEntries).get();
+        expect(meals.single.day, '2026-11-22');
+        expect(meals.single.portionUnit, isNull);
+        expect(meals.single.oilLevel, isNull);
+        final samples = await newDb.select(newDb.healthSamples).get();
+        expect(samples.single.day, '2026-11-22');
+        expect(await newDb.select(newDb.foods).get(), isEmpty);
+        expect(await newDb.select(newDb.savedMeals).get(), isEmpty);
       },
     );
   });

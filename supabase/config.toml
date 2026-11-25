@@ -6,3 +6,6 @@ project_id = "aura-fit"
 
 [functions.delete-account]
 verify_jwt = true
+
+[functions.parse-meal]
+verify_jwt = true

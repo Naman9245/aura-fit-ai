@@ -60,9 +60,9 @@ void main() {
       expect((weight.day, weight.weightKg), (DateTime(2026, 11, 22), 50.0));
 
       expect(goal.goalType, GoalType.loseFat);
-      expect(goal.caloriesKcal, 1200, reason: 'raised from 889 kcal');
+      expect(goal.caloriesKcal, 1200, reason: 'raised from 1,111 kcal');
       expect(goal.basisWeightKg, 50);
-      expect(goal.formulaVersion, 'v1');
+      expect(goal.formulaVersion, 'v2');
       expect(goal.startedAt, day1);
       expect(goal.endedAt, isNull);
       expect(goal.dirty, isTrue);
@@ -90,7 +90,7 @@ void main() {
 
     test('the stored targets are the explained ones, rounded', () async {
       final goal = await saveAt(day1, _withWeight(72.4));
-      final targets = repo.explain((await repo.profile())!, goal);
+      final targets = repo.explain((await repo.profile())!, goal)!;
 
       expect(goal.caloriesKcal, targets.caloriesKcal.round());
       expect(goal.proteinG, targets.proteinG.round());
@@ -114,7 +114,7 @@ void main() {
       final old = all.singleWhere((g) => g.id == first.id);
       expect(old.endedAt, later);
       expect(old.updatedAt, later);
-      expect(old.formulaVersion, 'v1');
+      expect(old.formulaVersion, 'v2');
     });
 
     test('saving the same answers again keeps the same goal', () async {
@@ -151,19 +151,26 @@ void main() {
       final targets = withClock(
         Clock.fixed(DateTime(2027, 6, 1)),
         () => repo.explain(profile, goal),
-      );
+      )!;
 
       expect(targets.inputs.age, 30);
       expect(targets.caloriesKcal, goal.caloriesKcal);
     });
 
-    test('refuses a goal made with a formula this app doesn\'t know', () async {
+    test('explains old v1 goals with v1 and returns null for unknown future formulas', () async {
       final goal = await saveAt(day1, _answers);
       final profile = (await repo.profile())!;
 
+      final v1Targets = repo.explain(
+        profile,
+        goal.copyWith(formulaVersion: 'v1'),
+      );
+      expect(v1Targets?.version, 'v1');
+      expect(v1Targets?.unflooredKcal, 889.3);
+
       expect(
-        () => repo.explain(profile, goal.copyWith(formulaVersion: 'v9')),
-        throwsStateError,
+        repo.explain(profile, goal.copyWith(formulaVersion: 'v9')),
+        isNull,
       );
     });
   });
@@ -217,6 +224,7 @@ void main() {
               HealthSamplesCompanion.insert(
                 id: 'w',
                 metric: HealthMetric.waterMl,
+                day: DateTime(2026, 11, 22),
                 value: 6000,
                 measuredAt: at,
                 source: SampleSource.manual,
@@ -231,6 +239,7 @@ void main() {
                 id: 'm',
                 name: 'Biryani',
                 meal: Meal.dinner,
+                day: DateTime(2026, 11, 22),
                 grams: 6000,
                 kcal: 900,
                 proteinG: 30,
@@ -269,6 +278,7 @@ void main() {
             HealthSamplesCompanion.insert(
               id: 's',
               metric: HealthMetric.steps,
+              day: DateTime(2026, 11, 22),
               value: 100000,
               measuredAt: at,
               source: SampleSource.manual,

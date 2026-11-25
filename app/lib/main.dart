@@ -34,7 +34,7 @@ Future<(String, Object?)> startingPoint(ProviderContainer container) async {
       .hasProfile();
   final account = await _savedSignIn(container);
   if (account != null) {
-    return (hasProfile ? Routes.targets : Routes.onboarding, null);
+    return (hasProfile ? Routes.today : Routes.onboarding, null);
   }
   if (!hasProfile) return (Routes.onboarding, null);
   final owner = await container.read(accountDataProvider).owner();

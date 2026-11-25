@@ -18,7 +18,8 @@ declare
   t text;
 begin
   foreach t in array array[
-    'profiles', 'goals', 'weight_logs', 'meal_entries', 'health_samples'
+    'profiles', 'goals', 'weight_logs', 'meal_entries', 'health_samples',
+    'saved_meals', 'saved_meal_items'
   ] loop
     assert (select relrowsecurity from pg_class
       where oid = ('public.' || t)::regclass),
@@ -255,6 +256,11 @@ begin
   perform public.refund_ai_call(a, 'scan');
   assert (select calls from public.ai_usage where user_id = a and kind = 'scan') = 1,
     'a refunded call should not count';
+  assert (select calls from public.ai_daily_totals where kind = 'scan') = 2,
+    'refunding a call should also step the day''s running total back';
+  perform public.record_ai_call(a, 'scan', 'gemini-2.5-flash-lite', 320, 0.00005, 'ok');
+  assert (select count(*) from public.ai_calls where user_id = a) = 1,
+    'the Edge Function role should record AI telemetry';
 end;
 $$;
 

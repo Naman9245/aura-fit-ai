@@ -6,15 +6,16 @@ import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// The questions, one screen each, in order.
+/// The questions, one screen each, in order. The training question waits
+/// until workouts ship (PRD A2, T1), so no one answers for a feature that
+/// isn't there yet.
 enum OnboardingStep {
   goal,
   birthDate,
   sex,
   body,
   activity,
-  diet(optional: true),
-  training(optional: true);
+  diet(optional: true);
 
   const OnboardingStep({this.optional = false});
 
@@ -71,7 +72,6 @@ class OnboardingDraft {
     OnboardingStep.body => heightCm != null && weightKg != null,
     OnboardingStep.activity => activity != null,
     OnboardingStep.diet => diet != null,
-    OnboardingStep.training => trainingPlace != null || experience != null,
   };
 
   /// Whether the main button can move on from [step]. An optional step
@@ -195,10 +195,6 @@ class OnboardingController extends Notifier<OnboardingDraft> {
   bool skip() {
     state = switch (state.step) {
       OnboardingStep.diet => state.copyWith(diet: () => null),
-      OnboardingStep.training => state.copyWith(
-        trainingPlace: () => null,
-        experience: () => null,
-      ),
       _ => throw StateError('${state.step} can\'t be skipped'),
     };
     return next();

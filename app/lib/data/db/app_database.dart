@@ -11,10 +11,13 @@ part 'app_database.g.dart';
 /// here, so it works the same with no network; the server gets a copy.
 @DriftDatabase(
   tables: [
+    Foods,
     Profiles,
     Goals,
     WeightLogs,
     MealEntries,
+    SavedMeals,
+    SavedMealItems,
     HealthSamples,
     SyncCursors,
     SyncAccount,
@@ -32,7 +35,7 @@ class AppDatabase extends _$AppDatabase {
   // To change the schema: bump this, add a step to [migration], then run
   // `dart run drift_dev make-migrations` so the new step gets a test.
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -55,6 +58,48 @@ class AppDatabase extends _$AppDatabase {
         ]) {
           await m.alterTable(TableMigration(table));
         }
+      },
+      // v4: Decisions for the code — bundled food catalogue, saved meals,
+      // portion and oil level on meal entries, and diary day on meals and
+      // health samples.
+      from3To4: (m, schema) async {
+        await m.createTable(schema.foods);
+        await m.createIndex(schema.foodsName);
+        await m.createTable(schema.savedMeals);
+        await m.createTrigger(schema.savedMealsStampForward);
+        await m.createTable(schema.savedMealItems);
+        await m.createTrigger(schema.savedMealItemsStampForward);
+        await m.createIndex(schema.savedMealItemsMeal);
+        await m.alterTable(TableMigration(schema.goals));
+        await m.alterTable(
+          TableMigration(
+            schema.mealEntries,
+            newColumns: [
+              schema.mealEntries.day,
+              schema.mealEntries.portionUnit,
+              schema.mealEntries.portionCount,
+              schema.mealEntries.oilLevel,
+            ],
+            columnTransformer: {
+              schema.mealEntries.day: const CustomExpression(
+                "strftime('%Y-%m-%d', eaten_at, 'unixepoch', 'localtime')",
+              ),
+            },
+          ),
+        );
+        await m.createIndex(schema.mealEntriesDay);
+        await m.alterTable(
+          TableMigration(
+            schema.healthSamples,
+            newColumns: [schema.healthSamples.day],
+            columnTransformer: {
+              schema.healthSamples.day: const CustomExpression(
+                "strftime('%Y-%m-%d', measured_at, 'unixepoch', 'localtime')",
+              ),
+            },
+          ),
+        );
+        await m.createIndex(schema.healthSamplesDayMetric);
       },
     ),
   );

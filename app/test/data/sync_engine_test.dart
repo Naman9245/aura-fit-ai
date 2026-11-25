@@ -66,6 +66,7 @@ class _Phone {
             id: id,
             name: name,
             meal: Meal.lunch,
+            day: DateTime(now.year, now.month, now.day),
             grams: 150,
             kcal: 180,
             proteinG: 9,
@@ -404,6 +405,7 @@ void main() {
       remote.put('health_samples', {
         'id': '019a8c3e-6a00-7000-8000-${i.toString().padLeft(12, '0')}',
         'metric': 'water_ml',
+        'day': '2026-11-22',
         'value': 250,
         'measured_at': _iso(start),
         'source': 'manual',

@@ -300,7 +300,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 TextButton(
                   onPressed: _busy || _saving
                       ? null
-                      : () => context.go(Routes.targets),
+                      : () => context.go(Routes.today),
                   child: const Text('Not now'),
                 ),
             ],

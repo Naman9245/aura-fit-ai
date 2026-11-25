@@ -64,17 +64,18 @@ void main() {
       await _tap(tester, 'Mostly sitting');
       await _continue(tester);
 
+      // Diet is the last question until workouts ship (PRD A2, T1).
+      expect(find.text('How do you train?'), findsNothing);
       await _tap(tester, 'Vegetarian');
-      await _continue(tester);
-
-      // The last question can be skipped, which saves.
-      expect(find.text('See my targets'), findsOneWidget);
-      await _tap(tester, 'Skip');
+      await _tap(tester, 'See my targets');
 
       expect(find.text('Your daily targets'), findsOneWidget);
       expect(find.text('1,200 kcal a day'), findsOneWidget);
       expect(find.textContaining('Raised to the safe minimum'), findsOneWidget);
-      expect(find.textContaining('The formula gave 889 kcal'), findsOneWidget);
+      expect(
+        find.textContaining('The formula gave 1,111 kcal'),
+        findsOneWidget,
+      );
       expect(find.text('90 g'), findsOneWidget, reason: '1.8 g × 50 kg');
       expect(find.text('1.75 L'), findsOneWidget, reason: '35 ml × 50 kg');
       expect(find.text('8,000'), findsOneWidget);
@@ -82,7 +83,7 @@ void main() {
       await _tap(tester, 'How we calculated this');
       expect(find.text('4. The safe minimum'), findsOneWidget);
       expect(
-        find.textContaining('889 kcal is below 1,200 kcal'),
+        find.textContaining('1,111 kcal is below 1,200 kcal'),
         findsOneWidget,
       );
       expect(
@@ -191,7 +192,6 @@ void main() {
       await _continue(tester);
       await _tap(tester, 'Mostly sitting');
       await _continue(tester);
-      await _continue(tester);
       await _tap(tester, 'See my targets');
 
       final profile = await tester.runAsync(
@@ -245,7 +245,7 @@ void main() {
     });
 
     testWidgets(
-      'changing the details starts from them and keeps the old goal',
+      'changing a detail on one screen recalculates targets and keeps the old goal',
       (tester) async {
         await withClock(Clock.fixed(testNow), () async {
           final db = await pumpAura(
@@ -255,25 +255,14 @@ void main() {
           );
 
           await _tap(tester, 'Change my details');
-          expect(
-            _continueEnabled(tester),
-            isTrue,
-            reason: 'Lose fat is chosen',
-          );
-          await _continue(tester);
-          expect(find.text('10 May 1996: you\'re 30.'), findsOneWidget);
-          await _continue(tester);
-          await _continue(tester);
-          expect(find.text('= 155 cm'), findsOneWidget);
+          expect(find.text('My details'), findsOneWidget);
+          await _tap(tester, '50 kg');
           await tester.enterText(_field('Weight'), '60');
           await tester.pumpAndSettle();
-          await _continue(tester);
-          await _continue(tester);
-          await _continue(tester);
-          // Training was skipped the first time; saving mustn't need Skip.
-          await _tap(tester, 'See my targets');
+          await _tap(tester, 'Save weight');
 
-          // The targets come back scrolled to where "Change my details" was.
+          await tester.pageBack();
+          await tester.pumpAndSettle();
           await tester.ensureVisible(
             find.text('Your daily targets', skipOffstage: false),
           );

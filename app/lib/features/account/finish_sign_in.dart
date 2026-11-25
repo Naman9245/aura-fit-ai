@@ -50,7 +50,7 @@ Future<void> finishSignIn(
   }
   final hasProfile = await profiles.hasProfile();
   if (context.mounted) {
-    context.go(hasProfile ? Routes.targets : Routes.onboarding);
+    context.go(hasProfile ? Routes.today : Routes.onboarding);
   }
 }
 

@@ -33,8 +33,9 @@ class ProfileAnswers {
   final Experience? experience;
 }
 
-/// The active goal, with the working behind its numbers.
-typedef ExplainedGoal = ({GoalRow goal, Targets targets});
+/// The active goal, with the working behind its numbers when this build knows
+/// the goal's formula version.
+typedef ExplainedGoal = ({GoalRow goal, Targets? targets});
 
 /// The profile, the weigh-ins and the goals, on this phone.
 class ProfileRepository {
@@ -69,16 +70,13 @@ class ProfileRepository {
       });
 
   /// Works the goal's numbers out again, the way they were reached: with
-  /// its own weight and goal type, and the age on the day it started.
-  Targets explain(ProfileRow profile, GoalRow goal) {
-    if (goal.formulaVersion != formulaVersion) {
-      throw StateError(
-        'Goal ${goal.id} uses formula ${goal.formulaVersion}, '
-        'and only $formulaVersion is known',
-      );
-    }
+  /// its own formula version, weight and goal type, and the age on the day
+  /// it started. Null when the goal came from a newer app build whose
+  /// formula this phone doesn't know yet.
+  Targets? explain(ProfileRow profile, GoalRow goal) {
     final started = goal.startedAt.toLocal();
-    return calculateTargets(
+    return calculateTargetsForVersion(
+      goal.formulaVersion,
       TargetInputs(
         age: ageOn(
           profile.birthDate,
@@ -96,78 +94,78 @@ class ProfileRepository {
   /// Saves what onboarding collected, all at once: the profile, today's
   /// weight and new targets. Editing the details saves through here too;
   /// when the targets come out different, the old goal ends and stays.
-  Future<GoalRow> saveProfile(ProfileAnswers answers) =>
-      _db.transaction(() async {
-        final now = clock.now();
-        final today = DateTime(now.year, now.month, now.day);
-        // Stored to 1 decimal place, as the server's numeric(4, 1) holds them.
-        final heightCm = roundHalfEven(answers.heightCm, 1);
-        final weightKg = roundHalfEven(answers.weightKg, 1);
+  Future<GoalRow> saveProfile(
+    ProfileAnswers answers,
+  ) => _db.transaction(() async {
+    final now = clock.now();
+    final today = DateTime(now.year, now.month, now.day);
+    // Stored to 1 decimal place, as the server's numeric(4, 1) holds them.
+    final heightCm = roundHalfEven(answers.heightCm, 1);
+    final weightKg = roundHalfEven(answers.weightKg, 1);
 
-        final existing = await profile();
-        final profileRow = ProfilesCompanion(
-          birthDate: Value(answers.birthDate),
-          sex: Value(answers.sex),
-          heightCm: Value(heightCm),
-          activityLevel: Value(answers.activity),
-          dietType: Value(answers.diet),
-          trainingPlace: Value(answers.trainingPlace),
-          experience: Value(answers.experience),
-          updatedAt: Value(now),
+    final existing = await profile();
+    final profileRow = ProfilesCompanion(
+      birthDate: Value(answers.birthDate),
+      sex: Value(answers.sex),
+      heightCm: Value(heightCm),
+      activityLevel: Value(answers.activity),
+      dietType: Value(answers.diet),
+      trainingPlace: Value(answers.trainingPlace),
+      experience: Value(answers.experience),
+      updatedAt: Value(now),
+      dirty: const Value(true),
+    );
+    if (existing == null) {
+      await _db
+          .into(_db.profiles)
+          .insert(profileRow.copyWith(createdAt: Value(now)));
+    } else {
+      await _db.update(_db.profiles).write(profileRow);
+    }
+
+    await _saveWeight(today, weightKg, now);
+
+    final targets = calculateTargets(
+      TargetInputs(
+        age: ageOn(answers.birthDate, today),
+        sex: answers.sex,
+        heightCm: heightCm,
+        weightKg: weightKg,
+        activity: answers.activity,
+        goal: answers.goal,
+      ),
+    );
+    final newGoal = GoalsCompanion.insert(
+      id: _uuid.v7(),
+      goalType: answers.goal,
+      basisWeightKg: weightKg,
+      caloriesKcal: _whole(targets.caloriesKcal),
+      proteinG: _whole(targets.proteinG),
+      carbsG: _whole(targets.carbsG),
+      fatG: _whole(targets.fatG),
+      waterMl: _whole(targets.waterL * 1000),
+      steps: targets.steps,
+      formulaVersion: targets.version,
+      startedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final active = await activeGoal();
+    if (active != null) {
+      if (_sameTargets(active, newGoal)) return active;
+      final endedAt = now.isBefore(active.startedAt) ? active.startedAt : now;
+      await (_db.update(_db.goals)..where((g) => g.id.equals(active.id))).write(
+        GoalsCompanion(
+          endedAt: Value(endedAt),
+          updatedAt: Value(endedAt),
           dirty: const Value(true),
-        );
-        if (existing == null) {
-          await _db
-              .into(_db.profiles)
-              .insert(profileRow.copyWith(createdAt: Value(now)));
-        } else {
-          await _db.update(_db.profiles).write(profileRow);
-        }
-
-        await _saveWeight(today, weightKg, now);
-
-        final targets = calculateTargets(
-          TargetInputs(
-            age: ageOn(answers.birthDate, today),
-            sex: answers.sex,
-            heightCm: heightCm,
-            weightKg: weightKg,
-            activity: answers.activity,
-            goal: answers.goal,
-          ),
-        );
-        final newGoal = GoalsCompanion.insert(
-          id: _uuid.v7(),
-          goalType: answers.goal,
-          basisWeightKg: weightKg,
-          caloriesKcal: _whole(targets.caloriesKcal),
-          proteinG: _whole(targets.proteinG),
-          carbsG: _whole(targets.carbsG),
-          fatG: _whole(targets.fatG),
-          waterMl: _whole(targets.waterL * 1000),
-          steps: targets.steps,
-          formulaVersion: targets.version,
-          startedAt: now,
-          createdAt: now,
-          updatedAt: now,
-        );
-
-        final active = await activeGoal();
-        if (active != null) {
-          if (_sameTargets(active, newGoal)) return active;
-          await (_db.update(
-            _db.goals,
-          )..where((g) => g.id.equals(active.id))).write(
-            GoalsCompanion(
-              endedAt: Value(now),
-              updatedAt: Value(now),
-              dirty: const Value(true),
-            ),
-          );
-        }
-        await _db.into(_db.goals).insert(newGoal);
-        return (await activeGoal())!;
-      });
+        ),
+      );
+    }
+    await _db.into(_db.goals).insert(newGoal);
+    return (await activeGoal())!;
+  });
 
   /// One weigh-in a day: a second one today replaces the first.
   Future<void> _saveWeight(

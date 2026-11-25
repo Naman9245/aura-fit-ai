@@ -1,6 +1,9 @@
 import 'package:aurafit/data/account_data.dart';
 import 'package:aurafit/data/db/app_database.dart';
+import 'package:aurafit/data/food_repository.dart';
+import 'package:aurafit/data/log_repository.dart';
 import 'package:aurafit/data/profile_repository.dart';
+import 'package:aurafit/services/meal_text_parser.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// The phone's database. Tests override it with an in-memory one.
@@ -14,6 +17,25 @@ final profileRepositoryProvider = Provider<ProfileRepository>(
   (ref) => ProfileRepository(ref.watch(appDatabaseProvider)),
 );
 
+final foodRepositoryProvider = Provider<FoodRepository>(
+  (ref) => FoodRepository(ref.watch(appDatabaseProvider)),
+);
+
+final logRepositoryProvider = Provider<LogRepository>(
+  (ref) => LogRepository(ref.watch(appDatabaseProvider)),
+);
+
+final mealParseRemoteProvider = Provider<MealParseRemote>(
+  (ref) => SupabaseMealParseRemote(),
+);
+
+final mealTextParserProvider = Provider<MealTextParser>(
+  (ref) => MealTextParser(
+    ref.watch(foodRepositoryProvider),
+    ref.watch(mealParseRemoteProvider),
+  ),
+);
+
 final accountDataProvider = Provider<AccountData>(
   (ref) => AccountData(ref.watch(appDatabaseProvider)),
 );
@@ -24,7 +46,37 @@ final phoneOwnerProvider = StreamProvider<SyncAccountRow?>(
   (ref) => ref.watch(accountDataProvider).watchOwner(),
 );
 
+/// The active profile row, kept up to date.
+final profileProvider = StreamProvider<ProfileRow?>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return (db.select(
+    db.profiles,
+  )..where((p) => p.deletedAt.isNull())).watchSingleOrNull();
+});
+
 /// The active goal with the working behind it, kept up to date.
 final explainedGoalProvider = StreamProvider<ExplainedGoal?>(
   (ref) => ref.watch(profileRepositoryProvider).watchExplainedGoal(),
+);
+
+/// Live summary of meals, water, steps and weigh-in for a diary [DateTime].
+final daySummaryProvider = StreamProvider.family<DaySummary, DateTime>(
+  (ref, day) => ref.watch(logRepositoryProvider).watchDay(day),
+);
+
+/// Live 7-day rolling calorie and protein average ending on [DateTime].
+final sevenDayAverageProvider =
+    StreamProvider.family<SevenDayAverage, DateTime>(
+      (ref, endDay) =>
+          ref.watch(logRepositoryProvider).watchSevenDayAverage(endDay),
+    );
+
+/// Live saved meals / favourites.
+final savedMealsProvider = StreamProvider<List<SavedMealBundle>>(
+  (ref) => ref.watch(logRepositoryProvider).watchSavedMeals(),
+);
+
+/// Recent distinct dishes for thumb-reach re-logging.
+final recentFoodsProvider = StreamProvider<List<MealEntryRow>>(
+  (ref) => ref.watch(logRepositoryProvider).watchRecentFoods(),
 );

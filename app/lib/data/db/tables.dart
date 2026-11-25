@@ -22,6 +22,50 @@ mixin Synced on Table {
   BoolColumn get dirty => boolean().withDefault(const Constant(true))();
 }
 
+/// The shared food catalogue, bundled inside the app so search works from the
+/// first minute offline and kept current by sequence number (`seq`).
+@DataClassName('FoodRow')
+@TableIndex(name: 'foods_name', columns: {#name})
+class Foods extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text().withLength(min: 1, max: 200)();
+
+  /// JSON list of Hindi, Hinglish and regional names.
+  TextColumn get aliasesJson => text().withDefault(const Constant('[]'))();
+  RealColumn get kcalPer100g => real()
+      .named('kcal_per_100g')
+      .check(kcalPer100g.isBetweenValues(0, 900))();
+  RealColumn get proteinGPer100g => real()
+      .named('protein_g_per_100g')
+      .check(proteinGPer100g.isBetweenValues(0, 100))();
+  RealColumn get carbsGPer100g => real()
+      .named('carbs_g_per_100g')
+      .check(carbsGPer100g.isBetweenValues(0, 100))();
+  RealColumn get fatGPer100g => real()
+      .named('fat_g_per_100g')
+      .check(fatGPer100g.isBetweenValues(0, 100))();
+
+  /// JSON list of portions, like `[{"unit":"katori","grams":150}]`.
+  TextColumn get portionsJson => text().withDefault(const Constant('[]'))();
+
+  /// What the recipe assumes, such as `"30 g wheat atta, no ghee"`.
+  TextColumn get assumption =>
+      text().withDefault(const Constant('')).withLength(min: 0, max: 300)();
+
+  /// Where the numbers come from, such as `'usda_fdc'`, `'recipe'`, `'label'`.
+  TextColumn get source => text().withLength(min: 1, max: 40)();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  IntColumn get seq => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    'CHECK (protein_g_per_100g + carbs_g_per_100g + fat_g_per_100g <= 100.5)',
+  ];
+}
+
 /// The person's profile: everything the targets are worked out from,
 /// apart from weight.
 @DataClassName('ProfileRow')
@@ -94,6 +138,11 @@ class Goals extends Table with Synced {
 
   @override
   Set<Column<Object>> get primaryKey => {id};
+
+  @override
+  List<String> get customConstraints => [
+    'CHECK (ended_at IS NULL OR ended_at >= started_at)',
+  ];
 }
 
 /// One weight a day, on the day as the person lived it.
@@ -114,10 +163,12 @@ class WeightLogs extends Table with Synced {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-/// Everything eaten. Nutrients are for the amount eaten. Logging starts
-/// in January.
+/// Everything eaten. Nutrients are stored with the entry so later recipe
+/// fixes never rewrite past logs, and the chosen portion and oil level stay
+/// for editing and repeating.
 @DataClassName('MealEntryRow')
 @TableIndex(name: 'meal_entries_eaten_at', columns: {#eatenAt})
+@TableIndex(name: 'meal_entries_day', columns: {#day})
 class MealEntries extends Table with Synced {
   TextColumn get id => text()();
 
@@ -125,6 +176,19 @@ class MealEntries extends Table with Synced {
   TextColumn get foodId => text().nullable()();
   TextColumn get name => text().withLength(min: 1, max: 200)();
   TextColumn get meal => text().map(const OptionConverter<Meal>(Meal.values))();
+
+  /// The diary day this meal counts towards, so a late-night log or travel
+  /// never moves it to another day.
+  TextColumn get day => text().map(const DateConverter())();
+
+  /// The portion chosen, like `'katori'` or `'piece'`, when applicable.
+  TextColumn get portionUnit => text().nullable().withLength(min: 1, max: 40)();
+  RealColumn get portionCount => real().nullable().check(
+    portionCount.isBiggerThanValue(0) &
+        portionCount.isSmallerOrEqualValue(5000),
+  )();
+  TextColumn get oilLevel =>
+      text().nullable().map(const OptionConverter<OilLevel>(OilLevel.values))();
   RealColumn get grams => real().check(
     grams.isBiggerThanValue(0) & grams.isSmallerOrEqualValue(5000),
   )();
@@ -135,6 +199,54 @@ class MealEntries extends Table with Synced {
   DateTimeColumn get eatenAt => dateTime()();
   TextColumn get source =>
       text().map(const OptionConverter<EntrySource>(EntrySource.values))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// A named favourite or meal combo, such as `"Hostel breakfast"`, synced
+/// across phones.
+@DataClassName('SavedMealRow')
+class SavedMeals extends Table with Synced {
+  TextColumn get id => text()();
+  TextColumn get name => text().withLength(min: 1, max: 120)();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// One dish inside a [SavedMeals] combo. Keeps the dish's name and nutrients
+/// so it still works even if the shared catalogue later retires the food.
+@DataClassName('SavedMealItemRow')
+@TableIndex(name: 'saved_meal_items_meal', columns: {#savedMealId, #sortOrder})
+class SavedMealItems extends Table with Synced {
+  TextColumn get id => text()();
+  TextColumn get savedMealId => text()();
+  TextColumn get foodId => text().nullable()();
+  TextColumn get name => text().withLength(min: 1, max: 200)();
+  TextColumn get portionUnit => text().nullable().withLength(min: 1, max: 40)();
+  RealColumn get portionCount => real().nullable().check(
+    portionCount.isBiggerThanValue(0) &
+        portionCount.isSmallerOrEqualValue(5000),
+  )();
+  TextColumn get oilLevel =>
+      text().nullable().map(const OptionConverter<OilLevel>(OilLevel.values))();
+  RealColumn get grams => real().check(
+    grams.isBiggerThanValue(0) & grams.isSmallerOrEqualValue(5000),
+  )();
+  RealColumn get kcal => real().check(kcal.isBetweenValues(0, 10000))();
+  RealColumn get proteinG => real().check(proteinG.isBiggerOrEqualValue(0))();
+  RealColumn get carbsG => real().check(carbsG.isBiggerOrEqualValue(0))();
+  RealColumn get fatG => real().check(fatG.isBiggerOrEqualValue(0))();
+  IntColumn get sortOrder => integer()
+      .withDefault(const Constant(0))
+      .check(sortOrder.isBetweenValues(0, 200))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get deletedAt => dateTime().nullable()();
@@ -171,13 +283,15 @@ class SyncAccount extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-/// Water and steps, one row per reading. Logging starts in January.
+/// Water and steps, one row per reading, tied to its diary [day].
 @DataClassName('HealthSampleRow')
 @TableIndex(name: 'health_samples_metric_time', columns: {#metric, #measuredAt})
+@TableIndex(name: 'health_samples_day_metric', columns: {#day, #metric})
 class HealthSamples extends Table with Synced {
   TextColumn get id => text()();
   TextColumn get metric =>
       text().map(const OptionConverter<HealthMetric>(HealthMetric.values))();
+  TextColumn get day => text().map(const DateConverter())();
   RealColumn get value => real().check(value.isBiggerOrEqualValue(0))();
   DateTimeColumn get measuredAt => dateTime()();
   TextColumn get source =>

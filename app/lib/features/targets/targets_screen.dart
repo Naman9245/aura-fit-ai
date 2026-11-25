@@ -32,10 +32,10 @@ class TargetsScreen extends ConsumerWidget {
               inAccount: inAccount,
             ),
             AsyncData() => const _NoGoal(),
-            AsyncError(:final error) => Center(
+            AsyncError() => const Center(
               child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text('Your targets couldn\'t be loaded: $error'),
+                padding: EdgeInsets.all(24),
+                child: Text('Your targets couldn\'t be loaded.'),
               ),
             ),
             _ => const Center(child: CircularProgressIndicator()),
@@ -54,7 +54,7 @@ class _Targets extends StatelessWidget {
   });
 
   final GoalRow goal;
-  final Targets targets;
+  final Targets? targets;
 
   /// Whether the plan is kept in an account, or so far only on this phone.
   final bool inAccount;
@@ -62,97 +62,105 @@ class _Targets extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return ListView(
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Semantics(
-                header: true,
-                child: Text('Your daily targets', style: text.headlineSmall),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text('Your daily targets', style: text.headlineSmall),
+                ),
               ),
-            ),
-            if (inAccount)
-              IconButton(
-                onPressed: () => showAccountSheet(context),
-                tooltip: 'Account',
-                icon: const Icon(Icons.account_circle_outlined),
+              if (inAccount)
+                IconButton(
+                  onPressed: () => showAccountSheet(context),
+                  tooltip: 'Account',
+                  icon: const Icon(Icons.account_circle_outlined),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'To ${goal.goalType.label.toLowerCase()}',
+            style: text.bodyLarge?.copyWith(color: AuraColors.muted),
+          ),
+          const SizedBox(height: 24),
+          _CaloriesCard(goal: goal, targets: targets),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _Stat(label: 'Protein', value: '${goal.proteinG} g'),
               ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'To ${goal.goalType.label.toLowerCase()}',
-          style: text.bodyLarge?.copyWith(color: AuraColors.muted),
-        ),
-        const SizedBox(height: 24),
-        _CaloriesCard(goal: goal, targets: targets),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _Stat(label: 'Protein', value: '${goal.proteinG} g'),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _Stat(label: 'Carbs', value: '${goal.carbsG} g'),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _Stat(label: 'Fat', value: '${goal.fatG} g'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _Stat(
-                label: 'Water',
-                value: formatLitres(goal.waterMl),
-                icon: Icons.water_drop_outlined,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _Stat(label: 'Carbs', value: '${goal.carbsG} g'),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _Stat(
-                label: 'Steps',
-                value: formatWhole(goal.steps),
-                icon: Icons.directions_walk,
+              const SizedBox(width: 12),
+              Expanded(
+                child: _Stat(label: 'Fat', value: '${goal.fatG} g'),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        if (!inAccount) ...[
-          FilledButton(
-            onPressed: () => context.push(Routes.signIn),
-            child: const Text('Save my plan'),
+            ],
           ),
           const SizedBox(height: 12),
-          OutlinedButton(
-            onPressed: () => context.push(Routes.howWeCalculated),
-            child: const Text('How we calculated this'),
+          Row(
+            children: [
+              Expanded(
+                child: _Stat(
+                  label: 'Water',
+                  value: formatLitres(goal.waterMl),
+                  icon: Icons.water_drop_outlined,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _Stat(
+                  label: 'Steps',
+                  value: formatWhole(goal.steps),
+                  icon: Icons.directions_walk,
+                ),
+              ),
+            ],
           ),
-        ] else
+          const SizedBox(height: 24),
           FilledButton(
-            onPressed: () => context.push(Routes.howWeCalculated),
-            child: const Text('How we calculated this'),
+            onPressed: () => context.go(Routes.today),
+            child: const Text('Open Today & log meals'),
           ),
-        const SizedBox(height: 12),
-        OutlinedButton(
-          onPressed: () => context.push(Routes.editDetails),
-          child: const Text('Change my details'),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'AURA isn\'t a medical device. If you\'re pregnant, under a doctor\'s '
-          'care or have had an eating disorder, check these targets with a '
-          'doctor first.',
-          style: text.bodySmall?.copyWith(color: AuraColors.muted),
-        ),
-      ],
+          const SizedBox(height: 12),
+          if (!inAccount) ...[
+            OutlinedButton(
+              onPressed: () => context.push(Routes.signIn),
+              child: const Text('Save my plan'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => context.push(Routes.howWeCalculated),
+              child: const Text('How we calculated this'),
+            ),
+          ] else
+            OutlinedButton(
+              onPressed: () => context.push(Routes.howWeCalculated),
+              child: const Text('How we calculated this'),
+            ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: () => context.push(Routes.editDetails),
+            child: const Text('Change my details'),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'AURA isn\'t a medical device. If you\'re pregnant, under a doctor\'s '
+            'care or have had an eating disorder, check these targets with a '
+            'doctor first.',
+            style: text.bodySmall?.copyWith(color: AuraColors.muted),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -161,11 +169,12 @@ class _CaloriesCard extends StatelessWidget {
   const _CaloriesCard({required this.goal, required this.targets});
 
   final GoalRow goal;
-  final Targets targets;
+  final Targets? targets;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final t = targets;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -191,7 +200,7 @@ class _CaloriesCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (targets.floorApplied) ...[
+            if (t != null && t.floorApplied) ...[
               const SizedBox(height: 16),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +213,7 @@ class _CaloriesCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Raised to the safe minimum. The formula gave '
-                      '${formatWhole(targets.unflooredKcal.round())} kcal, and '
+                      '${formatWhole(t.unflooredKcal.round())} kcal, and '
                       'eating that little isn\'t safe without a doctor.',
                       style: text.bodyMedium,
                     ),
