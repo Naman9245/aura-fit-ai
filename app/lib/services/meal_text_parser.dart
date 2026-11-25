@@ -413,9 +413,20 @@ class MealTextParser {
     const synonyms = <String, List<String>>{
       'bowl': ['katori', 'bowl'],
       'katori': ['katori', 'bowl'],
-      'piece': ['piece', '1 egg', 'fillet', 'slice'],
+      'piece': [
+        'piece',
+        'egg',
+        'idli',
+        'vada',
+        'chilla',
+        'dosa',
+        'fillet',
+        'breast',
+        'slice',
+      ],
       'roti': ['piece'],
-      'egg': ['1 egg', 'piece'],
+      'egg': ['egg', 'piece'],
+      'white': ['egg white'],
       'cup': ['cup', 'glass', 'katori'],
       'glass': ['glass', 'cup'],
     };

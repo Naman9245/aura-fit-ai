@@ -269,14 +269,22 @@ reset role;
 -- ----------------------------------------- Deleting the account removes all
 delete from auth.users where id = '00000000-0000-4000-8000-00000000000a';
 
+-- Counted for A alone: as the table owner these reads skip row-level
+-- security, and a live project holds other people's rows.
 do $$
+declare
+  a constant uuid := '00000000-0000-4000-8000-00000000000a';
 begin
-  assert (select count(*) from public.profiles) = 0, 'the profile should go with the account';
-  assert (select count(*) from public.goals) = 0, 'goals should go with the account';
-  assert (select count(*) from public.weight_logs) = 0, 'weights should go with the account';
-  assert (select count(*) from public.ai_usage
-    where user_id = '00000000-0000-4000-8000-00000000000a') = 0,
+  assert (select count(*) from public.profiles where user_id = a) = 0,
+    'the profile should go with the account';
+  assert (select count(*) from public.goals where user_id = a) = 0,
+    'goals should go with the account';
+  assert (select count(*) from public.weight_logs where user_id = a) = 0,
+    'weights should go with the account';
+  assert (select count(*) from public.ai_usage where user_id = a) = 0,
     'AI usage should go with the account';
+  assert (select count(*) from public.ai_calls where user_id = a) = 0,
+    'AI telemetry should go with the account';
 end;
 $$;
 

@@ -53,6 +53,7 @@ Future<AppDatabase> _pumpToday(
     ),
   );
   addTearDown(db.close);
+  addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));
 
   final seedJson = await tester.runAsync(
     () => File('assets/foods.json').readAsString(),
@@ -160,11 +161,32 @@ void main() {
         await _tap(tester, 'Remove entry');
         expect(find.textContaining('2 piece · Home style'), findsNothing);
 
+        // Log 6 boiled eggs via the scrollable wheel without opening keyboard.
+        await _tap(tester, 'Log food');
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Search Indian foods & staples'),
+          'boiled whole egg',
+        );
+        await tester.pumpAndSettle();
+        await _tap(tester, 'Boiled Whole Egg');
+        expect(find.text('1 egg  (50 g)'), findsOneWidget);
+
+        // Spin the horizontal wheel left to log multiple eggs without keyboard.
+        await tester.drag(
+          find.byType(ListWheelScrollView),
+          const Offset(-450, 0),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('1 egg  (50 g)'), findsNothing);
+        await _tap(tester, 'Add to breakfast');
+
         final allRows = await tester.runAsync(
           () => db.select(db.mealEntries).get(),
         );
-        expect(allRows, hasLength(1));
-        expect(allRows!.single.deletedAt, isNotNull);
+        expect(allRows, hasLength(2));
+        expect(allRows!.first.deletedAt, isNotNull);
+        expect(allRows.last.portionUnit, 'egg');
+        expect(allRows.last.portionCount, greaterThan(1));
       });
     },
   );
@@ -285,6 +307,10 @@ void main() {
 
         expect(find.text('Check and adjust before saving'), findsOneWidget);
         expect(find.textContaining('Verified food match'), findsOneWidget);
+        await _scrollTo(
+          tester,
+          find.textContaining('AI estimate, tap to adjust'),
+        );
         expect(
           find.textContaining('AI estimate, tap to adjust'),
           findsOneWidget,

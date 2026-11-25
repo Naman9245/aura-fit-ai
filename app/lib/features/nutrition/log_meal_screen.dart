@@ -11,6 +11,7 @@ import 'package:aurafit/models/options.dart';
 import 'package:aurafit/services/meal_text_parser.dart';
 import 'package:aurafit/services/oil.dart';
 import 'package:aurafit/widgets/aura_background.dart';
+import 'package:aurafit/widgets/portion_wheel_picker.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -409,6 +410,23 @@ class _LogMealScreenState extends ConsumerState<LogMealScreen> {
                           ),
                           child: Row(
                             children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AuraColors.surfaceStrong,
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(12),
+                                  ),
+                                  border: Border.all(color: AuraColors.border),
+                                ),
+                                child: Icon(
+                                  iconForPortionUnit(defaultPortion.unit),
+                                  size: 20,
+                                  color: AuraColors.accentSoft,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -873,6 +891,20 @@ class _DraftItemCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final needsAttention =
         !draft.isVerifiedMatch || draft.confidence == ParseConfidence.low;
+    final portions =
+        draft.matchedFood?.portions ??
+        [
+          FoodPortion(
+            unit: draft.portionUnit,
+            grams: draft.portionCount > 0
+                ? draft.grams / draft.portionCount
+                : draft.grams,
+          ),
+          if (draft.portionUnit != 'g') const FoodPortion(unit: 'g', grams: 1),
+        ];
+    final showOil =
+        draft.matchedFood == null || draft.matchedFood!.source == 'recipe';
+
     return Card(
       shape: needsAttention
           ? const RoundedRectangleBorder(
@@ -917,43 +949,64 @@ class _DraftItemCard extends StatelessWidget {
                   style: text.bodySmall?.copyWith(color: AuraColors.accentSoft),
                 ),
               ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                IconButton(
-                  tooltip: 'Less',
-                  onPressed: draft.portionCount > 0.5
-                      ? () => onChanged(
-                          draft.adjust(count: draft.portionCount - 0.5),
-                        )
-                      : null,
-                  icon: const Icon(Icons.remove_circle_outline),
-                ),
-                Text(
-                  '${formatDecimal(draft.portionCount)} ${draft.portionUnit} '
-                  '(${formatDecimal(draft.grams, places: 0)} g)',
-                  style: text.bodyMedium,
-                ),
-                IconButton(
-                  tooltip: 'More',
-                  onPressed: () =>
-                      onChanged(draft.adjust(count: draft.portionCount + 0.5)),
-                  icon: const Icon(Icons.add_circle_outline),
-                ),
-              ],
+            const SizedBox(height: 12),
+            PortionWheelPicker(
+              portions: portions,
+              selectedUnit: draft.portionUnit,
+              count: draft.portionCount,
+              onUnitChanged: (p) {
+                final nextCount = p.unit == 'g' ? 100.0 : 1.0;
+                final food = draft.matchedFood;
+                if (food != null) {
+                  final calc = food.calculate(
+                    unit: p.unit,
+                    count: nextCount,
+                    oilLevel: draft.oilLevel,
+                  );
+                  onChanged(
+                    ParsedMealDraft(
+                      matchedFood: food,
+                      name: draft.name,
+                      portionUnit: p.unit,
+                      portionCount: nextCount,
+                      oilLevel: draft.oilLevel,
+                      grams: calc.grams,
+                      kcal: calc.kcal,
+                      proteinG: calc.proteinG,
+                      carbsG: calc.carbsG,
+                      fatG: calc.fatG,
+                      confidence: draft.confidence,
+                    ),
+                  );
+                } else {
+                  final nextGrams = (p.grams * nextCount).clamp(1.0, 5000.0);
+                  final ratio = draft.grams > 0 ? nextGrams / draft.grams : 1.0;
+                  onChanged(
+                    ParsedMealDraft(
+                      matchedFood: null,
+                      name: draft.name,
+                      portionUnit: p.unit,
+                      portionCount: nextCount,
+                      oilLevel: draft.oilLevel,
+                      grams: nextGrams,
+                      kcal: draft.kcal * ratio,
+                      proteinG: draft.proteinG * ratio,
+                      carbsG: draft.carbsG * ratio,
+                      fatG: draft.fatG * ratio,
+                      confidence: draft.confidence,
+                    ),
+                  );
+                }
+              },
+              onCountChanged: (c) => onChanged(draft.adjust(count: c)),
             ),
-            Wrap(
-              spacing: 8,
-              runSpacing: 6,
-              children: [
-                for (final level in OilLevel.values)
-                  ChoiceChip(
-                    label: Text(_shortOilLabel(level)),
-                    selected: draft.oilLevel == level,
-                    onSelected: (_) => onChanged(draft.adjust(oil: level)),
-                  ),
-              ],
-            ),
+            if (showOil) ...[
+              const SizedBox(height: 12),
+              OilSelectorBar(
+                selected: draft.oilLevel,
+                onChanged: (level) => onChanged(draft.adjust(oil: level)),
+              ),
+            ],
           ],
         ),
       ),
@@ -979,8 +1032,9 @@ class _FoodPortionSheet extends ConsumerStatefulWidget {
 class _FoodPortionSheetState extends ConsumerState<_FoodPortionSheet> {
   late String _unit;
   late OilLevel _oil;
-  late final TextEditingController _countCtrl;
   double _count = 1;
+
+  bool get _hasCookingOil => widget.food.source == 'recipe';
 
   @override
   void initState() {
@@ -988,41 +1042,25 @@ class _FoodPortionSheetState extends ConsumerState<_FoodPortionSheet> {
     _unit = widget.food.portions.first.unit;
     _oil = widget.food.defaultOil;
     _count = _unit == 'g' ? 100 : 1;
-    _countCtrl = TextEditingController(text: formatDecimal(_count));
-  }
-
-  @override
-  void dispose() {
-    _countCtrl.dispose();
-    super.dispose();
-  }
-
-  void _setCount(double next) {
-    setState(() {
-      _count = next;
-      _countCtrl.text = formatDecimal(next);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final effectiveOil = _hasCookingOil ? _oil : null;
     final calc = widget.food.calculate(
       unit: _unit,
       count: _count,
-      oilLevel: _oil,
+      oilLevel: effectiveOil,
     );
-    final presets = _unit == 'g'
-        ? const <double>[50, 100, 150, 200, 250]
-        : const <double>[0.5, 1, 1.5, 2, 3, 4];
 
     return SafeArea(
-      child: SingleChildScrollView(
+      child: Padding(
         padding: EdgeInsets.fromLTRB(
-          24,
+          20,
           0,
-          24,
-          24 + MediaQuery.of(context).viewInsets.bottom,
+          20,
+          20 + MediaQuery.of(context).viewInsets.bottom,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1030,19 +1068,21 @@ class _FoodPortionSheetState extends ConsumerState<_FoodPortionSheet> {
           children: [
             Text(widget.food.name, style: text.titleLarge),
             if (widget.food.assumption.isNotEmpty) ...[
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 'Assumes: ${widget.food.assumption}',
                 style: text.bodySmall?.copyWith(color: AuraColors.muted),
               ),
             ],
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Card(
               color: AuraColors.surfaceStrong,
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 14,
+                ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _MacroPill(
                       label: 'Calories',
@@ -1065,139 +1105,98 @@ class _FoodPortionSheetState extends ConsumerState<_FoodPortionSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Text('Portion unit', style: text.labelLarge),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final p in widget.food.portions)
-                  ChoiceChip(
-                    label: Text(
-                      p.unit == 'g'
-                          ? 'grams (g)'
-                          : '${p.unit} (${formatDecimal(p.grams, places: 0)} g)',
-                    ),
-                    selected: _unit == p.unit,
-                    onSelected: (_) {
-                      setState(() {
-                        _unit = p.unit;
-                        _count = p.unit == 'g' ? 100 : 1;
-                        _countCtrl.text = formatDecimal(_count);
-                      });
-                    },
-                  ),
-              ],
-            ),
             const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      for (final preset in presets)
-                        ActionChip(
-                          label: Text(formatDecimal(preset)),
-                          onPressed: () => _setCount(preset),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 100,
-                  child: TextField(
-                    controller: _countCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    PortionWheelPicker(
+                      portions: widget.food.portions,
+                      selectedUnit: _unit,
+                      count: _count,
+                      onUnitChanged: (p) {
+                        setState(() {
+                          _unit = p.unit;
+                          _count = p.unit == 'g' ? 100 : 1;
+                        });
+                      },
+                      onCountChanged: (next) => setState(() => _count = next),
                     ),
-                    decoration: InputDecoration(labelText: _unit),
-                    onChanged: (v) {
-                      final parsed = double.tryParse(v);
-                      if (parsed != null && parsed > 0 && parsed <= 5000) {
-                        setState(() => _count = parsed);
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text('Oil & ghee', style: text.labelLarge),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final level in OilLevel.values)
-                  ChoiceChip(
-                    label: Text(level.label),
-                    selected: _oil == level,
-                    onSelected: (_) => setState(() => _oil = level),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            FilledButton(
-              onPressed: () async {
-                final nav = Navigator.of(context);
-                final undo = await ref
-                    .read(logRepositoryProvider)
-                    .logEntry(
-                      NewMealEntry(
-                        foodId: widget.food.id,
-                        name: widget.food.name,
-                        meal: widget.meal,
-                        day: widget.day,
-                        portionUnit: _unit,
-                        portionCount: _count,
-                        oilLevel: _oil,
-                        grams: calc.grams,
-                        kcal: calc.kcal,
-                        proteinG: calc.proteinG,
-                        carbsG: calc.carbsG,
-                        fatG: calc.fatG,
-                        source: EntrySource.search,
+                    if (_hasCookingOil) ...[
+                      const SizedBox(height: 14),
+                      Text('Oil & ghee', style: text.labelLarge),
+                      const SizedBox(height: 8),
+                      OilSelectorBar(
+                        selected: _oil,
+                        onChanged: (level) => setState(() => _oil = level),
                       ),
-                    );
-                if (mounted) nav.pop(undo);
-              },
-              child: Text('Add to ${widget.meal.label.toLowerCase()}'),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () async {
-                final messenger = ScaffoldMessenger.of(context);
-                await ref
-                    .read(logRepositoryProvider)
-                    .saveMealTemplate(
-                      name: widget.food.name,
-                      items: [
-                        SavedMealDraftItem(
-                          foodId: widget.food.id,
-                          name: widget.food.name,
-                          portionUnit: _unit,
-                          portionCount: _count,
-                          oilLevel: _oil,
-                          grams: calc.grams,
-                          kcal: calc.kcal,
-                          proteinG: calc.proteinG,
-                          carbsG: calc.carbsG,
-                          fatG: calc.fatG,
-                        ),
-                      ],
-                    );
-                if (!mounted) return;
-                messenger.showSnackBar(
-                  SnackBar(
-                    content: Text('Saved ${widget.food.name} to favourites.'),
-                  ),
-                );
-              },
-              child: const Text('Save to favourites'),
+                    ],
+                    const SizedBox(height: 18),
+                    FilledButton(
+                      onPressed: () async {
+                        final nav = Navigator.of(context);
+                        final undo = await ref
+                            .read(logRepositoryProvider)
+                            .logEntry(
+                              NewMealEntry(
+                                foodId: widget.food.id,
+                                name: widget.food.name,
+                                meal: widget.meal,
+                                day: widget.day,
+                                portionUnit: _unit,
+                                portionCount: _count,
+                                oilLevel: effectiveOil,
+                                grams: calc.grams,
+                                kcal: calc.kcal,
+                                proteinG: calc.proteinG,
+                                carbsG: calc.carbsG,
+                                fatG: calc.fatG,
+                                source: EntrySource.search,
+                              ),
+                            );
+                        if (mounted) nav.pop(undo);
+                      },
+                      child: Text('Add to ${widget.meal.label.toLowerCase()}'),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        await ref
+                            .read(logRepositoryProvider)
+                            .saveMealTemplate(
+                              name: widget.food.name,
+                              items: [
+                                SavedMealDraftItem(
+                                  foodId: widget.food.id,
+                                  name: widget.food.name,
+                                  portionUnit: _unit,
+                                  portionCount: _count,
+                                  oilLevel: effectiveOil,
+                                  grams: calc.grams,
+                                  kcal: calc.kcal,
+                                  proteinG: calc.proteinG,
+                                  carbsG: calc.carbsG,
+                                  fatG: calc.fatG,
+                                ),
+                              ],
+                            );
+                        if (!mounted) return;
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Saved ${widget.food.name} to favourites.',
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text('Save to favourites'),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -1272,18 +1271,18 @@ class _EditMealEntrySheet extends ConsumerStatefulWidget {
 
 class _EditMealEntrySheetState extends ConsumerState<_EditMealEntrySheet> {
   late Meal _meal;
+  late String _unit;
   late OilLevel _oil;
   late double _count;
-  late final TextEditingController _countCtrl;
   FoodItem? _food;
 
   @override
   void initState() {
     super.initState();
     _meal = widget.entry.meal;
+    _unit = widget.entry.portionUnit ?? 'g';
     _oil = widget.entry.oilLevel ?? OilLevel.home;
     _count = widget.entry.portionCount ?? widget.entry.grams;
-    _countCtrl = TextEditingController(text: formatDecimal(_count));
     final foodId = widget.entry.foodId;
     if (foodId != null) {
       unawaited(
@@ -1294,28 +1293,46 @@ class _EditMealEntrySheetState extends ConsumerState<_EditMealEntrySheet> {
     }
   }
 
-  @override
-  void dispose() {
-    _countCtrl.dispose();
-    super.dispose();
+  bool get _hasCookingOil {
+    final food = _food;
+    if (food != null) return food.source == 'recipe';
+    return widget.entry.oilLevel != null;
+  }
+
+  List<FoodPortion> get _portions {
+    final food = _food;
+    if (food != null) return food.portions;
+    final origUnit = widget.entry.portionUnit;
+    final origCount = widget.entry.portionCount ?? 1.0;
+    final unitGrams = origUnit == null || origUnit == 'g'
+        ? 1.0
+        : (origCount > 0 ? widget.entry.grams / origCount : widget.entry.grams);
+    return [
+      if (origUnit != null && origUnit != 'g')
+        FoodPortion(unit: origUnit, grams: unitGrams),
+      const FoodPortion(unit: 'g', grams: 1),
+    ];
   }
 
   CalculatedNutrients _recalculate() {
-    final unit = widget.entry.portionUnit ?? 'g';
+    final effectiveOil = _hasCookingOil ? _oil : null;
     final food = _food;
     if (food != null) {
-      return food.calculate(unit: unit, count: _count, oilLevel: _oil);
+      return food.calculate(unit: _unit, count: _count, oilLevel: effectiveOil);
     }
-    final baseCount = widget.entry.portionCount ?? widget.entry.grams;
-    final ratio = baseCount > 0 ? _count / baseCount : 1.0;
-    final grams = (widget.entry.grams * ratio).clamp(0.5, 5000.0);
+    final chosenPortion = _portions.firstWhere(
+      (p) => p.unit == _unit,
+      orElse: () => const FoodPortion(unit: 'g', grams: 1),
+    );
+    final grams = (chosenPortion.grams * _count).clamp(0.5, 5000.0);
+    final ratio = widget.entry.grams > 0 ? grams / widget.entry.grams : 1.0;
     final protein = widget.entry.proteinG * ratio;
     final carbs = widget.entry.carbsG * ratio;
     var fat = widget.entry.fatG * ratio;
     var kcal = widget.entry.kcal * ratio;
 
     final origOil = widget.entry.oilLevel ?? OilLevel.home;
-    if (_oil != origOil) {
+    if (_hasCookingOil && _oil != origOil) {
       final deltaPer100g = _stepFor(_oil) - _stepFor(origOil);
       final newFat = (fat + deltaPer100g * (grams / 100.0)).clamp(0.0, 500.0);
       kcal = (kcal + (newFat - fat) * 9.0).clamp(0.0, 10000.0);
@@ -1339,103 +1356,133 @@ class _EditMealEntrySheetState extends ConsumerState<_EditMealEntrySheet> {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final unit = widget.entry.portionUnit ?? 'g';
     final calc = _recalculate();
 
     return SafeArea(
-      child: SingleChildScrollView(
+      child: Padding(
         padding: EdgeInsets.fromLTRB(
-          24,
+          20,
           0,
-          24,
-          24 + MediaQuery.of(context).viewInsets.bottom,
+          20,
+          20 + MediaQuery.of(context).viewInsets.bottom,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(widget.entry.name, style: text.titleLarge),
-            const SizedBox(height: 6),
-            Text(
-              '${formatWhole(calc.kcal.round())} kcal · '
-              '${formatDecimal(calc.proteinG, places: 1)} g protein · '
-              '${formatDecimal(calc.fatG, places: 1)} g fat',
-              style: text.bodyMedium?.copyWith(color: AuraColors.accentSoft),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final m in Meal.values)
-                  ChoiceChip(
-                    label: Text(m.label),
-                    selected: _meal == m,
-                    onSelected: (_) => setState(() => _meal = m),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _countCtrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+            const SizedBox(height: 10),
+            Card(
+              color: AuraColors.surfaceStrong,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 14,
+                ),
+                child: Row(
+                  children: [
+                    _MacroPill(
+                      label: 'Calories',
+                      value: '${formatWhole(calc.kcal.round())} kcal',
+                      highlight: true,
+                    ),
+                    _MacroPill(
+                      label: 'Protein',
+                      value: '${formatDecimal(calc.proteinG, places: 1)} g',
+                    ),
+                    _MacroPill(
+                      label: 'Carbs',
+                      value: '${formatDecimal(calc.carbsG, places: 1)} g',
+                    ),
+                    _MacroPill(
+                      label: 'Fat',
+                      value: '${formatDecimal(calc.fatG, places: 1)} g',
+                    ),
+                  ],
+                ),
               ),
-              decoration: InputDecoration(labelText: 'Amount ($unit)'),
-              onChanged: (v) {
-                final parsed = double.tryParse(v);
-                if (parsed != null && parsed > 0 && parsed <= 5000) {
-                  setState(() => _count = parsed);
-                }
-              },
             ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final level in OilLevel.values)
-                  ChoiceChip(
-                    label: Text(_shortOilLabel(level)),
-                    selected: _oil == level,
-                    onSelected: (_) => setState(() => _oil = level),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            FilledButton(
-              onPressed: () async {
-                final nav = Navigator.of(context);
-                await ref
-                    .read(logRepositoryProvider)
-                    .updateMealEntry(
-                      id: widget.entry.id,
-                      meal: _meal,
-                      portionUnit: widget.entry.portionUnit,
-                      portionCount: widget.entry.portionUnit == null
-                          ? null
-                          : _count,
-                      oilLevel: _oil,
-                      grams: calc.grams,
-                      kcal: calc.kcal,
-                      proteinG: calc.proteinG,
-                      carbsG: calc.carbsG,
-                      fatG: calc.fatG,
-                    );
-                if (mounted) nav.pop();
-              },
-              child: const Text('Save changes'),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () async {
-                final nav = Navigator.of(context);
-                final undo = await ref
-                    .read(logRepositoryProvider)
-                    .deleteMealEntry(widget.entry);
-                if (mounted) nav.pop(undo);
-              },
-              child: const Text('Remove entry'),
+            const SizedBox(height: 14),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          for (final m in Meal.values)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(m.label),
+                                selected: _meal == m,
+                                onSelected: (_) => setState(() => _meal = m),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    PortionWheelPicker(
+                      portions: _portions,
+                      selectedUnit: _unit,
+                      count: _count,
+                      onUnitChanged: (p) {
+                        setState(() {
+                          _unit = p.unit;
+                          _count = p.unit == 'g' ? 100 : 1;
+                        });
+                      },
+                      onCountChanged: (next) => setState(() => _count = next),
+                    ),
+                    if (_hasCookingOil) ...[
+                      const SizedBox(height: 14),
+                      Text('Oil & ghee', style: text.labelLarge),
+                      const SizedBox(height: 8),
+                      OilSelectorBar(
+                        selected: _oil,
+                        onChanged: (level) => setState(() => _oil = level),
+                      ),
+                    ],
+                    const SizedBox(height: 18),
+                    FilledButton(
+                      onPressed: () async {
+                        final nav = Navigator.of(context);
+                        await ref
+                            .read(logRepositoryProvider)
+                            .updateMealEntry(
+                              id: widget.entry.id,
+                              meal: _meal,
+                              portionUnit: _unit,
+                              portionCount: _count,
+                              oilLevel: _hasCookingOil ? _oil : null,
+                              grams: calc.grams,
+                              kcal: calc.kcal,
+                              proteinG: calc.proteinG,
+                              carbsG: calc.carbsG,
+                              fatG: calc.fatG,
+                            );
+                        if (mounted) nav.pop();
+                      },
+                      child: const Text('Save changes'),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: () async {
+                        final nav = Navigator.of(context);
+                        final undo = await ref
+                            .read(logRepositoryProvider)
+                            .deleteMealEntry(widget.entry);
+                        if (mounted) nav.pop(undo);
+                      },
+                      child: const Text('Remove entry'),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -1443,9 +1490,3 @@ class _EditMealEntrySheetState extends ConsumerState<_EditMealEntrySheet> {
     );
   }
 }
-
-String _shortOilLabel(OilLevel level) => switch (level) {
-  OilLevel.low => 'No ghee / low oil',
-  OilLevel.home => 'Home style',
-  OilLevel.extra => 'Extra ghee / restaurant',
-};
