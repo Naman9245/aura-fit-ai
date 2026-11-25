@@ -37,6 +37,9 @@ Future<(String, Object?)> startingPoint(ProviderContainer container) async {
     return (hasProfile ? Routes.today : Routes.onboarding, null);
   }
   if (!hasProfile) return (Routes.onboarding, null);
+  if (!container.read(accountServiceProvider).canSignIn) {
+    return (Routes.today, null);
+  }
   final owner = await container.read(accountDataProvider).owner();
   return (
     Routes.signIn,
