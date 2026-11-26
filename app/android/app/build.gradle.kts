@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -6,6 +8,15 @@ plugins {
     // project.
     id("com.google.gms.google-services") apply false
     id("com.google.firebase.crashlytics") apply false
+}
+
+// The upload key for Google Play, kept out of git: android/key.properties
+// names the keystore file and its passwords (see app/README.md). Without
+// it, release builds are signed with the debug key, so CI and other
+// checkouts still build; only the upload key's builds go to Play.
+val uploadKey = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
 }
 
 android {
@@ -33,12 +44,22 @@ android {
         manifestPlaceholders["crashReportsOn"] = "false"
     }
 
+    signingConfigs {
+        if (!uploadKey.isEmpty) {
+            create("upload") {
+                storeFile = rootProject.file(uploadKey.getProperty("storeFile"))
+                storePassword = uploadKey.getProperty("storePassword")
+                keyAlias = uploadKey.getProperty("keyAlias")
+                keyPassword = uploadKey.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             manifestPlaceholders["crashReportsOn"] = "true"
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("upload")
+                ?: signingConfigs.getByName("debug")
         }
     }
 }

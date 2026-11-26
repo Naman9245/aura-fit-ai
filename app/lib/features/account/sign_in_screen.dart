@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:aurafit/core/links.dart';
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
 import 'package:aurafit/data/account.dart';
@@ -303,6 +304,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                       : () => context.go(Routes.today),
                   child: const Text('Not now'),
                 ),
+              // What the consent box agrees to, in full.
+              const SizedBox(height: 16),
+              const LegalLinks(),
             ],
           ),
         ),

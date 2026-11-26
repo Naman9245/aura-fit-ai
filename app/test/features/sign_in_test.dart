@@ -1,4 +1,5 @@
 import 'package:aurafit/core/error_reporter.dart';
+import 'package:aurafit/core/links.dart';
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/db/app_database.dart';
@@ -446,6 +447,57 @@ void main() {
 
         expect(accounts.deleted, isEmpty);
         expect(find.text('priya@example.com'), findsOneWidget);
+      });
+    });
+  });
+
+  group('the privacy policy and terms', () {
+    final opened = <Uri>[];
+    setUp(opened.clear);
+
+    testWidgets('open from sign-in', (tester) async {
+      await withClock(Clock.fixed(testNow), () async {
+        await pumpAura(
+          tester,
+          startAt: Routes.signIn,
+          startExtra: _returning,
+          accounts: accounts,
+          remote: remote,
+          openLink: (uri) async => opened.add(uri),
+        );
+        // At the foot of the screen, below the ways to sign in.
+        await tester.scrollUntilVisible(
+          find.text('Privacy policy'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await _tap(tester, 'Privacy policy');
+        await _tap(tester, 'Terms');
+
+        expect(opened, [AuraLinks.privacy, AuraLinks.terms]);
+        expect(
+          AuraLinks.privacy.toString(),
+          'https://naman9245.github.io/aura-fit-ai/privacy/',
+        );
+      });
+    });
+
+    testWidgets('open from the account sheet', (tester) async {
+      await withClock(Clock.fixed(testNow), () async {
+        await pumpAura(
+          tester,
+          startAt: Routes.targets,
+          seed: _onboarded,
+          accounts: accounts
+            ..signInAs(const Account(id: 'email-1', email: 'p@example.com')),
+          remote: remote,
+          openLink: (uri) async => opened.add(uri),
+        );
+        await tester.tap(find.byTooltip('Account'));
+        await tester.pumpAndSettle();
+        await _tap(tester, 'Terms');
+
+        expect(opened, [AuraLinks.terms]);
       });
     });
   });

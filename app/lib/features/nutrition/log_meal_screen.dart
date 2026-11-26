@@ -312,7 +312,7 @@ class _LogMealScreenState extends ConsumerState<LogMealScreen> {
                       value: LogMealMode.search,
                       label: Text('Search'),
                     ),
-                    ButtonSegment(value: LogMealMode.text, label: Text('Type')),
+                    ButtonSegment(value: LogMealMode.text, label: Text('AI')),
                     ButtonSegment(
                       value: LogMealMode.saved,
                       label: Text('Saved'),
@@ -469,8 +469,9 @@ class _LogMealScreenState extends ConsumerState<LogMealScreen> {
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       children: [
         Text(
-          'Type or dictate your meal (English or Hinglish). Our food database '
-          'supplies exact numbers whenever a dish matches.',
+          'Type or dictate your meal in English or Hinglish, and AI reads it. '
+          'Our food database supplies the numbers whenever a dish matches, '
+          'and you check everything before it\'s saved.',
           style: text.bodyMedium?.copyWith(color: AuraColors.muted),
         ),
         const SizedBox(height: 12),
@@ -855,7 +856,7 @@ class _EmptySearch extends StatelessWidget {
           Text('No verified match for "$query".', style: text.titleMedium),
           const SizedBox(height: 8),
           Text(
-            'Add it by hand in seconds, or describe the meal in Type.',
+            'Add it by hand in seconds, or describe the meal to AI.',
             textAlign: TextAlign.center,
             style: text.bodyMedium?.copyWith(color: AuraColors.muted),
           ),
@@ -867,7 +868,7 @@ class _EmptySearch extends StatelessWidget {
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: onTypeWithAi,
-            child: const Text('Type meal instead'),
+            child: const Text('Describe it to AI instead'),
           ),
         ],
       ),
