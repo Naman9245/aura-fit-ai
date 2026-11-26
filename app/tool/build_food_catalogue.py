@@ -1,17 +1,24 @@
-"""Builds the verified 380-item Indian food catalogue (PRD Food data, p. 20).
+"""Builds the verified 406-item Indian food catalogue (PRD Food data, p. 20).
 
 Four layers, never scraped from other apps:
   1. 120 raw staples from USDA FoodData Central (CC0 public domain).
-  2. 180 cooked Indian home & mess dishes worked out by recipe maths from raw
+  2. 206 cooked Indian home & mess dishes worked out by recipe maths from raw
      ingredients, cooked moisture yields and standard household measures
      (1 katori = 150 ml), each carrying its explicit assumption.
   3. 80 packaged Indian fitness staples from public nutrition labels.
   4. Weekly additions from missed-search counts (N10).
 
-Writes both:
-  * app/assets/foods.json (bundled inside the app for instant offline search)
-  * supabase/migrations/20261125200656_seed_foods.sql (server catalogue with
-    identical UUIDs so offline meal_entries foreign keys always match)
+Writes app/assets/foods.json, bundled inside the app for instant offline
+search. Run it from the repo root:
+
+    python app/tool/build_food_catalogue.py
+
+The server got the same 406 rows, with the same ids and seq numbers, from
+supabase/migrations/20261125200656_seed_foods.sql. That migration is applied
+and never changes, so the rows below stay exactly as seeded. A later change
+to a food goes in a new migration and in LATER_FIXES, with the seq the
+server gives it; foods.json then matches the server row for row, which CI
+checks (supabase/tests/check_catalogue.py).
 """
 
 from __future__ import annotations
@@ -21,7 +28,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 JSON_OUT = ROOT / "app" / "assets" / "foods.json"
-SQL_OUT = ROOT / "supabase" / "migrations" / "20261125200656_seed_foods.sql"
 
 
 def p(unit: str, grams: float) -> dict[str, object]:
@@ -484,8 +490,12 @@ PACKAGED_STAPLES: list[tuple] = [
 ]
 
 
-def sql_str(s: str) -> str:
-    return "'" + s.replace("'", "''") + "'"
+# Changes to seeded foods since the seed, oldest first: the seq of the food
+# in the seed, the fields that changed, and the seq the server gave the row.
+LATER_FIXES: list[dict[str, object]] = [
+    # 20261126094131_fix_food_229_name.sql: the name started with a space.
+    {"seed_seq": 229, "name": "Bharwa Baingan / Mirchi ka Salan", "seq": 407},
+]
 
 
 def main() -> None:
@@ -532,55 +542,17 @@ def main() -> None:
             }
         )
 
+    for fix in LATER_FIXES:
+        row = catalogue[int(fix["seed_seq"]) - 1]
+        assert row["seq"] == fix["seed_seq"]
+        row.update({k: v for k, v in fix.items() if k != "seed_seq"})
+
     JSON_OUT.parent.mkdir(parents=True, exist_ok=True)
     JSON_OUT.write_text(
         json.dumps(catalogue, ensure_ascii=False, separators=(",", ":")),
         encoding="utf-8",
     )
-
-    sql_lines = [
-        f"-- Seed the first {len(all_rows)} verified Indian foods ({len(RAW_STAPLES)} USDA public-domain raw",
-        f"-- staples, {len(COOKED_DISHES)} recipe-calculated home & mess dishes with assumptions,",
-        f"-- and {len(PACKAGED_STAPLES)} packaged staples from nutrition labels).",
-        "--",
-        "-- IDs and sequence numbers match app/assets/foods.json so offline meal",
-        "-- entries logged before first sync satisfy meal_entries.food_id.",
-        "",
-        "insert into public.foods (",
-        "  id, name, aliases, kcal_per_100g, protein_g_per_100g,",
-        "  carbs_g_per_100g, fat_g_per_100g, portions, assumption, source, seq",
-        ") values",
-    ]
-    values_sql: list[str] = []
-    for item in catalogue:
-        aliases_arr = "ARRAY[" + ", ".join(sql_str(a) for a in item["aliases"]) + "]::text[]"
-        portions_json = sql_str(json.dumps(item["portions"], separators=(",", ":"))) + "::jsonb"
-        values_sql.append(
-            f"  ({sql_str(item['id'])}, {sql_str(item['name'])}, {aliases_arr}, "
-            f"{item['kcal_per_100g']}, {item['protein_g_per_100g']}, "
-            f"{item['carbs_g_per_100g']}, {item['fat_g_per_100g']}, "
-            f"{portions_json}, {sql_str(item['assumption'])}, "
-            f"{sql_str(item['source'])}, {item['seq']})"
-        )
-    sql_lines.append(",\n".join(values_sql))
-    sql_lines.append(
-        "on conflict (id) do update set\n"
-        "  name = excluded.name,\n"
-        "  aliases = excluded.aliases,\n"
-        "  kcal_per_100g = excluded.kcal_per_100g,\n"
-        "  protein_g_per_100g = excluded.protein_g_per_100g,\n"
-        "  carbs_g_per_100g = excluded.carbs_g_per_100g,\n"
-        "  fat_g_per_100g = excluded.fat_g_per_100g,\n"
-        "  portions = excluded.portions,\n"
-        "  assumption = excluded.assumption,\n"
-        "  source = excluded.source;"
-    )
-    sql_lines.append("")
-    sql_lines.append(f"select setval('public.foods_seq', {len(all_rows)}, true);")
-    sql_lines.append("")
-    SQL_OUT.write_text("\n".join(sql_lines), encoding="utf-8")
     print(f"Wrote {JSON_OUT.stat().st_size} bytes to {JSON_OUT}")
-    print(f"Wrote {SQL_OUT.stat().st_size} bytes to {SQL_OUT}")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,6 @@
 # AURA FIT AI
 
 [![app tests](https://github.com/Naman9245/aura-fit-ai/actions/workflows/app-tests.yml/badge.svg)](https://github.com/Naman9245/aura-fit-ai/actions/workflows/app-tests.yml)
-[![backend tests](https://github.com/Naman9245/aura-fit-ai/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/Naman9245/aura-fit-ai/actions/workflows/backend-tests.yml)
 
 A fitness app for Indians who cook at home and train at a gym or at home: log a day of meals in under a minute, and get daily targets that are personal and safe. It is being built as an Android app in Flutter on Supabase ([why](docs/adr/001-flutter-and-supabase.md)), with the first Play Store release planned for May 2027.
 
@@ -22,7 +21,7 @@ A fitness app for Indians who cook at home and train at a gym or at home: log a 
 
 The Supabase project `aura-fit` (Mumbai, free plan) has every migration applied and passes the security and sync checks; CI also checks them on plain Postgres.
 
-**Being retired:** `backend/` (FastAPI, 45 tests) goes once the January milestone works; its maths and tests have moved to Dart.
+**Retired:** the FastAPI `backend/`. Its calorie maths and tests moved to Dart, its AI prompts to Edge Functions, and its answers for 30 profiles stay as the Dart's parity fixture. It's in git history.
 
 **The website** in `frontend/` is the landing page plus the privacy policy, terms and account deletion page that Google Play needs. It's built as plain files and published to GitHub Pages from `main` (`.github/workflows/website.yml`) once Pages is switched on and the `CONTACT_EMAIL` repository variable is set.
 
@@ -49,7 +48,6 @@ supabase/
 ├── migrations/            the schema, one SQL file per change
 └── tests/                 security and sync checks, and a shim to run them on plain Postgres
 docs/adr/                  why the big decisions were made
-backend/                   FastAPI, being retired
 frontend/                  the website: landing page, privacy, terms, account deletion
 ```
 
@@ -74,16 +72,8 @@ flutter build apk --release --split-per-abi --dart-define-from-file=env/supabase
 
 ```bash
 cd app
-flutter test                              # 171 tests, no network needed
+flutter test                              # every test, no network needed
 flutter test tool/screenshots_test.dart   # draws every screen to build/screenshots/
 ```
 
 The database checks run in CI on Postgres. On a Supabase project, apply the migrations in order and paste `supabase/tests/security_test.sql`, then `supabase/tests/sync_test.sql`, into the SQL editor; each rolls itself back.
-
-The old backend's tests still run until it is removed:
-
-```bash
-cd backend
-python -m pip install -r requirements-dev.txt
-pytest
-```

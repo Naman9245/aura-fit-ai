@@ -12,7 +12,6 @@ Android first, offline first: every screen reads and writes the phone's own data
 | `lib/data/db/` | The Drift tables, matching `supabase/migrations/` |
 | `lib/data/profile_repository.dart` | Saving onboarding, goals and weigh-ins |
 | `lib/features/` | Onboarding and the targets screens |
-| `tool/export_python_targets.py` | Records the old Python maths' answers for the parity test |
 | `tool/screenshots_test.dart` | Draws every screen, at normal and large text |
 
 ## Commands

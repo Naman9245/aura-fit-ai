@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:aurafit/data/db/app_database.dart';
 import 'package:aurafit/data/food_repository.dart';
@@ -30,10 +32,18 @@ void main() {
     final sources = {for (final f in all) f.source};
     expect(sources, containsAll(['usda_fdc', 'recipe', 'label']));
 
+    // The cursor starts at the bundled copy's highest seq, which is above
+    // the count once a seeded food has been fixed on the server.
     final cursor = await (db.select(
       db.syncCursors,
     )..where((c) => c.kind.equals('foods'))).getSingle();
-    expect(cursor.seq, all.length);
+    final bundled = jsonDecode(File('assets/foods.json').readAsStringSync());
+    expect(
+      cursor.seq,
+      (bundled as List<Object?>)
+          .map((f) => (f! as Map)['seq']! as int)
+          .reduce(max),
+    );
   });
 
   test('searches English, Hindi and Hinglish aliases in under 50 ms', () async {

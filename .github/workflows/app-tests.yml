@@ -73,3 +73,9 @@ jobs:
           done
           psql -v ON_ERROR_STOP=1 -f supabase/tests/security_test.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/sync_test.sql
+      # Phones search the bundled copy and fetch only newer rows, so it must
+      # match what the migrations leave on the server, row for row.
+      - name: Check the app's bundled catalogue matches the server's
+        run: |
+          psql -v ON_ERROR_STOP=1 -At -f supabase/tests/catalogue.sql > server_foods.json
+          python3 supabase/tests/check_catalogue.py app/assets/foods.json server_foods.json
