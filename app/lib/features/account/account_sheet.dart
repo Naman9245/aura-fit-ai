@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:aurafit/core/error_reporter.dart';
+import 'package:aurafit/core/links.dart';
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
 import 'package:aurafit/data/account.dart';
@@ -139,7 +140,11 @@ class _AccountSheet extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: children,
+          children: [
+            ...children,
+            const SizedBox(height: 8),
+            const LegalLinks(),
+          ],
         ),
       ),
     );

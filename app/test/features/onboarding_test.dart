@@ -92,6 +92,13 @@ void main() {
       );
       expect(find.text('= 1,158 kcal'), findsOneWidget, reason: 'BMR 1,157.75');
       expect(find.text('= 1,389 kcal'), findsOneWidget, reason: '× 1.2');
+      // Google Play's health policy: the screen says it isn't medical advice.
+      await tester.scrollUntilVisible(
+        find.textContaining('not medical advice'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.textContaining('not medical advice'), findsOneWidget);
 
       final goal = await tester.runAsync(ProfileRepository(db).activeGoal);
       expect(goal!.caloriesKcal, 1200);

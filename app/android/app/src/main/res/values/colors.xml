@@ -3,4 +3,6 @@
     <!-- The app's background (AuraColors.black), shown before Flutter draws
          its first frame so the app never flashes white. -->
     <color name="aura_black">#050816</color>
+    <!-- The adaptive launcher icon's back layer, behind the ring. -->
+    <color name="ic_launcher_background">#050816</color>
 </resources>

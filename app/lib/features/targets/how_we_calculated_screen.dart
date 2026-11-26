@@ -227,7 +227,10 @@ class _Working extends StatelessWidget {
           'so AURA never sets calories from it.\n\n'
           'Sources: Mifflin MD, St Jeor ST et al., Am J Clin Nutr (1990) for '
           'resting energy; ICMR–NIN Dietary Guidelines for Indians for safe '
-          'minimums and balanced macronutrients.',
+          'minimums and balanced macronutrients.\n\n'
+          'These are general estimates, not medical advice. Talk to a doctor '
+          'or a registered dietitian before changing your diet, especially if '
+          'you are pregnant or have a medical condition.',
           style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: AuraColors.muted),
         ),

@@ -298,7 +298,7 @@ void main() {
         );
 
         await _pumpToday(tester, parseRemote: remote);
-        await _tap(tester, 'Type');
+        await _tap(tester, 'AI');
         await tester.enterText(
           find.widgetWithText(TextField, 'What did you eat?'),
           '2 roti and 1 katori hostel special curry',
@@ -324,9 +324,9 @@ void main() {
         await _scrollTo(tester, find.text('Hostel special curry'));
         expect(find.text('Hostel special curry'), findsWidgets);
 
-        // Now go offline: AI Type falls back smoothly to Search / Quick add.
+        // Now go offline: AI logging falls back smoothly to Search / Quick add.
         remote.error = MealParseFallbackReason.offline;
-        await _tap(tester, 'Type');
+        await _tap(tester, 'AI');
         await tester.enterText(
           find.widgetWithText(TextField, 'What did you eat?'),
           '1 katori dal',
