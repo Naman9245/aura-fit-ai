@@ -5,29 +5,35 @@ import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUp, Brain, Menu, Shield, X, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
+import SiteFooter from "@/components/legal/SiteFooter";
+import { contactEmail } from "@/lib/site";
+
+// There's no store page yet: people join the closed beta by writing in.
+const joinBeta = `mailto:${contactEmail}?subject=${encodeURIComponent("Join the AURA beta")}`;
+
 const navLinks = [
   { label: "Home", href: "#home" },
   { label: "Why Aura", href: "#why" },
   { label: "Showcase", href: "#showcase" },
-  { label: "Plans", href: "#plans" },
+  { label: "Beta", href: "#plans" },
 ];
 
 const showcaseCards = [
   {
-    title: "AI Workout Engine",
-    subtitle: "Adaptive volume and intensity by daily readiness.",
+    title: "Targets That Show Their Maths",
+    subtitle: "Safe daily calories and protein, with every step of the working shown.",
     image:
       "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=80",
   },
   {
-    title: "Vision Meal Scanner",
-    subtitle: "Capture your plate and get macro-aware suggestions.",
+    title: "Indian Food, By The Katori",
+    subtitle: "406 dishes and staples, logged by katori, piece or gram, with the oil you used.",
     image:
       "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
   },
   {
-    title: "Performance Analytics",
-    subtitle: "Trend lines for energy balance, lifts, and progress.",
+    title: "Works Offline",
+    subtitle: "Search and logging never wait for the network; your phones sync when it's back.",
     image:
       "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80",
   },
@@ -70,12 +76,12 @@ export default function Home() {
                 {link.label}
               </a>
             ))}
-            <Link
-              href="/login"
+            <a
+              href={joinBeta}
               className="rounded-full border border-white/20 px-4 py-2 text-xs uppercase tracking-[0.16em] transition hover:bg-white hover:text-black"
             >
-              Login
-            </Link>
+              Join the beta
+            </a>
           </nav>
           <button
             type="button"
@@ -132,16 +138,17 @@ export default function Home() {
               TRANSFORM.
             </h1>
             <p className="mt-5 max-w-xl text-sm text-zinc-300 sm:text-base">
-              A cinematic fitness platform with elite UX, intelligent coaching, and
-              a smooth workflow from onboarding to measurable weekly progress.
+              Log Indian meals in under a minute, with safe daily targets that
+              show their maths. Type a meal in Hinglish and AI reads it. No ads,
+              and your data is never sold.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/signup"
+              <a
+                href={joinBeta}
                 className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-zinc-200"
               >
-                Start Now <ArrowRight size={14} />
-              </Link>
+                Join the beta <ArrowRight size={14} />
+              </a>
               <a
                 href="#showcase"
                 className="inline-flex items-center rounded-full border border-white/40 px-5 py-3 text-xs uppercase tracking-[0.16em] text-white transition hover:bg-white hover:text-black"
@@ -173,23 +180,23 @@ export default function Home() {
         <div className="grid gap-4 md:grid-cols-3">
           <article className="rounded-2xl border border-white/10 bg-zinc-950 p-6">
             <Zap className="text-white" size={18} />
-            <h3 className="mt-4 text-lg font-medium">Fast interactions</h3>
+            <h3 className="mt-4 text-lg font-medium">Fast logging</h3>
             <p className="mt-2 text-sm text-zinc-400">
-              Designed for speed with reduced friction across every recurring action.
+              Repeat yesterday in one tap, save your usual meals, add water with a tap.
             </p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-zinc-950 p-6">
             <Brain className="text-white" size={18} />
-            <h3 className="mt-4 text-lg font-medium">Context-aware AI</h3>
+            <h3 className="mt-4 text-lg font-medium">AI that you check</h3>
             <p className="mt-2 text-sm text-zinc-400">
-              Guidance adapts to your routine, goals, and logged behavior.
+              AI reads the meal you type; the food database supplies the numbers, and you confirm before saving.
             </p>
           </article>
           <article className="rounded-2xl border border-white/10 bg-zinc-950 p-6">
             <Shield className="text-white" size={18} />
-            <h3 className="mt-4 text-lg font-medium">Reliable backend</h3>
+            <h3 className="mt-4 text-lg font-medium">Your data, your call</h3>
             <p className="mt-2 text-sm text-zinc-400">
-              Smooth auth, stable endpoints, and clean data flow for your dashboard.
+              Export it or delete your account any time, from the app. It&apos;s never sold or used for ads.
             </p>
           </article>
         </div>
@@ -242,28 +249,25 @@ export default function Home() {
         <div className="rounded-2xl border border-white/10 bg-zinc-950 p-8 sm:p-10">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Start Today</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">Closed beta</p>
               <h2 className="mt-3 text-3xl font-semibold sm:text-5xl">
-                Ready To Build Your Best Shape?
+                Try It Before Everyone Else
               </h2>
+              <p className="mt-3 max-w-xl text-sm text-zinc-400">
+                AURA is in a closed test on Google Play. Write to us and we&apos;ll add you.
+              </p>
             </div>
-            <Link
-              href="/signup"
+            <a
+              href={joinBeta}
               className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-black transition hover:bg-zinc-200"
             >
-              Create Account <ArrowRight size={14} />
-            </Link>
+              Join the beta <ArrowRight size={14} />
+            </a>
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-white/10 px-6 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 text-xs uppercase tracking-[0.16em] text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
-          <span>Aura Fit AI</span>
-          <span>Designed for consistency and performance</span>
-          <span>© 2026</span>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <a
         href="#home"

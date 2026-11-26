@@ -22,7 +22,9 @@ A fitness app for Indians who cook at home and train at a gym or at home: log a 
 
 The Supabase project `aura-fit` (Mumbai, free plan) has every migration applied and passes the security and sync checks; CI also checks them on plain Postgres.
 
-**Being retired:** `backend/` (FastAPI, 45 tests) goes once the January milestone works; its maths and tests have moved to Dart. `frontend/` (Next.js) shows sample data and isn't connected to anything; it will become the landing page.
+**Being retired:** `backend/` (FastAPI, 45 tests) goes once the January milestone works; its maths and tests have moved to Dart.
+
+**The website** in `frontend/` is the landing page plus the privacy policy, terms and account deletion page that Google Play needs. It's built as plain files and published to GitHub Pages from `main` (`.github/workflows/website.yml`) once Pages is switched on and the `CONTACT_EMAIL` repository variable is set.
 
 ## Tech stack
 
@@ -31,7 +33,7 @@ The Supabase project `aura-fit` (Mumbai, free plan) has every migration applied 
 | App | Flutter, Android first; Riverpod, go_router |
 | On the phone | Drift (SQLite): the app reads and writes here, so it works offline |
 | Server | Supabase: Postgres with row-level security, Auth, Edge Functions for AI |
-| Website | Next.js, as the landing page |
+| Website | Next.js, exported as plain files to GitHub Pages |
 | CI | GitHub Actions |
 
 ## Project structure
@@ -48,7 +50,7 @@ supabase/
 └── tests/                 security and sync checks, and a shim to run them on plain Postgres
 docs/adr/                  why the big decisions were made
 backend/                   FastAPI, being retired
-frontend/                  Next.js, becoming the landing page
+frontend/                  the website: landing page, privacy, terms, account deletion
 ```
 
 ## Run the app
