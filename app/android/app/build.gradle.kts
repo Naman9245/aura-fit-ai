@@ -2,6 +2,10 @@ plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // Crash reports; applied below only when this checkout has a Firebase
+    // project.
+    id("com.google.gms.google-services") apply false
+    id("com.google.firebase.crashlytics") apply false
 }
 
 android {
@@ -25,10 +29,13 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Read by AndroidManifest.xml: only release builds send crash reports.
+        manifestPlaceholders["crashReportsOn"] = "false"
     }
 
     buildTypes {
         release {
+            manifestPlaceholders["crashReportsOn"] = "true"
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
@@ -44,4 +51,12 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+// Crash reports need the Firebase project's google-services.json, which each
+// checkout keeps for itself (gitignored, like env/supabase.json). A build
+// without it is the same app with crash reports off.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
 }

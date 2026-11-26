@@ -1,3 +1,4 @@
+import 'package:aurafit/core/error_reporter.dart';
 import 'package:aurafit/data/account_data.dart';
 import 'package:aurafit/data/db/app_database.dart';
 import 'package:aurafit/data/food_repository.dart';
@@ -12,6 +13,9 @@ final appDatabaseProvider = Provider<AppDatabase>((ref) {
   ref.onDispose(db.close);
   return db;
 });
+
+/// The "Send crash reports" switch. Tests override it with a fake.
+final crashReportsProvider = Provider<CrashReportSwitch>((ref) => crashReports);
 
 final profileRepositoryProvider = Provider<ProfileRepository>(
   (ref) => ProfileRepository(ref.watch(appDatabaseProvider)),

@@ -96,6 +96,7 @@ class _AccountSheet extends ConsumerWidget {
               onPressed: () => exportMyData(context, ref),
               child: const Text('Export my data'),
             ),
+            const _CrashReportsTile(),
           ]
         : [
             Text(account.email ?? 'Signed in', style: text.titleLarge),
@@ -119,6 +120,7 @@ class _AccountSheet extends ConsumerWidget {
               onPressed: () => exportMyData(context, ref),
               child: const Text('Export my data'),
             ),
+            const _CrashReportsTile(),
             const SizedBox(height: 8),
             OutlinedButton(
               onPressed: () => signOut(context, ref),
@@ -139,6 +141,41 @@ class _AccountSheet extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: children,
         ),
+      ),
+    );
+  }
+}
+
+/// "Send crash reports", in builds that can send them. A report holds where
+/// the app failed and the error's type, never meals or the email address.
+class _CrashReportsTile extends ConsumerStatefulWidget {
+  const _CrashReportsTile();
+
+  @override
+  ConsumerState<_CrashReportsTile> createState() => _CrashReportsTileState();
+}
+
+class _CrashReportsTileState extends ConsumerState<_CrashReportsTile> {
+  late bool _on = ref.read(crashReportsProvider).on;
+
+  @override
+  Widget build(BuildContext context) {
+    final reports = ref.watch(crashReportsProvider);
+    if (!reports.available) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: const Text('Send crash reports'),
+        subtitle: const Text(
+          'Only where the app broke and the phone model. Never your meals '
+          'or email.',
+        ),
+        value: _on,
+        onChanged: (on) {
+          setState(() => _on = on);
+          unawaited(reports.turn(on: on));
+        },
       ),
     );
   }
