@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:aurafit/app.dart';
+import 'package:aurafit/core/error_reporter.dart';
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/providers.dart';
@@ -11,6 +12,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  installErrorHooks();
+  await startCrashReports();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   // Light status-bar icons on the dark background.
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);

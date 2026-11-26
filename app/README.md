@@ -24,4 +24,8 @@ dart run build_runner build                 # after changing a Drift table
 dart format lib test tool                   # CI fails on unformatted code
 ```
 
+## Crash reports
+
+Release builds send crashes to Firebase Crashlytics when `android/app/google-services.json` is present (download it from the Firebase console; it's gitignored). Without it, the app builds and runs the same, with crash reports off. Only `lib/core/error_reporter.dart` may talk to Firebase, and it sends where the error happened, its type and the stack, never its message. A test enforces both.
+
 To change the database schema, bump `schemaVersion` in `lib/data/db/app_database.dart`, add a migration step, then run `dart run drift_dev make-migrations` so the new step gets a generated test. Add the matching SQL migration in `supabase/migrations/`.

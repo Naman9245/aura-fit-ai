@@ -1,3 +1,4 @@
+import 'package:aurafit/core/error_reporter.dart';
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/db/app_database.dart';
@@ -58,6 +59,18 @@ Future<void> _onboarded(ProfileRepository repo) => repo.saveProfile(
 );
 
 const _returning = SignInArgs(reason: SignInReason.returning);
+
+/// A build that can send crash reports, starting with them on.
+class _FakeCrashReports implements CrashReportSwitch {
+  @override
+  bool get available => true;
+
+  @override
+  bool on = true;
+
+  @override
+  Future<void> turn({required bool on}) async => this.on = on;
+}
 
 void main() {
   late FakeAccountService accounts;
@@ -433,6 +446,56 @@ void main() {
 
         expect(accounts.deleted, isEmpty);
         expect(find.text('priya@example.com'), findsOneWidget);
+      });
+    });
+  });
+
+  group('crash reports', () {
+    const priya = Account(id: 'email-1', email: 'priya@example.com');
+
+    Future<void> openSheet(
+      WidgetTester tester,
+      CrashReportSwitch crashReports,
+    ) async {
+      await pumpAura(
+        tester,
+        startAt: Routes.targets,
+        seed: _onboarded,
+        accounts: accounts..signInAs(priya),
+        remote: remote,
+        crashReports: crashReports,
+      );
+      await tester.tap(find.byTooltip('Account'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('can be turned off from the account sheet', (tester) async {
+      await withClock(Clock.fixed(testNow), () async {
+        final reports = _FakeCrashReports();
+        await openSheet(tester, reports);
+
+        final toggle = find.widgetWithText(
+          SwitchListTile,
+          'Send crash reports',
+        );
+        await tester.ensureVisible(toggle);
+        expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+        await tester.tap(toggle);
+        await tester.pumpAndSettle();
+
+        expect(reports.on, isFalse);
+        expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+      });
+    });
+
+    testWidgets('show no switch in a build that can\'t send them', (
+      tester,
+    ) async {
+      await withClock(Clock.fixed(testNow), () async {
+        await openSheet(tester, crashReports);
+
+        expect(find.text('Delete account'), findsOneWidget);
+        expect(find.text('Send crash reports'), findsNothing);
       });
     });
   });

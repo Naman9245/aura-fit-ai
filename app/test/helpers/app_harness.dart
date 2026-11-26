@@ -1,4 +1,5 @@
 import 'package:aurafit/app.dart';
+import 'package:aurafit/core/error_reporter.dart';
 import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/db/app_database.dart';
 import 'package:aurafit/data/profile_repository.dart';
@@ -32,6 +33,7 @@ Future<AppDatabase> pumpAura(
   Future<void> Function(AppDatabase db)? seedDb,
   FakeAccountService? accounts,
   FakeSyncRemote? remote,
+  CrashReportSwitch? crashReports,
 }) async {
   tester.view
     ..physicalSize = const Size(1080, 2400)
@@ -56,6 +58,8 @@ Future<AppDatabase> pumpAura(
         if (accounts != null)
           accountServiceProvider.overrideWithValue(accounts),
         if (remote != null) syncRemoteProvider.overrideWithValue(remote),
+        if (crashReports != null)
+          crashReportsProvider.overrideWithValue(crashReports),
       ],
       child: AuraApp(startAt: startAt, startExtra: startExtra),
     ),
