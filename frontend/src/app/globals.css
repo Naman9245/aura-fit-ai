@@ -101,6 +101,36 @@ body::-webkit-scrollbar-thumb {
     width: max-content;
     animation: marquee 26s linear infinite;
   }
+
+  /* The privacy policy, terms and deletion page: plain reading text. */
+  .legal h2 {
+    @apply mt-10 text-xl font-semibold text-white;
+  }
+
+  .legal p {
+    @apply mt-3 leading-7 text-zinc-300;
+  }
+
+  .legal ul,
+  .legal ol {
+    @apply mt-3 space-y-2 pl-6 leading-7 text-zinc-300;
+  }
+
+  .legal ul {
+    @apply list-disc;
+  }
+
+  .legal ol {
+    @apply list-decimal;
+  }
+
+  .legal a {
+    @apply text-aura-accent-soft underline underline-offset-4;
+  }
+
+  .legal strong {
+    @apply font-semibold text-zinc-100;
+  }
 }
 
 @keyframes float {

@@ -3,7 +3,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "AURA FIT AI",
-  description: "A futuristic AI fitness operating system.",
+  description:
+    "Log Indian meals in under a minute, with safe daily targets that show their maths.",
 };
 
 export default function RootLayout({
