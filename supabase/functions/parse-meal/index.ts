@@ -37,7 +37,10 @@ Deno.serve(
       log({ event: "missing_gemini_key" });
       return fail(503, "ai_unavailable");
     }
-    const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash-lite";
+    // Google serves the 2.5 models only to projects that already used them,
+    // so new keys need a 3.x model. The price in _shared/gemini.ts goes
+    // with this model.
+    const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.5-flash-lite";
     const userDailyLimit = envInt("AI_PARSE_USER_LIMIT", 25);
     const totalDailyLimit = envInt("AI_PARSE_TOTAL_LIMIT", 20_000);
     const admin = ctx.supabaseAdmin;

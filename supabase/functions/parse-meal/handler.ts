@@ -244,7 +244,12 @@ export async function parseMeal(
       costUsd: 0,
       outcome: kind,
     });
-    deps.log({ event: "ai_failed", outcome: kind });
+    // Why it failed, as a code like gemini_http_404: never the meal text.
+    deps.log({
+      event: "ai_failed",
+      outcome: kind,
+      detail: error instanceof GeminiError ? error.message : "unexpected",
+    });
     const status = kind === "timeout" ? 504 : 502;
     return fail(status, kind);
   }

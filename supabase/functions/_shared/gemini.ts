@@ -30,9 +30,11 @@ export interface GeminiJsonResult<T> {
   costUsd: number;
 }
 
-// Gemini 2.5 Flash-Lite list pricing ($0.10 / 1M input, $0.40 / 1M output).
-const INPUT_USD_PER_TOKEN = 0.10 / 1_000_000;
-const OUTPUT_USD_PER_TOKEN = 0.40 / 1_000_000;
+// Gemini 3.5 Flash-Lite's paid-tier list price, checked 26 Nov 2026: $0.30
+// per 1M input tokens and $2.50 per 1M output tokens, thinking included
+// (https://ai.google.dev/gemini-api/docs/pricing). Change it with the model.
+const INPUT_USD_PER_TOKEN = 0.30 / 1_000_000;
+const OUTPUT_USD_PER_TOKEN = 2.50 / 1_000_000;
 
 export async function generateStructuredJson<T>(
   req: GeminiTextRequest,
@@ -96,9 +98,11 @@ export async function generateStructuredJson<T>(
   const candidates = payload.candidates;
   const first = Array.isArray(candidates) ? candidates[0] : undefined;
   const parts = first?.content?.parts;
-  const rawText = Array.isArray(parts) && typeof parts[0]?.text === "string"
-    ? parts[0].text
+  // The answer, skipping any thinking the model sends back with it.
+  const answer = Array.isArray(parts)
+    ? parts.find((p) => typeof p?.text === "string" && !p?.thought)
     : undefined;
+  const rawText: string | undefined = answer?.text;
   if (!rawText) {
     throw new GeminiError("bad_json", "gemini_empty_candidate");
   }
@@ -114,9 +118,12 @@ export async function generateStructuredJson<T>(
   const inTokens = typeof usage.promptTokenCount === "number"
     ? usage.promptTokenCount
     : 0;
-  const outTokens = typeof usage.candidatesTokenCount === "number"
+  const outTokens = (typeof usage.candidatesTokenCount === "number"
     ? usage.candidatesTokenCount
-    : 0;
+    : 0) +
+    (typeof usage.thoughtsTokenCount === "number"
+      ? usage.thoughtsTokenCount
+      : 0);
   const costUsd = Number(
     (inTokens * INPUT_USD_PER_TOKEN + outTokens * OUTPUT_USD_PER_TOKEN)
       .toFixed(6),

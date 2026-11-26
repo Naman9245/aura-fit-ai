@@ -5,8 +5,9 @@ import 'package:aurafit/models/options.dart';
 import 'package:aurafit/services/targets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Checks the Dart maths against what the old Python maths returned for the
-/// profiles in tool/export_python_targets.py.
+/// Checks the Dart maths against what the old Python maths returned for 30
+/// profiles, recorded before the FastAPI backend was retired (the script that
+/// recorded them, tool/export_python_targets.py, is in git history).
 ///
 /// Every number matches exactly, except where formula v1 deliberately
 /// differs: a target below the calorie floor is raised to it, and negative
