@@ -538,7 +538,7 @@ LATER_FIXES: list[dict[str, object]] = [
 
 # The migration that made the fixes above marked MORE_FOODS_MIGRATION and
 # added ADDED_FOODS. Supabase records it under the time it was applied.
-MORE_FOODS_MIGRATION = "20261127140000_more_foods.sql"
+MORE_FOODS_MIGRATION = "20261127222516_more_foods.sql"
 
 
 def _mix(parts: list[tuple[str, float]]) -> tuple[float, float, float, float]:
