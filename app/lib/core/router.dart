@@ -1,5 +1,6 @@
 import 'package:aurafit/features/account/code_screen.dart';
 import 'package:aurafit/features/account/sign_in_screen.dart';
+import 'package:aurafit/features/intro/intro_screen.dart';
 import 'package:aurafit/features/nutrition/log_meal_screen.dart';
 import 'package:aurafit/features/onboarding/onboarding_screen.dart';
 import 'package:aurafit/features/profile/edit_details_screen.dart';
@@ -10,6 +11,7 @@ import 'package:aurafit/data/log_repository.dart';
 import 'package:go_router/go_router.dart';
 
 abstract final class Routes {
+  static const intro = '/intro';
   static const onboarding = '/onboarding';
   static const today = '/today';
   static const logMeal = '/log-meal';
@@ -20,14 +22,18 @@ abstract final class Routes {
   static const code = '/sign-in/code';
 }
 
-/// The app's screens, starting at [initialLocation]: onboarding until
-/// someone has targets, sign-in while they're kept only on the phone, then
+/// The app's screens, starting at [initialLocation]: Josh's intro and
+/// onboarding until someone has targets, sign-in while they're kept only on the phone, then
 /// Today. [initialExtra] is the first screen's arguments.
 GoRouter buildRouter({required String initialLocation, Object? initialExtra}) =>
     GoRouter(
       initialLocation: initialLocation,
       initialExtra: initialExtra,
       routes: [
+        GoRoute(
+          path: Routes.intro,
+          builder: (context, state) => IntroScreen(replay: state.extra == true),
+        ),
         GoRoute(
           path: Routes.onboarding,
           builder: (context, state) => const OnboardingScreen(),

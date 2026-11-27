@@ -31,6 +31,29 @@ final _app = GlobalKey();
 
 void main() {
   for (final (scale, suffix) in [(1.0, ''), (1.3, '_large_text')]) {
+    testWidgets('render the intro$suffix', (tester) async {
+      await withClock(Clock.fixed(DateTime(2026, 11, 22, 9)), () async {
+        await _loadFonts();
+        // Josh at rest: he moves for ever otherwise.
+        tester.platformDispatcher.accessibilityFeaturesTestValue =
+            const FakeAccessibilityFeatures(disableAnimations: true);
+        addTearDown(
+          tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+        );
+        await _pump(tester, scale, startAt: Routes.intro);
+
+        await _shot(tester, '00a_intro_hello$suffix');
+        await _tap(tester, 'Hi Josh');
+        await _shot(tester, '00b_intro_plan$suffix');
+        await _tap(tester, 'Next');
+        await _shot(tester, '00c_intro_coach$suffix');
+        await _tap(tester, 'Next');
+        await _shot(tester, '00d_intro_food$suffix');
+        await _tap(tester, 'Next');
+        await _shot(tester, '00e_intro_together$suffix');
+      });
+    });
+
     testWidgets('render every screen$suffix', (tester) async {
       await withClock(Clock.fixed(DateTime(2026, 11, 22, 9)), () async {
         await _loadFonts();
@@ -111,7 +134,11 @@ Future<void> _tap(WidgetTester tester, String text) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _pump(WidgetTester tester, double textScale) async {
+Future<void> _pump(
+  WidgetTester tester,
+  double textScale, {
+  String startAt = Routes.onboarding,
+}) async {
   tester.view
     ..physicalSize = const Size(1080, 2400)
     ..devicePixelRatio = 2.625;
@@ -136,7 +163,7 @@ Future<void> _pump(WidgetTester tester, double textScale) async {
           accountServiceProvider.overrideWithValue(FakeAccountService()),
           syncRemoteProvider.overrideWithValue(FakeSyncRemote()),
         ],
-        child: const AuraApp(startAt: Routes.onboarding),
+        child: AuraApp(startAt: startAt),
       ),
     ),
   );
@@ -165,8 +192,8 @@ Future<void> _shot(WidgetTester tester, String name) async {
   });
 }
 
-/// Roboto and the Material icons, as an Android phone has them. Tests draw
-/// with a stand-in font otherwise.
+/// The app's bundled fonts, plus Roboto and the Material icons as an Android
+/// phone has them. Tests draw with a stand-in font otherwise.
 Future<void> _loadFonts() async {
   // flutter_tester sits in bin/cache/artifacts/engine/<platform>/.
   final artifacts = File(Platform.resolvedExecutable).parent.parent.parent;
@@ -187,4 +214,11 @@ Future<void> _loadFonts() async {
       '$fonts/roboto-$weight.ttf',
   ]);
   await family('MaterialIcons', ['$fonts/materialicons-regular.otf']);
+  await family('DMSans', [
+    for (final weight in ['Regular', 'Medium', 'Bold'])
+      'assets/fonts/DMSans-$weight.ttf',
+  ]);
+  await family('BarlowCondensed', [
+    'assets/fonts/BarlowCondensed-ExtraBold.ttf',
+  ]);
 }

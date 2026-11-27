@@ -143,6 +143,13 @@ class _AccountSheet extends ConsumerWidget {
           children: [
             ...children,
             const SizedBox(height: 8),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.push(Routes.intro, extra: true);
+              },
+              child: const Text('Meet Josh again'),
+            ),
             const LegalLinks(),
           ],
         ),

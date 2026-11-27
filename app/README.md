@@ -13,6 +13,9 @@ Android first, offline first: every screen reads and writes the phone's own data
 | `lib/data/profile_repository.dart` | Saving onboarding, goals and weigh-ins |
 | `lib/features/` | Onboarding and the targets screens |
 | `tool/screenshots_test.dart` | Draws every screen, at normal and large text |
+| `lib/widgets/josh.dart` | Josh, the mascot: a bear drawn in code, with four streak stages and six moods |
+| `lib/features/intro/` | Josh's five-screen intro before onboarding |
+| `tool/render_josh_test.dart` | Draws every stage and mood of Josh to `build/josh/sheet.png` |
 
 ## Commands
 
