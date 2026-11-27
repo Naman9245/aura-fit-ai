@@ -47,6 +47,10 @@ enum JoshStage {
   };
 }
 
+/// How long Josh moves when a tab opens, before he rests: see
+/// [Josh.playFor].
+const joshPlayFor = Duration(seconds: 8);
+
 /// Josh, the AURA mascot: a bear cub with a mint sweatband and sneakers.
 ///
 /// He moves (bobs, blinks, waves, and his eyes flicker when fired up) unless
@@ -57,6 +61,7 @@ class Josh extends StatefulWidget {
     required this.mood,
     this.stage = JoshStage.cub,
     this.width = 200,
+    this.playFor,
   });
 
   final JoshMood mood;
@@ -64,6 +69,12 @@ class Josh extends StatefulWidget {
 
   /// His height follows: 1.15 times the width.
   final double width;
+
+  /// On screens people stay on, like Today: he moves for this long, then
+  /// holds still until he's tapped or his mood or stage changes, so he
+  /// doesn't keep the phone busy. Null: he moves for as long as he's on
+  /// screen, as in the intro.
+  final Duration? playFor;
 
   @override
   State<Josh> createState() => _JoshState();
@@ -77,18 +88,45 @@ class _JoshState extends State<Josh> with SingleTickerProviderStateMixin {
     vsync: this,
     duration: _loop,
   );
+  bool _still = false;
+  bool _started = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    if (still) {
+    _still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (_still) {
+      _started = false;
       _clock
         ..stop()
         ..value = 0;
-    } else if (!_clock.isAnimating) {
-      _clock.repeat();
+    } else if (!_started) {
+      _started = true;
+      _play();
     }
+  }
+
+  @override
+  void didUpdateWidget(Josh old) {
+    super.didUpdateWidget(old);
+    if (_still) return;
+    if (old.mood != widget.mood || old.stage != widget.stage) _play();
+  }
+
+  /// Moves on from where he stands, so he never jumps.
+  void _play() {
+    final playFor = widget.playFor;
+    if (playFor == null) {
+      _clock.repeat();
+      return;
+    }
+    final share = playFor.inMilliseconds / _loop.inMilliseconds;
+    var to = _clock.value + share;
+    if (to > 1) {
+      _clock.value = 0;
+      to = share;
+    }
+    _clock.animateTo(to, duration: playFor);
   }
 
   @override
@@ -99,22 +137,33 @@ class _JoshState extends State<Josh> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
+    final drawn = Semantics(
       image: true,
       label: joshLabel(widget.mood, widget.stage),
       child: ExcludeSemantics(
-        child: AnimatedBuilder(
-          animation: _clock,
-          builder: (context, _) => CustomPaint(
-            size: Size(widget.width, widget.width * 1.15),
-            painter: JoshPainter(
-              mood: widget.mood,
-              stage: widget.stage,
-              seconds: _clock.value * _loop.inMilliseconds / 1000,
+        child: RepaintBoundary(
+          child: AnimatedBuilder(
+            animation: _clock,
+            builder: (context, _) => CustomPaint(
+              size: Size(widget.width, widget.width * 1.15),
+              painter: JoshPainter(
+                mood: widget.mood,
+                stage: widget.stage,
+                seconds: _clock.value * _loop.inMilliseconds / 1000,
+              ),
             ),
           ),
         ),
       ),
+    );
+    if (widget.playFor == null) return drawn;
+    // A tap wakes him up again; it's only for fun, so screen readers skip it.
+    return GestureDetector(
+      excludeFromSemantics: true,
+      onTap: () {
+        if (!_still && !_clock.isAnimating) _play();
+      },
+      child: drawn,
     );
   }
 }

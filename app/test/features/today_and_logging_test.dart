@@ -7,6 +7,7 @@ import 'package:aurafit/data/food_repository.dart';
 import 'package:aurafit/data/log_repository.dart';
 import 'package:aurafit/data/profile_repository.dart';
 import 'package:aurafit/data/providers.dart';
+import 'package:aurafit/features/shell/app_shell.dart';
 import 'package:aurafit/models/options.dart';
 import 'package:aurafit/services/meal_text_parser.dart';
 import 'package:clock/clock.dart';
@@ -115,6 +116,17 @@ Future<void> _tap(WidgetTester tester, String text) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _openTab(WidgetTester tester, String label) async {
+  await tester.tap(
+    find.descendant(of: find.byType(AuraTabBar), matching: find.text(label)),
+  );
+  await tester.pumpAndSettle();
+}
+
+/// The Food tab's box for typing a meal.
+Finder _typeItBox() =>
+    find.widgetWithText(TextField, '2 roti, 1 katori rajma, salad');
+
 void main() {
   testWidgets(
     'Today searches foods offline, switches oil level, edits/deletes entries, and undoes 250 ml water',
@@ -123,6 +135,7 @@ void main() {
         final db = await _pumpToday(tester);
 
         // Diet-matched vegetarian protein ideas appear (PRD C5).
+        await _scrollTo(tester, find.textContaining('protein left today'));
         expect(find.textContaining('protein left today'), findsOneWidget);
         expect(find.text('Vegetarian'), findsOneWidget);
 
@@ -151,7 +164,8 @@ void main() {
         await _tap(tester, 'Home style');
         await _tap(tester, 'Add to breakfast');
 
-        // Back on Today: entry shows portion and oil choice.
+        // On the Food tab: the entry shows its portion and oil choice.
+        await _openTab(tester, 'Food');
         await _scrollTo(tester, find.textContaining('2 piece · Home style'));
         expect(find.textContaining('2 piece · Home style'), findsOneWidget);
 
@@ -162,7 +176,7 @@ void main() {
         expect(find.textContaining('2 piece · Home style'), findsNothing);
 
         // Log 6 boiled eggs via the scrollable wheel without opening keyboard.
-        await _tap(tester, 'Log food');
+        await _tap(tester, 'Search Indian foods');
         await tester.enterText(
           find.widgetWithText(TextField, 'Search Indian foods & staples'),
           'boiled whole egg',
@@ -221,6 +235,7 @@ void main() {
         );
 
         // Repeat yesterday's breakfast in 1 tap (PRD N3).
+        await _openTab(tester, 'Food');
         await _scrollTo(
           tester,
           find.textContaining('Repeat yesterday (1 item · 240 kcal)'),
@@ -233,7 +248,6 @@ void main() {
         expect(find.text('Poha'), findsWidgets);
 
         // Log a big wedding feast via Quick add offline (PRD N12, D2, D4).
-        await _tap(tester, 'Log food');
         await _tap(tester, 'Quick add');
         await tester.enterText(
           find.widgetWithText(TextField, 'Dish name'),
@@ -249,9 +263,8 @@ void main() {
         );
         await _tap(tester, 'Add to breakfast');
 
-        // Scroll back up to summary card to verify calm amber feedback & 7-day avg.
-        await tester.drag(_verticalScrollable().first, const Offset(0, 600));
-        await tester.pumpAndSettle();
+        // Today has the calm amber feedback and the 7-day average.
+        await _openTab(tester, 'Today');
         expect(find.textContaining('kcal over target'), findsOneWidget);
         expect(
           find.textContaining('One day doesn\'t change the week'),
@@ -263,7 +276,7 @@ void main() {
   );
 
   testWidgets(
-    'AI Type meal shows edit-before-save drafts and falls back cleanly when offline',
+    'a meal typed on Food is read by AI, checked before saving, and falls back cleanly offline',
     (tester) async {
       await withClock(Clock.fixed(testNow), () async {
         final remote = _StubParseRemote(
@@ -298,12 +311,13 @@ void main() {
         );
 
         await _pumpToday(tester, parseRemote: remote);
-        await _tap(tester, 'AI');
+        // Typed on the Food tab, read as soon as the logger opens.
+        await _openTab(tester, 'Food');
         await tester.enterText(
-          find.widgetWithText(TextField, 'What did you eat?'),
+          _typeItBox(),
           '2 roti and 1 katori hostel special curry',
         );
-        await _tap(tester, 'Read meal');
+        await _tap(tester, 'Read it');
 
         expect(find.text('Check and adjust before saving'), findsOneWidget);
         expect(find.textContaining('Verified food match'), findsOneWidget);
@@ -323,15 +337,19 @@ void main() {
         await _tap(tester, 'Save 2 items (404 kcal)');
         await _scrollTo(tester, find.text('Hostel special curry'));
         expect(find.text('Hostel special curry'), findsWidgets);
+        // Saved, so the box is empty for the next meal.
+        await tester.scrollUntilVisible(
+          _typeItBox(),
+          -300,
+          scrollable: _verticalScrollable().last,
+        );
+        expect(_typeItBox(), findsOneWidget);
 
         // Now go offline: AI logging falls back smoothly to Search / Quick add.
         remote.error = MealParseFallbackReason.offline;
-        await _tap(tester, 'AI');
-        await tester.enterText(
-          find.widgetWithText(TextField, 'What did you eat?'),
-          '1 katori dal',
-        );
-        await _tap(tester, 'Read meal');
+        await _scrollTo(tester, _typeItBox());
+        await tester.enterText(_typeItBox(), '1 katori dal');
+        await _tap(tester, 'Read it');
 
         expect(find.text('You\'re offline right now.'), findsOneWidget);
         await _tap(tester, 'Quick add');

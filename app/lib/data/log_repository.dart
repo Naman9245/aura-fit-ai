@@ -252,6 +252,30 @@ class LogRepository {
         });
   }
 
+  /// Every diary day with a meal logged on it, for Josh's streak and the
+  /// Progress calendar. A day leaves only if every meal on it is deleted.
+  Stream<Set<DateTime>> watchLoggedDays() {
+    final day = _db.mealEntries.day;
+    final query = _db.selectOnly(_db.mealEntries, distinct: true)
+      ..addColumns([day])
+      ..where(_db.mealEntries.deletedAt.isNull());
+    return query.watch().map(
+      (rows) => {for (final row in rows) row.readWithConverter(day)!},
+    );
+  }
+
+  /// Weigh-ins on or after [from], oldest first, for the weight trend
+  /// (PRD D3).
+  Stream<List<WeightLogRow>> watchWeighIns({required DateTime from}) {
+    final fromSql = const DateConverter().toSql(diaryDay(from));
+    return (_db.select(_db.weightLogs)
+          ..where(
+            (w) => w.deletedAt.isNull() & w.day.isBiggerOrEqualValue(fromSql),
+          )
+          ..orderBy([(w) => OrderingTerm.asc(w.day)]))
+        .watch();
+  }
+
   /// Yesterday's live entries for [meal] relative to [viewedDay].
   Future<List<MealEntryRow>> yesterdayEntriesFor(
     DateTime viewedDay,

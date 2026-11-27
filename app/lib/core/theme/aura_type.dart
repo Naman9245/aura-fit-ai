@@ -12,4 +12,12 @@ abstract final class AuraType {
     height: 0.95,
     color: color,
   );
+
+  /// The small spaced capitals above a card's heading, like "PROTEIN".
+  static TextStyle kicker({Color? color}) => TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 1.5,
+    color: color,
+  );
 }

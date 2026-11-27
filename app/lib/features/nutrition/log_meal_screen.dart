@@ -26,12 +26,19 @@ class LogMealArgs {
     this.meal,
     this.mode = LogMealMode.search,
     this.initialQuery = '',
+    this.readNow = false,
   });
 
   final DateTime? day;
   final Meal? meal;
   final LogMealMode mode;
+
+  /// What's searched for, or in [LogMealMode.text], the meal as typed.
   final String initialQuery;
+
+  /// In [LogMealMode.text], read [initialQuery] straight away: it was typed
+  /// on the Food tab already.
+  final bool readNow;
 }
 
 Meal defaultMealForHour(int hour) {
@@ -90,6 +97,12 @@ class _LogMealScreenState extends ConsumerState<LogMealScreen> {
           : '',
     );
     unawaited(_runSearch(widget.args.initialQuery));
+    if (widget.args.readNow && _mode == LogMealMode.text) {
+      // After the first frame: reading starts with a setState.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_parseTextMeal());
+      });
+    }
   }
 
   @override
@@ -1254,6 +1267,8 @@ Future<UndoAction?> showEditMealEntrySheet(
   MealEntryRow entry,
 ) => showModalBottomSheet<UndoAction>(
   context: context,
+  // Over the tabs and their snackbars, not inside the Food tab.
+  useRootNavigator: true,
   isScrollControlled: true,
   showDragHandle: true,
   backgroundColor: AuraColors.surface,

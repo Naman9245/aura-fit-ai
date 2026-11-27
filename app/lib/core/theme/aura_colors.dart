@@ -1,44 +1,49 @@
 import 'package:flutter/painting.dart';
 
-/// The website's dark look (frontend/src/app/globals.css), as colours.
+/// The trainer design's dark look: a soft near-black with bright cards.
 ///
-/// Text colours all pass WCAG AA on [black] and [surfaceStrong]: [muted] is
-/// 7.2:1 on [black], and [accent] is 7.6:1. Buttons put [black] text on
-/// [accent], since white on orange would only reach 2.9:1.
+/// Text colours all pass WCAG AA on [black], [surface] and [surfaceStrong]:
+/// [foreground] is 16:1 on [black], [muted] 9.2:1 on [black] and 7:1 on
+/// [surfaceStrong], and [accent] 6.9:1 on [black]. Buttons put [black] text
+/// on [accent], since white on orange would only reach 2.9:1.
 abstract final class AuraColors {
-  /// The background (--aura-black).
-  static const black = Color(0xFF050816);
+  /// The background.
+  static const black = Color(0xFF17151F);
 
-  /// Cards and fields (--aura-surface).
-  static const surface = Color(0xFF0B1120);
+  /// Cards, fields and sheets.
+  static const surface = Color(0xFF24212E);
 
-  /// Raised cards and the progress track (--aura-surface-strong).
-  static const surfaceStrong = Color(0xFF101A2B);
+  /// Tiles inside a card, and progress tracks.
+  static const surfaceStrong = Color(0xFF2F2B3B);
 
-  /// Buttons, the selected choice and key numbers (--aura-accent).
+  /// Buttons, the selected tab and key numbers.
   static const accent = Color(0xFFFF7A00);
 
-  /// Links and secondary highlights (--aura-accent-soft).
+  /// Links and secondary highlights: 8.8:1 on [black].
   static const accentSoft = Color(0xFFFF9F43);
 
-  /// Body text (--aura-foreground).
-  static const foreground = Color(0xFFE7E9F4);
+  /// Body text.
+  static const foreground = Color(0xFFF4F1EA);
 
-  /// Secondary text and field outlines (--aura-muted).
-  static const muted = Color(0xFF8B93B3);
+  /// Secondary text and field outlines.
+  static const muted = Color(0xFFB9B4C7);
 
-  /// The faint edge of a card (--aura-glass-border: white at 8%).
+  /// Numbers that don't need reading, like days to come on the calendar:
+  /// 5.7:1 on [black].
+  static const faint = Color(0xFF948EA6);
+
+  /// The faint edge of a card: white at 8%.
   static const border = Color(0x14FFFFFF);
 
-  /// The two glows behind every screen.
+  /// The two glows behind the setup screens.
   static const orangeGlow = Color(0x1FFF7A00);
   static const blueGlow = Color(0x2E587AFF);
 
-  /// Field errors: 8.7:1 on [black].
+  /// Field errors: 7.9:1 on [black].
   static const error = Color(0xFFFF8A80);
 
-  // The bright cards from the trainer design. Text on any of them is [ink]:
-  // 9.95:1 on [sky], 6.5:1 on [lilac], 11.5:1 on [mint], 13:1 on [yellow].
+  // The bright cards. Text on any of them is [ink]: 9.95:1 on [sky], 6.5:1
+  // on [lilac], 11.5:1 on [mint], 13:1 on [yellow] and 6.9:1 on [accent].
 
   /// Text and buttons on a bright card.
   static const ink = Color(0xFF17151F);

@@ -1,19 +1,27 @@
 import 'package:aurafit/features/account/code_screen.dart';
 import 'package:aurafit/features/account/sign_in_screen.dart';
+import 'package:aurafit/features/food/food_screen.dart';
 import 'package:aurafit/features/intro/intro_screen.dart';
 import 'package:aurafit/features/nutrition/log_meal_screen.dart';
 import 'package:aurafit/features/onboarding/onboarding_screen.dart';
 import 'package:aurafit/features/profile/edit_details_screen.dart';
+import 'package:aurafit/features/progress/progress_screen.dart';
+import 'package:aurafit/features/shell/app_shell.dart';
 import 'package:aurafit/features/targets/how_we_calculated_screen.dart';
 import 'package:aurafit/features/targets/targets_screen.dart';
 import 'package:aurafit/features/today/today_screen.dart';
+import 'package:aurafit/features/train/train_screen.dart';
 import 'package:aurafit/data/log_repository.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 abstract final class Routes {
   static const intro = '/intro';
   static const onboarding = '/onboarding';
   static const today = '/today';
+  static const train = '/train';
+  static const food = '/food';
+  static const progress = '/progress';
   static const logMeal = '/log-meal';
   static const editDetails = '/edit-details';
   static const targets = '/targets';
@@ -23,8 +31,9 @@ abstract final class Routes {
 }
 
 /// The app's screens, starting at [initialLocation]: Josh's intro and
-/// onboarding until someone has targets, sign-in while they're kept only on the phone, then
-/// Today. [initialExtra] is the first screen's arguments.
+/// onboarding until someone has targets, sign-in while they're kept only on
+/// the phone, then the four tabs from Today. Everything else opens over the
+/// tabs. [initialExtra] is the first screen's arguments.
 GoRouter buildRouter({required String initialLocation, Object? initialExtra}) =>
     GoRouter(
       initialLocation: initialLocation,
@@ -38,9 +47,15 @@ GoRouter buildRouter({required String initialLocation, Object? initialExtra}) =>
           path: Routes.onboarding,
           builder: (context, state) => const OnboardingScreen(),
         ),
-        GoRoute(
-          path: Routes.today,
-          builder: (context, state) => const TodayScreen(),
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, shell) => AppShell(shell: shell),
+          // In AppTab's order.
+          branches: [
+            _tab(Routes.today, const TodayScreen()),
+            _tab(Routes.train, const TrainScreen()),
+            _tab(Routes.food, const FoodScreen()),
+            _tab(Routes.progress, const ProgressScreen()),
+          ],
         ),
         GoRoute(
           path: Routes.logMeal,
@@ -77,6 +92,10 @@ GoRouter buildRouter({required String initialLocation, Object? initialExtra}) =>
         ),
       ],
     );
+
+StatefulShellBranch _tab(String path, Widget screen) => StatefulShellBranch(
+  routes: [GoRoute(path: path, builder: (context, state) => screen)],
+);
 
 /// Helper type reference so GoRouter `push<UndoAction>` resolves cleanly.
 typedef MealLogUndo = UndoAction;

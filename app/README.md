@@ -15,6 +15,11 @@ Android first, offline first: every screen reads and writes the phone's own data
 | `tool/screenshots_test.dart` | Draws every screen, at normal and large text |
 | `lib/widgets/josh.dart` | Josh, the mascot: a bear drawn in code, with four streak stages and six moods |
 | `lib/features/intro/` | Josh's five-screen intro before onboarding |
+| `lib/features/shell/` | The four tabs (Today, Train, Food, Progress) and the Yesterday/Today switch they share |
+| `lib/features/today/` | Today: Josh's card, calories, protein, water, steps, weight; and the water, steps and weight sheets |
+| `lib/features/food/` | Food: type a meal for AI, search, saved meals, quick add, and the day's meals to edit |
+| `lib/features/progress/` | Progress: Josh's streak, the calendar of days logged, the weight trend |
+| `lib/features/train/` | Train: Josh until workouts arrive, and today's steps |
 | `tool/render_josh_test.dart` | Draws every stage and mood of Josh to `build/josh/sheet.png` |
 
 ## Commands

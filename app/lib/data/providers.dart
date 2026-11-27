@@ -5,6 +5,7 @@ import 'package:aurafit/data/food_repository.dart';
 import 'package:aurafit/data/log_repository.dart';
 import 'package:aurafit/data/profile_repository.dart';
 import 'package:aurafit/services/meal_text_parser.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// The phone's database. Tests override it with an in-memory one.
@@ -79,6 +80,25 @@ final sevenDayAverageProvider =
 final savedMealsProvider = StreamProvider<List<SavedMealBundle>>(
   (ref) => ref.watch(logRepositoryProvider).watchSavedMeals(),
 );
+
+/// Every day with a meal logged: Josh's streak and the Progress calendar.
+final loggedDaysProvider = StreamProvider<Set<DateTime>>(
+  (ref) => ref.watch(logRepositoryProvider).watchLoggedDays(),
+);
+
+/// How far back the weight trend looks: 12 weeks.
+const weightTrendDays = 84;
+
+/// Weigh-ins over the last [weightTrendDays], oldest first (PRD D3).
+final weighInsProvider = StreamProvider<List<WeightLogRow>>((ref) {
+  final today = diaryDay(clock.now());
+  final from = DateTime(
+    today.year,
+    today.month,
+    today.day - weightTrendDays + 1,
+  );
+  return ref.watch(logRepositoryProvider).watchWeighIns(from: from);
+});
 
 /// Recent distinct dishes for thumb-reach re-logging.
 final recentFoodsProvider = StreamProvider<List<MealEntryRow>>(
