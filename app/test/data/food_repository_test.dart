@@ -221,6 +221,24 @@ void main() {
     );
     // Exact spellings still come before loose ones.
     expect(await first('aloo paratha'), 'Aloo Paratha');
+
+    // Joining words and typos.
+    expect(await first('makke di roti'), 'Makki ki Roti');
+    expect(await first('sarson da saag'), 'Sarson ka Saag');
+    expect(
+      (await repo.search('chiken curry')).map((f) => f.name),
+      contains('Home-Style Chicken Curry'),
+    );
+    expect(
+      (await repo.search('panir tika')).map((f) => f.name),
+      contains('Paneer Tikka (Grilled / Tandoori)'),
+    );
+    expect(
+      (await repo.search('biryani chiken')).map((f) => f.name),
+      contains('Chicken Biryani'),
+    );
+    expect(editDistance('chiken', 'chicken', 2), 1);
+    expect(editDistance('roti', 'dosa', 1), 2);
   });
 
   test('dishes made of eggs or pieces are counted by them', () async {
@@ -240,7 +258,15 @@ void main() {
     expect((await food('egg bhurji')).portions.first.unit, 'egg');
     expect(
       (await food('chicken curry')).portions.map((p) => p.unit),
-      contains('piece + gravy'),
+      containsAll([
+        'small piece + gravy',
+        'medium piece + gravy',
+        'large piece + gravy',
+      ]),
+    );
+    expect(
+      (await food('tandoori chicken')).portions.map((p) => p.unit),
+      containsAll(['leg piece', 'drumstick', 'wing']),
     );
     expect((await food('chicken curry')).name, 'Home-Style Chicken Curry');
     for (final name in ['chole bhature', 'malai kofta', 'momos', 'jalebi']) {

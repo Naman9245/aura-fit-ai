@@ -6,7 +6,7 @@ Layers, never scraped from other apps:
      ingredients, cooked moisture yields and standard household measures
      (1 katori = 150 ml), each carrying its explicit assumption.
   3. 80 packaged Indian fitness staples from public nutrition labels.
-  4. ADDED_FOODS: foods added since the seed, the same way (84 so far).
+  4. ADDED_FOODS: foods added since the seed, worked out the same way.
   5. Weekly additions from missed-search counts (N10).
 
 Writes app/assets/foods.json, bundled inside the app for instant offline
@@ -519,11 +519,21 @@ LATER_FIXES: list[dict[str, object]] = [
     },
     {"seed_seq": 237, "portions": [p("egg", 60), p("omelette (2 eggs)", 120)], "seq": 411},
     {"seed_seq": 238, "portions": [p("egg white", 40), p("omelette (3 whites)", 120)], "seq": 412},
-    {"seed_seq": 246, "portions": [p("katori", 150), p("piece + gravy", 80), p("bowl", 200)], "seq": 413},
-    {"seed_seq": 248, "portions": [p("katori", 150), p("piece + gravy", 70), p("bowl", 200)], "seq": 414},
-    {"seed_seq": 255, "portions": [p("katori", 150), p("piece + gravy", 80), p("bowl", 200)], "seq": 415},
-    {"seed_seq": 252, "portions": [p("katori", 150), p("piece + gravy", 110), p("bowl", 200)], "seq": 416},
+    {"seed_seq": 246, "portions": [p("katori", 150), p("small piece + gravy", 60), p("medium piece + gravy", 90), p("large piece + gravy", 130), p("bowl", 200)], "seq": 413},
+    {"seed_seq": 248, "portions": [p("katori", 150), p("small piece + gravy", 50), p("medium piece + gravy", 75), p("large piece + gravy", 110), p("bowl", 200)], "seq": 414},
+    {"seed_seq": 255, "portions": [p("katori", 150), p("small piece + gravy", 50), p("medium piece + gravy", 80), p("large piece + gravy", 120), p("bowl", 200)], "seq": 415},
+    {"seed_seq": 252, "portions": [p("katori", 150), p("small piece + gravy", 80), p("medium piece + gravy", 110), p("large piece + gravy", 150), p("bowl", 200)], "seq": 416},
     {"seed_seq": 213, "portions": [p("katori", 150), p("potato + gravy", 60), p("bowl", 250)], "seq": 417},
+    {"seed_seq": 247, "portions": [p("katori", 150), p("small piece", 40), p("medium piece", 60), p("large piece", 90), p("bowl", 200)], "seq": 418},
+    {"seed_seq": 249, "portions": [p("katori", 150), p("small piece + gravy", 60), p("medium piece + gravy", 90), p("large piece + gravy", 130), p("bowl", 200)], "seq": 419},
+    {
+        "seed_seq": 244,
+        "portions": [p("leg piece", 110), p("drumstick", 50), p("wing", 30), p("quarter", 150), p("half bird", 300)],
+        "assumption": "Edible tandoori chicken meat marinated in curd and spices; a leg piece gives about 110 g",
+        "seq": 420,
+    },
+    {"seed_seq": 129, "aliases": ["makke ki roti", "makke di roti", "makki di roti", "corn roti"], "seq": 421},
+    {"seed_seq": 231, "aliases": ["mustard greens saag", "sarson da saag", "saag"], "seq": 422},
 ]
 
 # The migration that made the fixes above marked MORE_FOODS_MIGRATION and
@@ -548,7 +558,7 @@ _CHOLE_BHATURE = _mix([("Punjabi Chole / Chana Masala", 150), ("Bhatura", 160)])
 # them. Their ids carry on from the seed's (407 up), and the server numbers
 # them after the fixes (ADDED_FIRST_SEQ up). Same tuple as the seed's.
 ADDED_FIRST_ID = 407
-ADDED_FIRST_SEQ = 418
+ADDED_FIRST_SEQ = 423
 ADDED_FOODS: list[tuple] = [
     # Breads
     ("Ajwain Paratha", ["ajwain parantha", "carom paratha"], 305, 8.4, 47.0, 9.2, [p("piece", 70)], "Whole wheat atta with ajwain, cooked on tawa with 1 tsp ghee or oil", "recipe"),
@@ -577,7 +587,7 @@ ADDED_FOODS: list[tuple] = [
     ("Kaddu ki Sabzi (Khatta Meetha)", ["pumpkin sabzi", "petha sabzi", "sitaphal sabzi"], 78, 1.2, 11.6, 3.0, DRY_SABZI, "Pumpkin cooked with methi seeds, a little jaggery and 1 tsp oil", "recipe"),
     # Chicken, mutton, fish and eggs
     ("Chicken 65", ["chicken sixty five"], 252, 20.5, 9.5, 14.8, [p("piece", 20), p("katori", 120), p("plate", 180)], "Boneless chicken marinated in curd and spices, deep fried, tossed with curry leaves", "recipe"),
-    ("Chicken Korma", ["murgh korma", "chicken kurma"], 202, 15.2, 6.2, 13.0, [p("katori", 150), p("piece + gravy", 80), p("bowl", 200)], "Chicken in onion, curd and cashew korma gravy", "recipe"),
+    ("Chicken Korma", ["murgh korma", "chicken kurma"], 202, 15.2, 6.2, 13.0, [p("katori", 150), p("small piece + gravy", 60), p("medium piece + gravy", 90), p("large piece + gravy", 130), p("bowl", 200)], "Chicken in onion, curd and cashew korma gravy", "recipe"),
     ("Mutton Keema", ["keema", "kheema", "gosht keema"], 212, 17.0, 5.2, 13.8, [p("katori", 150), p("plate", 200)], "Minced mutton cooked with onion, tomato, peas and 1 tsp oil", "recipe"),
     ("Fish Tikka / Tandoori Fish", ["tandoori fish", "fish tikka"], 158, 23.0, 3.0, 6.0, [p("piece", 40), p("plate", 160)], "Boneless fish chunks marinated in curd and spices, grilled", "recipe"),
     ("Egg Roll (Kolkata Style)", ["anda roll", "egg kathi roll"], 248, 8.6, 26.0, 12.2, [p("roll", 180)], "Paratha wrapped around 1 egg, onion and sauces", "recipe"),
@@ -644,6 +654,44 @@ ADDED_FOODS: list[tuple] = [
     # Dairy
     ("Fresh Cream (Amul, 25% Fat)", ["malai cream", "cooking cream", "amul fresh cream"], 246, 2.0, 3.2, 25.0, [p("tbsp", 15)], "Amul fresh cream, 25% fat (label)", "label"),
     ("Khoya / Mawa", ["mawa", "khoa"], 421, 14.6, 20.5, 31.2, [p("tbsp", 15), p("katori", 100)], "Whole milk reduced to solids", "recipe"),
+    # 28 Nov: more chicken by the piece, and more of India's food.
+    ("Chicken Fry (Home Style, Edible)", ["chicken fry", "kozhi varuval", "chicken roast"], 238, 22.0, 4.0, 15.0, [p("small piece", 40), p("medium piece", 60), p("large piece", 90), p("katori", 120)], "Bone-in chicken pan-fried with masala and 1 tbsp oil; edible weight", "recipe"),
+    ("Chicken Lollipop", ["lollipop chicken", "drums of heaven"], 262, 18.0, 12.0, 15.8, [p("piece", 35), p("plate (6)", 210)], "Frenched chicken wings in spiced batter, deep fried; edible weight", "recipe"),
+    ("Fried Chicken (Crispy, Edible)", ["kfc chicken", "crispy fried chicken", "broast"], 280, 20.0, 10.0, 18.0, [p("wing", 50), p("drumstick", 90), p("breast piece", 160)], "Bone-in chicken in seasoned flour, deep fried; edible weight with coating", "recipe"),
+    ("Chicken Wings (Grilled / Tandoori)", ["tandoori wings", "chicken wings"], 210, 24.0, 2.0, 12.0, [p("wing", 30), p("plate (6)", 180)], "Wings marinated in curd and spices, grilled; edible weight", "recipe"),
+    ("Malai / Reshmi Chicken Kebab", ["malai tikka", "reshmi kebab", "murgh malai tikka"], 220, 22.0, 3.5, 13.2, [p("piece", 30), p("plate", 180)], "Boneless chicken in cream, cheese and curd marinade, grilled", "recipe"),
+    ("Mutton Seekh Kebab", ["mutton seekh", "gosht seekh kabab"], 248, 19.0, 4.0, 17.4, [p("piece", 50), p("plate", 200)], "Minced mutton with spices on a skewer, grilled", "recipe"),
+    ("Kulcha (Plain)", ["plain kulcha"], 290, 8.4, 50.0, 6.2, [p("piece", 90)], "Leavened maida flatbread cooked on tawa or tandoor", "recipe"),
+    ("Kashmiri Pulao", ["kashmiri pulav", "meetha pulao"], 192, 3.2, 31.0, 6.2, RICE_BOWL, "Basmati rice with ghee, saffron, fruit and dry fruits", "recipe"),
+    ("Puttu", ["puttu kadala"], 168, 3.4, 33.0, 2.4, [p("piece", 100), p("plate", 200)], "Steamed rice flour and coconut cylinder", "recipe"),
+    ("Idiyappam", ["string hoppers", "nool puttu"], 158, 2.8, 34.0, 1.0, [p("piece", 30), p("plate", 150)], "Steamed rice-flour noodle nests", "recipe"),
+    ("Sambar Vada", ["sambar vadai", "vada sambar"], 148, 5.4, 17.0, 6.6, [p("vada + sambar", 150)], "1 medu vada soaked in a katori of sambar", "recipe"),
+    ("Masala Vada (Dal Vada)", ["paruppu vadai", "dal vada", "chana dal vada"], 318, 12.0, 30.0, 16.8, [p("vada", 40)], "Coarse chana dal patties with onion and spices, deep fried", "recipe"),
+    ("Cabbage Thoran / Poriyal", ["muttaikose thoran", "patta gobi poriyal"], 92, 2.0, 8.0, 5.8, DRY_SABZI, "Cabbage stir-fried with coconut, mustard seeds and 1 tsp oil", "recipe"),
+    ("Kootu (Dal and Veg)", ["kootu"], 104, 4.6, 12.0, 4.2, KATORI, "Vegetables cooked with moong dal and coconut", "recipe"),
+    ("Aloo Puri (Plate)", ["aloo poori", "puri bhaji", "poori aloo"], 187, 3.9, 25.2, 7.9, [p("plate (3 puris)", 240)], "A katori (150 g) of aloo tamatar sabzi with 3 fried puris (90 g)", "recipe"),
+    ("Dahi Bhalla / Dahi Vada", ["dahi bhalle", "dahi vada", "thayir vadai"], 168, 5.6, 20.0, 7.4, [p("vada + curd", 80), p("plate (2)", 160)], "Fried urad dal vadas soaked in sweetened curd with chutneys", "recipe"),
+    ("Paneer Tikka Masala", ["paneer tikka gravy"], 210, 9.6, 8.0, 15.6, GRAVY, "Grilled paneer in spiced onion-tomato-cream gravy", "recipe"),
+    ("Undhiyu", ["oondhiyu"], 168, 4.2, 16.0, 9.8, KATORI, "Gujarati mixed winter vegetables and methi muthiya slow-cooked in oil", "recipe"),
+    ("Handvo", ["handva"], 210, 7.0, 26.0, 8.6, [p("piece", 80)], "Baked rice-lentil batter cake with lauki and sesame", "recipe"),
+    ("Fafda", ["fafda gathiya"], 520, 14.0, 48.0, 30.0, [p("handful", 30)], "Besan strips, deep fried", "recipe"),
+    ("Dal Dhokli", ["dal dhokri"], 132, 5.2, 19.0, 3.8, [p("bowl", 250), p("katori", 150)], "Wheat dumplings simmered in sweet-sour toor dal", "recipe"),
+    ("Aloo Posto", ["alu posto", "posto aloo"], 168, 3.2, 16.0, 10.2, DRY_SABZI, "Potatoes cooked in poppy seed paste with mustard oil", "recipe"),
+    ("Mishti Doi", ["mishti dahi", "sweet curd bengali"], 158, 4.2, 24.0, 4.8, [p("katori", 100)], "Sweetened, caramelised set curd", "recipe"),
+    ("Thukpa", ["thukpa noodle soup"], 78, 4.0, 11.0, 2.0, [p("bowl", 300)], "Noodle soup with vegetables in clear broth", "recipe"),
+    ("Aloo Chaat", ["alu chaat"], 168, 2.6, 24.0, 7.0, [p("plate", 150)], "Fried potato cubes tossed with chutneys and chaat masala", "recipe"),
+    ("Sweet Corn Chaat / Corn Cup", ["corn cup", "masala corn"], 118, 3.4, 20.0, 3.2, [p("cup", 150)], "Boiled sweet corn with butter, lemon and masala", "recipe"),
+    ("Peanut Chikki", ["chikki", "gud chikki"], 500, 13.0, 55.0, 26.0, [p("piece", 25)], "Roasted peanuts set in jaggery", "recipe"),
+    ("Popcorn (Salted)", ["popcorn"], 420, 11.0, 66.0, 13.0, [p("bowl", 30), p("small pack", 50)], "Popcorn popped with a little oil and salt", "recipe"),
+    ("Phirni", ["firni"], 152, 4.0, 22.0, 5.4, [p("katori", 100)], "Ground rice set in sweetened milk with cardamom", "recipe"),
+    ("Seviyan Kheer", ["sewai kheer", "semiya payasam"], 168, 4.4, 25.0, 5.6, [p("katori", 150)], "Roasted vermicelli in sweetened milk", "recipe"),
+    ("Coconut Ladoo", ["nariyal ladoo"], 420, 4.0, 52.0, 22.0, [p("ladoo", 25)], "Desiccated coconut with condensed milk or sugar", "recipe"),
+    ("Malpua", ["malpua rabdi"], 362, 5.0, 50.0, 16.0, [p("piece", 50)], "Fried sweet batter pancake soaked in syrup", "recipe"),
+    ("Soan Papdi", ["son papdi", "patisa"], 510, 6.0, 62.0, 26.0, [p("piece", 25)], "Flaky besan-ghee-sugar sweet", "recipe"),
+    ("Rose Sharbat (Rooh Afza)", ["rooh afza", "gulab sharbat"], 48, 0.0, 12.0, 0.0, [p("glass", 250)], "Rose syrup in water", "recipe"),
+    ("Aam Panna", ["kairi panha", "raw mango drink"], 52, 0.2, 13.0, 0.0, [p("glass", 250)], "Raw mango pulp drink with sugar and spices", "recipe"),
+    ("Thandai", ["thandai milk"], 128, 4.0, 15.0, 5.8, [p("glass", 200)], "Milk with almonds, seeds, spices and sugar", "recipe"),
+    ("Mango Lassi", ["aam lassi"], 104, 3.0, 17.0, 2.6, [p("glass", 250)], "Curd blended with ripe mango and a little sugar", "recipe"),
 ]
 
 

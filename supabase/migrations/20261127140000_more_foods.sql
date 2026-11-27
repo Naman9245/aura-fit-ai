@@ -1,11 +1,13 @@
 -- More foods, and dishes counted the way people eat them.
 --
--- * Plain paratha is renamed so a search for it finds it first.
--- * Egg curry, egg bhurji and the omelettes are counted by the egg, and
---   the chicken, mutton and fish curries and dum aloo by the piece with its
---   gravy, as well as by the katori.
--- * 84 foods people asked for that weren't there: breads, dishes, Indo-
---   Chinese, fast food, snacks, sweets, drinks and fruits.
+-- * Plain paratha is renamed so a search for it finds it first, and makki
+--   ki roti and sarson ka saag take their Punjabi names too.
+-- * Egg curry, egg bhurji and the omelettes are counted by the egg; the
+--   chicken, mutton and fish curries by a small, medium or large piece with
+--   its gravy; tandoori chicken by the leg piece, drumstick or wing; and
+--   dum aloo by the potato. The katori stays.
+-- * 121 foods people asked for that weren't there: breads, dishes, chicken,
+--   Indo-Chinese, fast food, snacks, sweets, drinks and fruits.
 --
 -- Every update takes the next number from foods_seq (foods_stamp), and
 -- every insert the one after, so phones fetch all of it with their next
@@ -24,16 +26,26 @@ update public.foods set portions = '[{"unit":"egg","grams":60},{"unit":"omelette
 where id = '019a9000-0000-7000-8000-0000000000ed';
 update public.foods set portions = '[{"unit":"egg white","grams":40},{"unit":"omelette (3 whites)","grams":120}]'::jsonb
 where id = '019a9000-0000-7000-8000-0000000000ee';
-update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"piece + gravy","grams":80},{"unit":"bowl","grams":200}]'::jsonb
+update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"small piece + gravy","grams":60},{"unit":"medium piece + gravy","grams":90},{"unit":"large piece + gravy","grams":130},{"unit":"bowl","grams":200}]'::jsonb
 where id = '019a9000-0000-7000-8000-0000000000f6';
-update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"piece + gravy","grams":70},{"unit":"bowl","grams":200}]'::jsonb
+update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"small piece + gravy","grams":50},{"unit":"medium piece + gravy","grams":75},{"unit":"large piece + gravy","grams":110},{"unit":"bowl","grams":200}]'::jsonb
 where id = '019a9000-0000-7000-8000-0000000000f8';
-update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"piece + gravy","grams":80},{"unit":"bowl","grams":200}]'::jsonb
+update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"small piece + gravy","grams":50},{"unit":"medium piece + gravy","grams":80},{"unit":"large piece + gravy","grams":120},{"unit":"bowl","grams":200}]'::jsonb
 where id = '019a9000-0000-7000-8000-0000000000ff';
-update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"piece + gravy","grams":110},{"unit":"bowl","grams":200}]'::jsonb
+update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"small piece + gravy","grams":80},{"unit":"medium piece + gravy","grams":110},{"unit":"large piece + gravy","grams":150},{"unit":"bowl","grams":200}]'::jsonb
 where id = '019a9000-0000-7000-8000-0000000000fc';
 update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"potato + gravy","grams":60},{"unit":"bowl","grams":250}]'::jsonb
 where id = '019a9000-0000-7000-8000-0000000000d5';
+update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"small piece","grams":40},{"unit":"medium piece","grams":60},{"unit":"large piece","grams":90},{"unit":"bowl","grams":200}]'::jsonb
+where id = '019a9000-0000-7000-8000-0000000000f7';
+update public.foods set portions = '[{"unit":"katori","grams":150},{"unit":"small piece + gravy","grams":60},{"unit":"medium piece + gravy","grams":90},{"unit":"large piece + gravy","grams":130},{"unit":"bowl","grams":200}]'::jsonb
+where id = '019a9000-0000-7000-8000-0000000000f9';
+update public.foods set portions = '[{"unit":"leg piece","grams":110},{"unit":"drumstick","grams":50},{"unit":"wing","grams":30},{"unit":"quarter","grams":150},{"unit":"half bird","grams":300}]'::jsonb, assumption = 'Edible tandoori chicken meat marinated in curd and spices; a leg piece gives about 110 g'
+where id = '019a9000-0000-7000-8000-0000000000f4';
+update public.foods set aliases = ARRAY['makke ki roti', 'makke di roti', 'makki di roti', 'corn roti']::text[]
+where id = '019a9000-0000-7000-8000-000000000081';
+update public.foods set aliases = ARRAY['mustard greens saag', 'sarson da saag', 'saag']::text[]
+where id = '019a9000-0000-7000-8000-0000000000e7';
 
 insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
   ('019a9000-0000-7000-8000-000000000197', 'Ajwain Paratha', ARRAY['ajwain parantha', 'carom paratha']::text[], 305.0, 8.4, 47.0, 9.2, '[{"unit":"piece","grams":70}]'::jsonb, 'Whole wheat atta with ajwain, cooked on tawa with 1 tsp ghee or oil', 'recipe');
@@ -82,7 +94,7 @@ insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, 
 insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
   ('019a9000-0000-7000-8000-0000000001ad', 'Chicken 65', ARRAY['chicken sixty five']::text[], 252.0, 20.5, 9.5, 14.8, '[{"unit":"piece","grams":20},{"unit":"katori","grams":120},{"unit":"plate","grams":180}]'::jsonb, 'Boneless chicken marinated in curd and spices, deep fried, tossed with curry leaves', 'recipe');
 insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
-  ('019a9000-0000-7000-8000-0000000001ae', 'Chicken Korma', ARRAY['murgh korma', 'chicken kurma']::text[], 202.0, 15.2, 6.2, 13.0, '[{"unit":"katori","grams":150},{"unit":"piece + gravy","grams":80},{"unit":"bowl","grams":200}]'::jsonb, 'Chicken in onion, curd and cashew korma gravy', 'recipe');
+  ('019a9000-0000-7000-8000-0000000001ae', 'Chicken Korma', ARRAY['murgh korma', 'chicken kurma']::text[], 202.0, 15.2, 6.2, 13.0, '[{"unit":"katori","grams":150},{"unit":"small piece + gravy","grams":60},{"unit":"medium piece + gravy","grams":90},{"unit":"large piece + gravy","grams":130},{"unit":"bowl","grams":200}]'::jsonb, 'Chicken in onion, curd and cashew korma gravy', 'recipe');
 insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
   ('019a9000-0000-7000-8000-0000000001af', 'Mutton Keema', ARRAY['keema', 'kheema', 'gosht keema']::text[], 212.0, 17.0, 5.2, 13.8, '[{"unit":"katori","grams":150},{"unit":"plate","grams":200}]'::jsonb, 'Minced mutton cooked with onion, tomato, peas and 1 tsp oil', 'recipe');
 insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
@@ -203,3 +215,77 @@ insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, 
   ('019a9000-0000-7000-8000-0000000001e9', 'Fresh Cream (Amul, 25% Fat)', ARRAY['malai cream', 'cooking cream', 'amul fresh cream']::text[], 246.0, 2.0, 3.2, 25.0, '[{"unit":"tbsp","grams":15}]'::jsonb, 'Amul fresh cream, 25% fat (label)', 'label');
 insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
   ('019a9000-0000-7000-8000-0000000001ea', 'Khoya / Mawa', ARRAY['mawa', 'khoa']::text[], 421.0, 14.6, 20.5, 31.2, '[{"unit":"tbsp","grams":15},{"unit":"katori","grams":100}]'::jsonb, 'Whole milk reduced to solids', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001eb', 'Chicken Fry (Home Style, Edible)', ARRAY['chicken fry', 'kozhi varuval', 'chicken roast']::text[], 238.0, 22.0, 4.0, 15.0, '[{"unit":"small piece","grams":40},{"unit":"medium piece","grams":60},{"unit":"large piece","grams":90},{"unit":"katori","grams":120}]'::jsonb, 'Bone-in chicken pan-fried with masala and 1 tbsp oil; edible weight', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001ec', 'Chicken Lollipop', ARRAY['lollipop chicken', 'drums of heaven']::text[], 262.0, 18.0, 12.0, 15.8, '[{"unit":"piece","grams":35},{"unit":"plate (6)","grams":210}]'::jsonb, 'Frenched chicken wings in spiced batter, deep fried; edible weight', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001ed', 'Fried Chicken (Crispy, Edible)', ARRAY['kfc chicken', 'crispy fried chicken', 'broast']::text[], 280.0, 20.0, 10.0, 18.0, '[{"unit":"wing","grams":50},{"unit":"drumstick","grams":90},{"unit":"breast piece","grams":160}]'::jsonb, 'Bone-in chicken in seasoned flour, deep fried; edible weight with coating', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001ee', 'Chicken Wings (Grilled / Tandoori)', ARRAY['tandoori wings', 'chicken wings']::text[], 210.0, 24.0, 2.0, 12.0, '[{"unit":"wing","grams":30},{"unit":"plate (6)","grams":180}]'::jsonb, 'Wings marinated in curd and spices, grilled; edible weight', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001ef', 'Malai / Reshmi Chicken Kebab', ARRAY['malai tikka', 'reshmi kebab', 'murgh malai tikka']::text[], 220.0, 22.0, 3.5, 13.2, '[{"unit":"piece","grams":30},{"unit":"plate","grams":180}]'::jsonb, 'Boneless chicken in cream, cheese and curd marinade, grilled', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001f0', 'Mutton Seekh Kebab', ARRAY['mutton seekh', 'gosht seekh kabab']::text[], 248.0, 19.0, 4.0, 17.4, '[{"unit":"piece","grams":50},{"unit":"plate","grams":200}]'::jsonb, 'Minced mutton with spices on a skewer, grilled', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001f1', 'Kulcha (Plain)', ARRAY['plain kulcha']::text[], 290.0, 8.4, 50.0, 6.2, '[{"unit":"piece","grams":90}]'::jsonb, 'Leavened maida flatbread cooked on tawa or tandoor', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001f2', 'Kashmiri Pulao', ARRAY['kashmiri pulav', 'meetha pulao']::text[], 192.0, 3.2, 31.0, 6.2, '[{"unit":"katori","grams":150},{"unit":"plate","grams":250},{"unit":"bowl","grams":200}]'::jsonb, 'Basmati rice with ghee, saffron, fruit and dry fruits', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001f3', 'Puttu', ARRAY['puttu kadala']::text[], 168.0, 3.4, 33.0, 2.4, '[{"unit":"piece","grams":100},{"unit":"plate","grams":200}]'::jsonb, 'Steamed rice flour and coconut cylinder', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001f4', 'Idiyappam', ARRAY['string hoppers', 'nool puttu']::text[], 158.0, 2.8, 34.0, 1.0, '[{"unit":"piece","grams":30},{"unit":"plate","grams":150}]'::jsonb, 'Steamed rice-flour noodle nests', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001f5', 'Sambar Vada', ARRAY['sambar vadai', 'vada sambar']::text[], 148.0, 5.4, 17.0, 6.6, '[{"unit":"vada + sambar","grams":150}]'::jsonb, '1 medu vada soaked in a katori of sambar', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001f6', 'Masala Vada (Dal Vada)', ARRAY['paruppu vadai', 'dal vada', 'chana dal vada']::text[], 318.0, 12.0, 30.0, 16.8, '[{"unit":"vada","grams":40}]'::jsonb, 'Coarse chana dal patties with onion and spices, deep fried', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001f7', 'Cabbage Thoran / Poriyal', ARRAY['muttaikose thoran', 'patta gobi poriyal']::text[], 92.0, 2.0, 8.0, 5.8, '[{"unit":"katori","grams":120},{"unit":"small katori","grams":80},{"unit":"plate","grams":180}]'::jsonb, 'Cabbage stir-fried with coconut, mustard seeds and 1 tsp oil', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001f8', 'Kootu (Dal and Veg)', ARRAY['kootu']::text[], 104.0, 4.6, 12.0, 4.2, '[{"unit":"katori","grams":150},{"unit":"small katori","grams":100},{"unit":"bowl","grams":250}]'::jsonb, 'Vegetables cooked with moong dal and coconut', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001f9', 'Aloo Puri (Plate)', ARRAY['aloo poori', 'puri bhaji', 'poori aloo']::text[], 187.0, 3.9, 25.2, 7.9, '[{"unit":"plate (3 puris)","grams":240}]'::jsonb, 'A katori (150 g) of aloo tamatar sabzi with 3 fried puris (90 g)', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001fa', 'Dahi Bhalla / Dahi Vada', ARRAY['dahi bhalle', 'dahi vada', 'thayir vadai']::text[], 168.0, 5.6, 20.0, 7.4, '[{"unit":"vada + curd","grams":80},{"unit":"plate (2)","grams":160}]'::jsonb, 'Fried urad dal vadas soaked in sweetened curd with chutneys', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001fb', 'Paneer Tikka Masala', ARRAY['paneer tikka gravy']::text[], 210.0, 9.6, 8.0, 15.6, '[{"unit":"katori","grams":150},{"unit":"bowl","grams":250}]'::jsonb, 'Grilled paneer in spiced onion-tomato-cream gravy', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001fc', 'Undhiyu', ARRAY['oondhiyu']::text[], 168.0, 4.2, 16.0, 9.8, '[{"unit":"katori","grams":150},{"unit":"small katori","grams":100},{"unit":"bowl","grams":250}]'::jsonb, 'Gujarati mixed winter vegetables and methi muthiya slow-cooked in oil', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001fd', 'Handvo', ARRAY['handva']::text[], 210.0, 7.0, 26.0, 8.6, '[{"unit":"piece","grams":80}]'::jsonb, 'Baked rice-lentil batter cake with lauki and sesame', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001fe', 'Fafda', ARRAY['fafda gathiya']::text[], 520.0, 14.0, 48.0, 30.0, '[{"unit":"handful","grams":30}]'::jsonb, 'Besan strips, deep fried', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-0000000001ff', 'Dal Dhokli', ARRAY['dal dhokri']::text[], 132.0, 5.2, 19.0, 3.8, '[{"unit":"bowl","grams":250},{"unit":"katori","grams":150}]'::jsonb, 'Wheat dumplings simmered in sweet-sour toor dal', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-000000000200', 'Aloo Posto', ARRAY['alu posto', 'posto aloo']::text[], 168.0, 3.2, 16.0, 10.2, '[{"unit":"katori","grams":120},{"unit":"small katori","grams":80},{"unit":"plate","grams":180}]'::jsonb, 'Potatoes cooked in poppy seed paste with mustard oil', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-000000000201', 'Mishti Doi', ARRAY['mishti dahi', 'sweet curd bengali']::text[], 158.0, 4.2, 24.0, 4.8, '[{"unit":"katori","grams":100}]'::jsonb, 'Sweetened, caramelised set curd', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-000000000202', 'Thukpa', ARRAY['thukpa noodle soup']::text[], 78.0, 4.0, 11.0, 2.0, '[{"unit":"bowl","grams":300}]'::jsonb, 'Noodle soup with vegetables in clear broth', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-000000000203', 'Aloo Chaat', ARRAY['alu chaat']::text[], 168.0, 2.6, 24.0, 7.0, '[{"unit":"plate","grams":150}]'::jsonb, 'Fried potato cubes tossed with chutneys and chaat masala', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-000000000204', 'Sweet Corn Chaat / Corn Cup', ARRAY['corn cup', 'masala corn']::text[], 118.0, 3.4, 20.0, 3.2, '[{"unit":"cup","grams":150}]'::jsonb, 'Boiled sweet corn with butter, lemon and masala', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-000000000205', 'Peanut Chikki', ARRAY['chikki', 'gud chikki']::text[], 500.0, 13.0, 55.0, 26.0, '[{"unit":"piece","grams":25}]'::jsonb, 'Roasted peanuts set in jaggery', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-000000000206', 'Popcorn (Salted)', ARRAY['popcorn']::text[], 420.0, 11.0, 66.0, 13.0, '[{"unit":"bowl","grams":30},{"unit":"small pack","grams":50}]'::jsonb, 'Popcorn popped with a little oil and salt', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-000000000207', 'Phirni', ARRAY['firni']::text[], 152.0, 4.0, 22.0, 5.4, '[{"unit":"katori","grams":100}]'::jsonb, 'Ground rice set in sweetened milk with cardamom', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-000000000208', 'Seviyan Kheer', ARRAY['sewai kheer', 'semiya payasam']::text[], 168.0, 4.4, 25.0, 5.6, '[{"unit":"katori","grams":150}]'::jsonb, 'Roasted vermicelli in sweetened milk', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-000000000209', 'Coconut Ladoo', ARRAY['nariyal ladoo']::text[], 420.0, 4.0, 52.0, 22.0, '[{"unit":"ladoo","grams":25}]'::jsonb, 'Desiccated coconut with condensed milk or sugar', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-00000000020a', 'Malpua', ARRAY['malpua rabdi']::text[], 362.0, 5.0, 50.0, 16.0, '[{"unit":"piece","grams":50}]'::jsonb, 'Fried sweet batter pancake soaked in syrup', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-00000000020b', 'Soan Papdi', ARRAY['son papdi', 'patisa']::text[], 510.0, 6.0, 62.0, 26.0, '[{"unit":"piece","grams":25}]'::jsonb, 'Flaky besan-ghee-sugar sweet', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-00000000020c', 'Rose Sharbat (Rooh Afza)', ARRAY['rooh afza', 'gulab sharbat']::text[], 48.0, 0.0, 12.0, 0.0, '[{"unit":"glass","grams":250}]'::jsonb, 'Rose syrup in water', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-00000000020d', 'Aam Panna', ARRAY['kairi panha', 'raw mango drink']::text[], 52.0, 0.2, 13.0, 0.0, '[{"unit":"glass","grams":250}]'::jsonb, 'Raw mango pulp drink with sugar and spices', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-00000000020e', 'Thandai', ARRAY['thandai milk']::text[], 128.0, 4.0, 15.0, 5.8, '[{"unit":"glass","grams":200}]'::jsonb, 'Milk with almonds, seeds, spices and sugar', 'recipe');
+insert into public.foods (id, name, aliases, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, portions, assumption, source) values
+  ('019a9000-0000-7000-8000-00000000020f', 'Mango Lassi', ARRAY['aam lassi']::text[], 104.0, 3.0, 17.0, 2.6, '[{"unit":"glass","grams":250}]'::jsonb, 'Curd blended with ripe mango and a little sugar', 'recipe');
