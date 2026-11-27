@@ -270,6 +270,7 @@ void main() {
           find.textContaining('One day doesn\'t change the week'),
           findsOneWidget,
         );
+        await _scrollTo(tester, find.textContaining('2 days logged'));
         expect(find.textContaining('2 days logged'), findsOneWidget);
       });
     },

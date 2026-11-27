@@ -9,6 +9,8 @@ import 'package:aurafit/data/providers.dart';
 import 'package:aurafit/features/progress/streak.dart';
 import 'package:aurafit/features/shell/diary.dart';
 import 'package:aurafit/features/today/health_sheets.dart';
+import 'package:aurafit/features/today/today_screen.dart' show GoalsCard;
+import 'package:aurafit/services/goals.dart';
 import 'package:aurafit/widgets/bright_card.dart';
 import 'package:aurafit/widgets/josh.dart';
 import 'package:aurafit/widgets/motion.dart';
@@ -64,6 +66,7 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
             today: today,
             start: start,
             logged: logged,
+            onPick: (day) => showDaySheet(context, day),
             onPrevious: _month.isAfter(firstMonth)
                 ? () => setState(
                     () => _month = DateTime(_month.year, _month.month - 1),
@@ -144,6 +147,7 @@ class _MonthCalendar extends StatelessWidget {
     required this.today,
     required this.start,
     required this.logged,
+    required this.onPick,
     required this.onPrevious,
     required this.onNext,
   });
@@ -152,6 +156,9 @@ class _MonthCalendar extends StatelessWidget {
   final DateTime today;
   final DateTime start;
   final Set<DateTime> logged;
+
+  /// Opens a day that has been, to see its goals.
+  final ValueChanged<DateTime> onPick;
   final VoidCallback? onPrevious;
   final VoidCallback? onNext;
 
@@ -246,6 +253,16 @@ class _MonthCalendar extends StatelessWidget {
                                 isToday:
                                     DateTime(month.year, month.month, n) ==
                                     today,
+                                onTap:
+                                    DateTime(
+                                      month.year,
+                                      month.month,
+                                      n,
+                                    ).isAfter(today)
+                                    ? null
+                                    : () => onPick(
+                                        DateTime(month.year, month.month, n),
+                                      ),
                               ),
                             ),
                             _ => const SizedBox.shrink(),
@@ -267,11 +284,15 @@ class _DayCell extends StatelessWidget {
     required this.day,
     required this.kind,
     required this.isToday,
+    required this.onTap,
   });
 
   final DateTime day;
   final _DayKind kind;
   final bool isToday;
+
+  /// Null for days still to come.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -362,9 +383,18 @@ class _DayCell extends StatelessWidget {
     // Its own stop for a screen reader, not one long read of the month.
     return Semantics(
       container: true,
+      button: onTap != null,
       label: label,
       excludeSemantics: true,
-      child: cell,
+      child: onTap == null
+          ? cell
+          : Pressable(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onTap,
+                child: cell,
+              ),
+            ),
     );
   }
 }
@@ -692,4 +722,168 @@ class _WeightChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(_WeightChartPainter old) =>
       old.kg != kg || old.days != days || old.end != end || old.drawn != drawn;
+}
+
+const _weekdays = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+];
+
+/// A day that has been: Josh says how it went, over its goals.
+Future<void> showDaySheet(BuildContext context, DateTime day) =>
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => _DaySheet(day: day),
+    );
+
+class _DaySheet extends ConsumerWidget {
+  const _DaySheet({required this.day});
+
+  final DateTime day;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final text = Theme.of(context).textTheme;
+    final today = diaryDay(clock.now());
+    final isToday = day == today;
+    final summary = ref.watch(daySummaryProvider(day)).value;
+    final goal = ref.watch(explainedGoalProvider).value?.goal;
+    final trained =
+        ref
+            .watch(weekWorkoutsProvider(day))
+            .value
+            ?.any((session) => session.day == day) ??
+        false;
+    final streak = streakDays(
+      ref.watch(loggedDaysProvider).value ?? const {},
+      today,
+    );
+    final goals = summary == null || goal == null
+        ? const <DailyGoal>[]
+        : dailyGoals(
+            summary: summary,
+            goal: goal,
+            sex: ref.watch(profileProvider).value?.sex,
+            planDay: ref.watch(trainingPlanProvider)?.dayOf(day.weekday),
+            trained: trained,
+          );
+    final nothing =
+        summary != null &&
+        summary.entries.isEmpty &&
+        summary.waterMl == 0 &&
+        summary.steps == 0 &&
+        !trained;
+    final done = goals.where((g) => g.done).length;
+    final line = nothing
+        ? 'Nothing logged this day. No guilt: every day is a fresh start.'
+        : goalsLine(goals, isToday: isToday);
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              isToday
+                  ? 'TODAY'
+                  : '${_weekdays[day.weekday - 1]} ${formatDayMonth(day).toUpperCase()}',
+              style: AuraType.display(30),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Josh(
+                  mood: nothing
+                      ? JoshMood.calm
+                      : (goals.isNotEmpty && done == goals.length
+                            ? JoshMood.proud
+                            : JoshMood.happy),
+                  stage: JoshStage.forStreak(streak),
+                  width: 84,
+                  playFor: joshPlayFor,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _Bubble(text: line, style: text),
+                ),
+              ],
+            ),
+            if (!nothing && goals.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              GoalsCard(goals: goals, isToday: isToday),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Josh's speech bubble, its tail pointing at him.
+class _Bubble extends StatelessWidget {
+  const _Bubble({required this.text, required this.style});
+
+  final String text;
+  final TextTheme style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Entrance(
+      index: 1,
+      grow: true,
+      rise: 8,
+      child: CustomPaint(
+        painter: const _BubblePainter(),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(22, 14, 16, 14),
+          child: Semantics(
+            liveRegion: true,
+            child: Text(
+              text,
+              style: style.bodyLarge?.copyWith(
+                color: AuraColors.ink,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BubblePainter extends CustomPainter {
+  const _BubblePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = AuraColors.paper;
+    canvas.drawRRect(
+      RRect.fromLTRBR(8, 0, size.width, size.height, const Radius.circular(20)),
+      paint,
+    );
+    // The tail, low on the left, towards Josh.
+    final y = size.height - 22;
+    canvas.drawPath(
+      Path()
+        ..moveTo(10, y - 8)
+        ..lineTo(0, y + 6)
+        ..lineTo(14, y + 4)
+        ..close(),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_BubblePainter old) => false;
 }

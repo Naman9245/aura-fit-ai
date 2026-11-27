@@ -15,6 +15,7 @@ import 'package:aurafit/features/shell/diary.dart';
 import 'package:aurafit/features/today/health_sheets.dart';
 import 'package:aurafit/models/options.dart';
 import 'package:aurafit/services/coach_rules.dart';
+import 'package:aurafit/services/goals.dart';
 import 'package:aurafit/services/targets.dart';
 import 'package:aurafit/widgets/bright_card.dart';
 import 'package:aurafit/widgets/josh.dart';
@@ -107,6 +108,20 @@ class _TodayBody extends ConsumerWidget {
       currentHour: now.hour,
       mealCount: summary.entries.length,
     );
+    final trained =
+        ref
+            .watch(weekWorkoutsProvider(day))
+            .value
+            ?.any((session) => session.day == day) ??
+        false;
+    final goals = dailyGoals(
+      summary: summary,
+      goal: goal,
+      sex: profile?.sex,
+      planDay: ref.watch(trainingPlanProvider)?.dayOf(day.weekday),
+      trained: trained,
+    );
+    final allDone = goals.every((g) => g.done);
     final proteinGuidance = buildProteinGuidance(
       dietType: profile?.dietType,
       targetProteinG: goal.proteinG,
@@ -130,15 +145,23 @@ class _TodayBody extends ConsumerWidget {
             streak: streak,
             greeting: todayGreeting(isToday: isToday, hour: now.hour),
             feedback: feedback,
-            mood: todayMood(
-              feedback: feedback,
-              isToday: isToday,
-              hour: now.hour,
-              mealCount: summary.entries.length,
-              proteinEatenG: summary.totalProteinG,
-              proteinTargetG: goal.proteinG,
-            ),
+            // A day that needs a second look says so calmly; otherwise
+            // Josh cheers on the next goal.
+            line: feedback.isAmber
+                ? feedback.message
+                : goalsLine(goals, isToday: isToday),
+            mood: allDone && isToday
+                ? JoshMood.proud
+                : todayMood(
+                    feedback: feedback,
+                    isToday: isToday,
+                    hour: now.hour,
+                    mealCount: summary.entries.length,
+                    proteinEatenG: summary.totalProteinG,
+                    proteinTargetG: goal.proteinG,
+                  ),
           ),
+          GoalsCard(goals: goals, isToday: isToday),
           _CaloriesCard(
             summary: summary,
             goal: goal,
@@ -312,9 +335,13 @@ class _JoshCard extends StatelessWidget {
     required this.streak,
     required this.greeting,
     required this.feedback,
+    required this.line,
     required this.mood,
     required this.wakeKey,
   });
+
+  /// What Josh says.
+  final String line;
 
   final Object wakeKey;
   final int streak;
@@ -345,7 +372,7 @@ class _JoshCard extends StatelessWidget {
                   Semantics(
                     liveRegion: true,
                     child: Text(
-                      feedback.message,
+                      line,
                       style: Theme.of(context).textTheme.bodyMedium
                           ?.copyWith(color: AuraColors.ink, height: 1.35),
                     ),
@@ -829,6 +856,126 @@ class _ProteinIdeasCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The day's goals, ticked off as they're done.
+class GoalsCard extends StatelessWidget {
+  const GoalsCard({super.key, required this.goals, required this.isToday});
+
+  final List<DailyGoal> goals;
+  final bool isToday;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final done = goals.where((g) => g.done).length;
+    return BrightCard(
+      color: AuraColors.surface,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  isToday ? 'TODAY\'S GOALS' : 'THAT DAY\'S GOALS',
+                  style: AuraType.kicker(color: AuraColors.mint),
+                ),
+              ),
+              CountUp(
+                value: done.toDouble(),
+                fromZero: false,
+                format: (v) => '${v.round()} / ${goals.length}',
+                style: AuraType.display(24),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          for (final goal in goals) GoalLine(goal: goal, text: text),
+        ],
+      ),
+    );
+  }
+}
+
+/// One goal: a ring filling up, or a tick once it's done.
+class GoalLine extends StatelessWidget {
+  const GoalLine({super.key, required this.goal, required this.text});
+
+  final DailyGoal goal;
+  final TextTheme text;
+
+  @override
+  Widget build(BuildContext context) {
+    final colour = switch (goal.kind) {
+      GoalKind.calories => AuraColors.accent,
+      GoalKind.protein => AuraColors.mint,
+      GoalKind.water => AuraColors.sky,
+      GoalKind.steps => AuraColors.yellow,
+      GoalKind.training => AuraColors.lilac,
+    };
+    return MergeSemantics(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            SizedBox.square(
+              dimension: 34,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) =>
+                    ScaleTransition(scale: animation, child: child),
+                child: goal.done
+                    ? DecoratedBox(
+                        key: const ValueKey('done'),
+                        decoration: BoxDecoration(
+                          color: colour,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: AuraColors.ink,
+                          size: 22,
+                        ),
+                      )
+                    : FillUp(
+                        key: const ValueKey('ring'),
+                        value: goal.progress,
+                        builder: (context, fill, _) =>
+                            CircularProgressIndicator(
+                              value: fill,
+                              strokeWidth: 4,
+                              color: colour,
+                              backgroundColor: AuraColors.surfaceStrong,
+                            ),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                goal.title,
+                style: text.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                goal.detail,
+                textAlign: TextAlign.end,
+                style: text.bodySmall?.copyWith(
+                  color: goal.done ? colour : AuraColors.muted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Semantics(label: goal.done ? 'done' : 'not done yet'),
+          ],
+        ),
       ),
     );
   }
