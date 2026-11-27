@@ -35,10 +35,6 @@ abstract final class AuraColors {
   /// The faint edge of a card: white at 8%.
   static const border = Color(0x14FFFFFF);
 
-  /// The two glows behind the setup screens.
-  static const orangeGlow = Color(0x1FFF7A00);
-  static const blueGlow = Color(0x2E587AFF);
-
   /// Field errors: 7.9:1 on [black].
   static const error = Color(0xFFFF8A80);
 

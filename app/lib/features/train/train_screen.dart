@@ -8,6 +8,7 @@ import 'package:aurafit/features/shell/diary.dart';
 import 'package:aurafit/features/today/health_sheets.dart';
 import 'package:aurafit/widgets/bright_card.dart';
 import 'package:aurafit/widgets/josh.dart';
+import 'package:aurafit/widgets/motion.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,12 +34,11 @@ class TrainScreen extends ConsumerWidget {
       bottom: false,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        children: [
+        children: staggered([
           Semantics(
             header: true,
             child: Text('TRAIN', style: AuraType.display(40)),
           ),
-          const SizedBox(height: 14),
           BrightCard(
             color: AuraColors.mint,
             radius: 28,
@@ -71,7 +71,6 @@ class TrainScreen extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 12),
           BrightCard(
             color: AuraColors.surface,
             onTap: summary == null
@@ -95,23 +94,28 @@ class TrainScreen extends ConsumerWidget {
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      '${formatWhole(steps)} / ${formatWhole(goalSteps)}',
+                    child: CountUp(
+                      value: steps.toDouble(),
+                      format: (v) =>
+                          '${formatWhole(v.round())} / ${formatWhole(goalSteps)}',
                       style: AuraType.display(30),
                       maxLines: 1,
                       softWrap: false,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(5)),
-                    child: LinearProgressIndicator(
-                      value: goalSteps > 0
-                          ? (steps / goalSteps).clamp(0.0, 1.0)
-                          : 0,
-                      minHeight: 10,
-                      color: AuraColors.mint,
-                      backgroundColor: AuraColors.surfaceStrong,
+                  FillUp(
+                    value: goalSteps > 0
+                        ? (steps / goalSteps).clamp(0.0, 1.0)
+                        : 0,
+                    builder: (context, fill, _) => ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(5)),
+                      child: LinearProgressIndicator(
+                        value: fill,
+                        minHeight: 10,
+                        color: AuraColors.mint,
+                        backgroundColor: AuraColors.surfaceStrong,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -123,7 +127,7 @@ class TrainScreen extends ConsumerWidget {
               ),
             ),
           ),
-        ],
+        ]),
       ),
     );
   }

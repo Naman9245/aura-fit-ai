@@ -142,8 +142,8 @@ void main() {
         // 1-tap +250 ml water and 1-tap Undo (PRD N5, N11).
         await _scrollTo(tester, find.text('250 ml'));
         await tester.tap(find.text('250 ml'));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
+        // The litres count up to the new amount.
+        await tester.pumpAndSettle();
         expect(find.textContaining('0.25 L /'), findsOneWidget);
         await tester.tap(find.text('Undo'));
         await tester.pumpAndSettle();
@@ -166,14 +166,14 @@ void main() {
 
         // On the Food tab: the entry shows its portion and oil choice.
         await _openTab(tester, 'Food');
-        await _scrollTo(tester, find.textContaining('2 piece · Home style'));
-        expect(find.textContaining('2 piece · Home style'), findsOneWidget);
+        await _scrollTo(tester, find.textContaining('2 pieces · Home style'));
+        expect(find.textContaining('2 pieces · Home style'), findsOneWidget);
 
         // Tap logged entry to remove it, then verify soft-delete (PRD N11).
-        await tester.tap(find.textContaining('2 piece · Home style'));
+        await tester.tap(find.textContaining('2 pieces · Home style'));
         await tester.pumpAndSettle();
         await _tap(tester, 'Remove entry');
-        expect(find.textContaining('2 piece · Home style'), findsNothing);
+        expect(find.textContaining('2 pieces · Home style'), findsNothing);
 
         // Log 6 boiled eggs via the scrollable wheel without opening keyboard.
         await _tap(tester, 'Search Indian foods');

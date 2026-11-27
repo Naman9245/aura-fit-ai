@@ -247,10 +247,26 @@ class FoodRepository {
         .where((t) => t.isNotEmpty)
         .toList();
 
+    final folded = foldSpelling(trimmed);
+    // "makke di roti": the little joining words don't have to match.
+    final foldedTokens = [
+      for (final t in folded.split(' '))
+        if (t.isNotEmpty && !_fillers.contains(t)) t,
+    ];
     final scored = <(int, FoodItem)>[];
     for (final food in all) {
-      final score = _scoreFood(food, trimmed, tokens);
+      final score = _scoreFood(food, trimmed, tokens, folded, foldedTokens);
       if (score != null) scored.add((score, food));
+    }
+    // Few matches: perhaps a typo, like "chiken" or "panir tika". Only then
+    // look for near misses, so ordinary searches stay quick.
+    if (scored.length < 5 && foldedTokens.isNotEmpty) {
+      final found = {for (final (_, food) in scored) food};
+      for (final food in all) {
+        if (!found.contains(food) && _nearMiss(food, foldedTokens)) {
+          scored.add((9, food));
+        }
+      }
     }
     scored.sort((a, b) {
       final byScore = a.$1.compareTo(b.$1);
@@ -309,13 +325,21 @@ class FoodRepository {
     }
   }
 
-  static int? _scoreFood(FoodItem food, String fullQuery, List<String> tokens) {
+  static int? _scoreFood(
+    FoodItem food,
+    String fullQuery,
+    List<String> tokens,
+    String foldedQuery,
+    List<String> foldedTokens,
+  ) {
     final name = food.name.toLowerCase();
     final aliases = [for (final a in food.aliases) a.toLowerCase()];
     final haystack = [name, ...aliases].join(' ');
 
     for (final token in tokens) {
-      if (!haystack.contains(token)) return null;
+      if (!haystack.contains(token)) {
+        return _scoreLoosely(food, foldedQuery, foldedTokens);
+      }
     }
     if (name == fullQuery || aliases.contains(fullQuery)) return 0;
     if (name.startsWith(fullQuery)) return 1;
@@ -323,11 +347,174 @@ class FoodRepository {
     if (name.split(RegExp(r'[\s()/,-]+')).any((w) => w.startsWith(fullQuery))) {
       return 3;
     }
+    // "chicken curry" in "Home-Style Chicken Curry".
+    if (name.contains(fullQuery)) return 4;
     if (aliases.any(
       (a) => a.split(RegExp(r'[\s()/,-]+')).any((w) => w.startsWith(fullQuery)),
     )) {
-      return 4;
+      return 5;
     }
-    return 5;
+    return 6;
   }
+
+  /// Joining words, folded: ki, ka, ke, di, da, de, wala, aur, with...
+  static final _fillers = {
+    for (final word in [
+      'ki',
+      'ka',
+      'ke',
+      'di',
+      'da',
+      'de',
+      'ni',
+      'na',
+      'wala',
+      'wali',
+      'wale',
+      'aur',
+      'and',
+      'with',
+      'of',
+      'the',
+      'a',
+      'in',
+    ])
+      foldSpelling(word),
+  };
+
+  // Each food's folded words, worked out once.
+  static final _foldedWords = Expando<List<String>>();
+
+  /// Every word typed is in the food's name or aliases with a letter or two
+  /// wrong: one in a short word, two in a long one. The first letter must
+  /// match, which is how people mistype, and keeps this quick.
+  static bool _nearMiss(FoodItem food, List<String> tokens) {
+    final words = _foldedWords[food] ??= [
+      for (final w in foldSpelling(
+        [food.name, ...food.aliases].join(' '),
+      ).split(' '))
+        if (w.isNotEmpty) w,
+    ];
+    for (final token in tokens) {
+      final allowed = token.length >= 7 ? 2 : (token.length >= 4 ? 1 : 0);
+      var hit = false;
+      for (final word in words) {
+        if (word.startsWith(token)) {
+          hit = true;
+          break;
+        }
+        if (allowed == 0 || word[0] != token[0]) continue;
+        // The whole word, or its start while the word is still being typed.
+        final start = word.length > token.length + allowed
+            ? word.substring(0, token.length)
+            : word;
+        if ((start.length - token.length).abs() > allowed) continue;
+        if (editDistance(token, start, allowed) <= allowed) {
+          hit = true;
+          break;
+        }
+      }
+      if (!hit) return false;
+    }
+    return true;
+  }
+
+  // Each food's name, and its name and aliases, with the spelling folded,
+  // worked out once.
+  static final _foldedName = Expando<String>();
+  static final _foldedAll = Expando<String>();
+
+  /// A match only once spelling is folded, like "parantha" for "paratha":
+  /// after every exact match.
+  static int? _scoreLoosely(
+    FoodItem food,
+    String foldedQuery,
+    List<String> foldedTokens,
+  ) {
+    if (foldedTokens.isEmpty) return null;
+    final haystack = _foldedAll[food] ??= foldSpelling(
+      [food.name, ...food.aliases].join(' '),
+    );
+    for (final token in foldedTokens) {
+      if (!haystack.contains(token)) return null;
+    }
+    final name = _foldedName[food] ??= foldSpelling(food.name);
+    return name.startsWith(foldedQuery) ? 7 : 8;
+  }
+}
+
+/// How many letters to add, drop or change to turn [a] into [b], counting
+/// no further than [limit]: anything over it comes back as limit + 1.
+int editDistance(String a, String b, int limit) {
+  if ((a.length - b.length).abs() > limit) return limit + 1;
+  var previous = List<int>.generate(b.length + 1, (i) => i);
+  for (var i = 1; i <= a.length; i++) {
+    final current = List<int>.filled(b.length + 1, 0)..[0] = i;
+    var best = current[0];
+    for (var j = 1; j <= b.length; j++) {
+      final cost = a.codeUnitAt(i - 1) == b.codeUnitAt(j - 1) ? 0 : 1;
+      final value = [
+        previous[j] + 1,
+        current[j - 1] + 1,
+        previous[j - 1] + cost,
+      ].reduce((x, y) => x < y ? x : y);
+      current[j] = value;
+      if (value < best) best = value;
+    }
+    if (best > limit) return limit + 1;
+    previous = current;
+  }
+  return previous[b.length];
+}
+
+/// [text] with the ways Hinglish spellings vary folded away, so "parantha"
+/// finds "paratha", "gobhi" finds "gobi", "daal" finds "dal", "panner"
+/// finds "paneer" and "chaval" finds "chawal". Search folds the query and
+/// the foods the same way, so it only needs to be consistent, not right.
+String foldSpelling(String text) {
+  // One pass over the letters, no regular expressions: search folds every
+  // food once, so this has to be quick.
+  const aspirated = 'bcdgjkpt';
+  const nasalBefore = 'bcdgjkpstzfq';
+  final s = text.toLowerCase();
+  final out = StringBuffer();
+  var last = ' ';
+  var previous = ' ';
+  for (var i = 0; i < s.length; i++) {
+    final letter = s[i];
+    final code = letter.codeUnitAt(0);
+    var c = letter;
+    if (!((code >= 97 && code <= 122) || (code >= 48 && code <= 57))) {
+      c = ' ';
+    } else if (letter == 'h' && aspirated.contains(previous)) {
+      // bh, chh, dh, gh, jh, kh, ph, th: "gobhi" is "gobi".
+      continue;
+    } else if (letter == 'o' && i + 1 < s.length && s[i + 1] == 'o') {
+      // "aloo" is "alu", "moong" is "mung".
+      c = 'u';
+      i++;
+    } else if (letter == 'n' &&
+        i + 1 < s.length &&
+        nasalBefore.contains(s[i + 1])) {
+      // A nasal n before a consonant: "parantha" is "paratha".
+      previous = letter;
+      continue;
+    } else {
+      // e and i alike ("panner", "paneer"), w and v ("chawal", "chaval").
+      c = switch (letter) {
+        'e' || 'y' => 'i',
+        'w' => 'v',
+        'z' => 'j',
+        'f' => 'p',
+        'q' => 'k',
+        _ => letter,
+      };
+    }
+    previous = letter;
+    // Doubled letters, and runs of spaces: "chapatti", "daal".
+    if (c == last) continue;
+    out.write(c);
+    last = c;
+  }
+  return out.toString().trim();
 }

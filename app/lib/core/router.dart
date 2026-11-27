@@ -34,64 +34,67 @@ abstract final class Routes {
 /// onboarding until someone has targets, sign-in while they're kept only on
 /// the phone, then the four tabs from Today. Everything else opens over the
 /// tabs. [initialExtra] is the first screen's arguments.
-GoRouter buildRouter({required String initialLocation, Object? initialExtra}) =>
-    GoRouter(
-      initialLocation: initialLocation,
-      initialExtra: initialExtra,
+GoRouter buildRouter({
+  required String initialLocation,
+  Object? initialExtra,
+}) => GoRouter(
+  initialLocation: initialLocation,
+  initialExtra: initialExtra,
+  routes: [
+    GoRoute(
+      path: Routes.intro,
+      builder: (context, state) => IntroScreen(replay: state.extra == true),
+    ),
+    GoRoute(
+      path: Routes.onboarding,
+      builder: (context, state) => const OnboardingScreen(),
+    ),
+    StatefulShellRoute(
+      builder: (context, state, shell) => AppShell(shell: shell),
+      navigatorContainerBuilder: (context, shell, children) =>
+          TabsContainer(currentIndex: shell.currentIndex, children: children),
+      // In AppTab's order.
+      branches: [
+        _tab(Routes.today, const TodayScreen()),
+        _tab(Routes.train, const TrainScreen()),
+        _tab(Routes.food, const FoodScreen()),
+        _tab(Routes.progress, const ProgressScreen()),
+      ],
+    ),
+    GoRoute(
+      path: Routes.logMeal,
+      builder: (context, state) => LogMealScreen(
+        args: state.extra as LogMealArgs? ?? const LogMealArgs(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.editDetails,
+      builder: (context, state) => const EditDetailsScreen(),
+    ),
+    GoRoute(
+      path: Routes.targets,
+      builder: (context, state) => const TargetsScreen(),
       routes: [
         GoRoute(
-          path: Routes.intro,
-          builder: (context, state) => IntroScreen(replay: state.extra == true),
-        ),
-        GoRoute(
-          path: Routes.onboarding,
-          builder: (context, state) => const OnboardingScreen(),
-        ),
-        StatefulShellRoute.indexedStack(
-          builder: (context, state, shell) => AppShell(shell: shell),
-          // In AppTab's order.
-          branches: [
-            _tab(Routes.today, const TodayScreen()),
-            _tab(Routes.train, const TrainScreen()),
-            _tab(Routes.food, const FoodScreen()),
-            _tab(Routes.progress, const ProgressScreen()),
-          ],
-        ),
-        GoRoute(
-          path: Routes.logMeal,
-          builder: (context, state) => LogMealScreen(
-            args: state.extra as LogMealArgs? ?? const LogMealArgs(),
-          ),
-        ),
-        GoRoute(
-          path: Routes.editDetails,
-          builder: (context, state) => const EditDetailsScreen(),
-        ),
-        GoRoute(
-          path: Routes.targets,
-          builder: (context, state) => const TargetsScreen(),
-          routes: [
-            GoRoute(
-              path: 'how',
-              builder: (context, state) => const HowWeCalculatedScreen(),
-            ),
-          ],
-        ),
-        GoRoute(
-          path: Routes.signIn,
-          builder: (context, state) => SignInScreen(
-            args: state.extra as SignInArgs? ?? const SignInArgs(),
-          ),
-          routes: [
-            GoRoute(
-              path: 'code',
-              builder: (context, state) =>
-                  CodeScreen(args: state.extra! as CodeArgs),
-            ),
-          ],
+          path: 'how',
+          builder: (context, state) => const HowWeCalculatedScreen(),
         ),
       ],
-    );
+    ),
+    GoRoute(
+      path: Routes.signIn,
+      builder: (context, state) =>
+          SignInScreen(args: state.extra as SignInArgs? ?? const SignInArgs()),
+      routes: [
+        GoRoute(
+          path: 'code',
+          builder: (context, state) =>
+              CodeScreen(args: state.extra! as CodeArgs),
+        ),
+      ],
+    ),
+  ],
+);
 
 StatefulShellBranch _tab(String path, Widget screen) => StatefulShellBranch(
   routes: [GoRoute(path: path, builder: (context, state) => screen)],

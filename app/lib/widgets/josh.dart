@@ -62,6 +62,7 @@ class Josh extends StatefulWidget {
     this.stage = JoshStage.cub,
     this.width = 200,
     this.playFor,
+    this.wakeKey,
   });
 
   final JoshMood mood;
@@ -75,6 +76,9 @@ class Josh extends StatefulWidget {
   /// doesn't keep the phone busy. Null: he moves for as long as he's on
   /// screen, as in the intro.
   final Duration? playFor;
+
+  /// When this changes, he moves again: something was just logged.
+  final Object? wakeKey;
 
   @override
   State<Josh> createState() => _JoshState();
@@ -110,7 +114,11 @@ class _JoshState extends State<Josh> with SingleTickerProviderStateMixin {
   void didUpdateWidget(Josh old) {
     super.didUpdateWidget(old);
     if (_still) return;
-    if (old.mood != widget.mood || old.stage != widget.stage) _play();
+    if (old.mood != widget.mood ||
+        old.stage != widget.stage ||
+        old.wakeKey != widget.wakeKey) {
+      _play();
+    }
   }
 
   /// Moves on from where he stands, so he never jumps.

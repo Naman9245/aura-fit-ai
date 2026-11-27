@@ -79,6 +79,17 @@ void main() {
         await _shot(tester, '21_today_more$suffix');
         await _tapTab(tester, 'Food');
         await _shot(tester, '22_food$suffix');
+        await _tap(tester, 'Search Indian foods');
+        await tester.enterText(_field('Search Indian foods & staples'), 'egg');
+        await _shot(tester, '22a_log_search$suffix');
+        await _tap(tester, 'Egg Curry (AndaTari)');
+        await _shot(tester, '22b_food_sheet$suffix');
+        Navigator.of(tester.element(find.text('OIL & GHEE'))).pop();
+        await tester.pumpAndSettle();
+        await _tap(tester, 'Quick add');
+        await _shot(tester, '22c_quick_add$suffix');
+        await tester.pageBack();
+        await tester.pumpAndSettle();
         await _scroll(tester, -900);
         await _shot(tester, '23_food_meals$suffix');
         await _tapTab(tester, 'Progress');

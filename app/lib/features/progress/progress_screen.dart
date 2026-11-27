@@ -11,6 +11,7 @@ import 'package:aurafit/features/shell/diary.dart';
 import 'package:aurafit/features/today/health_sheets.dart';
 import 'package:aurafit/widgets/bright_card.dart';
 import 'package:aurafit/widgets/josh.dart';
+import 'package:aurafit/widgets/motion.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,14 +53,12 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
       bottom: false,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        children: [
+        children: staggered([
           Semantics(
             header: true,
             child: Text('PROGRESS', style: AuraType.display(40)),
           ),
-          const SizedBox(height: 14),
           _StreakCard(streak: streak),
-          const SizedBox(height: 12),
           _MonthCalendar(
             month: _month,
             today: today,
@@ -76,11 +75,9 @@ class _ProgressScreenState extends ConsumerState<ProgressScreen> {
                   )
                 : null,
           ),
-          const SizedBox(height: 10),
           const _Legend(),
-          const SizedBox(height: 16),
           const _WeightCard(),
-        ],
+        ]),
       ),
     );
   }
@@ -110,7 +107,11 @@ class _StreakCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(streakTitle(streak), style: AuraType.display(28)),
+                CountUp(
+                  value: streak.toDouble(),
+                  format: (v) => streakTitle(v.round()),
+                  style: AuraType.display(28),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   streakLine(streak),
@@ -219,6 +220,8 @@ class _MonthCalendar extends StatelessWidget {
           const SizedBox(height: 6),
           for (var row = 0; row < rows; row++)
             Padding(
+              // A new month's days pop in afresh.
+              key: ValueKey((month, row)),
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 children: [
@@ -229,11 +232,21 @@ class _MonthCalendar extends StatelessWidget {
                         child: SizedBox(
                           height: cellHeight,
                           child: switch (row * 7 + col - lead + 1) {
-                            final n when n >= 1 && n <= daysInMonth => _DayCell(
-                              day: DateTime(month.year, month.month, n),
-                              kind: _kind(DateTime(month.year, month.month, n)),
-                              isToday:
-                                  DateTime(month.year, month.month, n) == today,
+                            final n when n >= 1 && n <= daysInMonth => Entrance(
+                              index: n,
+                              step: const Duration(milliseconds: 16),
+                              maxIndex: 31,
+                              rise: 8,
+                              grow: true,
+                              child: _DayCell(
+                                day: DateTime(month.year, month.month, n),
+                                kind: _kind(
+                                  DateTime(month.year, month.month, n),
+                                ),
+                                isToday:
+                                    DateTime(month.year, month.month, n) ==
+                                    today,
+                              ),
                             ),
                             _ => const SizedBox.shrink(),
                           },
@@ -586,12 +599,16 @@ class _WeightChart extends StatelessWidget {
       child: SizedBox(
         height: 140,
         width: double.infinity,
-        child: CustomPaint(
-          painter: _WeightChartPainter(
-            days: [for (final row in weighIns) row.day],
-            kg: kg,
-            average: sevenDayAverages(weighIns),
-            end: end,
+        child: FillUp(
+          value: 1,
+          builder: (context, drawn, _) => CustomPaint(
+            painter: _WeightChartPainter(
+              days: [for (final row in weighIns) row.day],
+              kg: kg,
+              average: sevenDayAverages(weighIns),
+              end: end,
+              drawn: drawn,
+            ),
           ),
         ),
       ),
@@ -605,12 +622,16 @@ class _WeightChartPainter extends CustomPainter {
     required this.kg,
     required this.average,
     required this.end,
+    this.drawn = 1,
   });
 
   final List<DateTime> days;
   final List<double> kg;
   final List<double> average;
   final DateTime end;
+
+  /// How much of the line is drawn yet, from 0 to 1.
+  final double drawn;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -637,9 +658,12 @@ class _WeightChartPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
     }
 
+    // Dots appear as the line reaches them, left to right.
+    final reached = pad + (size.width - 2 * pad) * drawn;
     final dot = Paint()..color = AuraColors.lilac;
     for (var i = 0; i < days.length; i++) {
-      canvas.drawCircle(at(days[i], kg[i]), 3.5, dot);
+      final point = at(days[i], kg[i]);
+      if (point.dx <= reached + 0.5) canvas.drawCircle(point, 3.5, dot);
     }
 
     final line = Path();
@@ -649,18 +673,23 @@ class _WeightChartPainter extends CustomPainter {
           ? line.moveTo(point.dx, point.dy)
           : line.lineTo(point.dx, point.dy);
     }
-    canvas.drawPath(
-      line,
-      Paint()
-        ..color = AuraColors.accent
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round,
-    );
+    final pen = Paint()
+      ..color = AuraColors.accent
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    if (drawn >= 1) {
+      canvas.drawPath(line, pen);
+      return;
+    }
+    canvas.save();
+    canvas.clipRect(Rect.fromLTRB(0, 0, reached + 2, size.height));
+    canvas.drawPath(line, pen);
+    canvas.restore();
   }
 
   @override
   bool shouldRepaint(_WeightChartPainter old) =>
-      old.kg != kg || old.days != days || old.end != end;
+      old.kg != kg || old.days != days || old.end != end || old.drawn != drawn;
 }

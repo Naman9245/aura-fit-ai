@@ -1,6 +1,9 @@
 import 'package:aurafit/core/format.dart';
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
+import 'package:aurafit/core/theme/aura_type.dart';
+import 'package:aurafit/widgets/bright_card.dart';
+import 'package:aurafit/widgets/motion.dart';
 import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/db/app_database.dart';
 import 'package:aurafit/data/providers.dart';
@@ -89,43 +92,63 @@ class _Targets extends StatelessWidget {
             style: text.bodyLarge?.copyWith(color: AuraColors.muted),
           ),
           const SizedBox(height: 24),
-          _CaloriesCard(goal: goal, targets: targets),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _Stat(label: 'Protein', value: '${goal.proteinG} g'),
+          ...staggered([
+            _CaloriesCard(goal: goal, targets: targets),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: _Stat(
+                      label: 'Protein',
+                      value: '${goal.proteinG} g',
+                      colour: AuraColors.mint,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _Stat(
+                      label: 'Carbs',
+                      value: '${goal.carbsG} g',
+                      colour: AuraColors.sky,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _Stat(
+                      label: 'Fat',
+                      value: '${goal.fatG} g',
+                      colour: AuraColors.yellow,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _Stat(label: 'Carbs', value: '${goal.carbsG} g'),
+            ),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: _Stat(
+                      label: 'Water',
+                      value: formatLitres(goal.waterMl),
+                      icon: Icons.water_drop_outlined,
+                      colour: AuraColors.lilacLight,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _Stat(
+                      label: 'Steps',
+                      value: formatWhole(goal.steps),
+                      icon: Icons.directions_walk,
+                      colour: AuraColors.lilac,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _Stat(label: 'Fat', value: '${goal.fatG} g'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _Stat(
-                  label: 'Water',
-                  value: formatLitres(goal.waterMl),
-                  icon: Icons.water_drop_outlined,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _Stat(
-                  label: 'Steps',
-                  value: formatWhole(goal.steps),
-                  icon: Icons.directions_walk,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ]),
           const SizedBox(height: 24),
           FilledButton(
             onPressed: () => context.go(Routes.today),
@@ -175,94 +198,100 @@ class _CaloriesCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final t = targets;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Calories',
-              style: text.titleMedium?.copyWith(color: AuraColors.muted),
+    return BrightCard(
+      color: AuraColors.accent,
+      radius: 28,
+      padding: const EdgeInsets.all(22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('CALORIES', style: AuraType.kicker()),
+          const SizedBox(height: 6),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: formatWhole(goal.caloriesKcal),
+                  style: AuraType.display(64, color: AuraColors.ink),
+                ),
+                TextSpan(
+                  text: ' kcal a day',
+                  style: text.titleMedium?.copyWith(
+                    color: AuraColors.ink,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: formatWhole(goal.caloriesKcal),
-                    style: text.displayMedium?.copyWith(
-                      color: AuraColors.accent,
-                      fontWeight: FontWeight.w700,
-                    ),
+          ),
+          if (t != null && t.floorApplied) ...[
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.shield_outlined),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Raised to the safe minimum. The formula gave '
+                    '${formatWhole(t.unflooredKcal.round())} kcal, and '
+                    'eating that little isn\'t safe without a doctor.',
+                    style: text.bodyMedium?.copyWith(color: AuraColors.ink),
                   ),
-                  TextSpan(text: ' kcal a day', style: text.titleMedium),
-                ],
-              ),
+                ),
+              ],
             ),
-            if (t != null && t.floorApplied) ...[
-              const SizedBox(height: 16),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.shield_outlined,
-                    color: AuraColors.accentSoft,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Raised to the safe minimum. The formula gave '
-                      '${formatWhole(t.unflooredKcal.round())} kcal, and '
-                      'eating that little isn\'t safe without a doctor.',
-                      style: text.bodyMedium,
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value, this.icon});
+  const _Stat({
+    required this.label,
+    required this.value,
+    required this.colour,
+    this.icon,
+  });
 
   final String label;
   final String value;
+  final Color colour;
   final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: MergeSemantics(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 18, color: AuraColors.muted),
-                    const SizedBox(width: 6),
-                  ],
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: text.labelLarge?.copyWith(color: AuraColors.muted),
-                    ),
-                  ),
+    return BrightCard(
+      color: colour,
+      child: MergeSemantics(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 18),
+                  const SizedBox(width: 6),
                 ],
+                Flexible(
+                  child: Text(label.toUpperCase(), style: AuraType.kicker()),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                maxLines: 1,
+                softWrap: false,
+                style: AuraType.display(30, color: AuraColors.ink),
               ),
-              const SizedBox(height: 6),
-              Text(value, style: text.titleLarge),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

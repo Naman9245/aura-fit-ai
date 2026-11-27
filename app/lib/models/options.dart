@@ -131,6 +131,9 @@ enum Meal implements StoredOption {
 
   const Meal(this.storage, this.label);
 
+  /// In the order they're eaten through the day.
+  static const inDayOrder = [breakfast, lunch, snack, dinner];
+
   @override
   final String storage;
   @override

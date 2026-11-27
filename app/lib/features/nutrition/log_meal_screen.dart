@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:aurafit/core/error_reporter.dart';
 import 'package:aurafit/core/format.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
+import 'package:aurafit/core/theme/aura_type.dart';
+import 'package:aurafit/widgets/motion.dart';
 import 'package:aurafit/data/db/app_database.dart';
 import 'package:aurafit/data/food_repository.dart';
 import 'package:aurafit/data/log_repository.dart';
@@ -291,7 +293,7 @@ class _LogMealScreenState extends ConsumerState<LogMealScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: Text('Log ${_meal.label.toLowerCase()}')),
+      appBar: AppBar(title: Text('LOG ${_meal.label.toUpperCase()}')),
       body: AuraBackground(
         child: SafeArea(
           child: Column(
@@ -303,7 +305,7 @@ class _LogMealScreenState extends ConsumerState<LogMealScreen> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      for (final m in Meal.values)
+                      for (final m in Meal.inDayOrder)
                         Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: ChoiceChip(
@@ -410,61 +412,73 @@ class _LogMealScreenState extends ConsumerState<LogMealScreen> {
                       count: 1,
                       oilLevel: food.defaultOil,
                     );
-                    return Card(
-                      child: InkWell(
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(24),
-                        ),
-                        onTap: () => _openFoodSheet(food),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: AuraColors.surfaceStrong,
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.circular(12),
-                                  ),
-                                  border: Border.all(color: AuraColors.border),
-                                ),
-                                child: Icon(
-                                  iconForPortionUnit(defaultPortion.unit),
-                                  size: 20,
-                                  color: AuraColors.accentSoft,
-                                ),
+                    // Keyed by food, so new results rise in as you type.
+                    return Entrance(
+                      key: ValueKey(food.id),
+                      index: index,
+                      step: const Duration(milliseconds: 30),
+                      rise: 12,
+                      child: Pressable(
+                        child: Card(
+                          child: InkWell(
+                            onTap: () => _openFoodSheet(food),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(food.name, style: text.titleMedium),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '1 ${defaultPortion.unit} '
-                                      '(${formatDecimal(preview.grams, places: 0)} g) · '
-                                      '${formatDecimal(preview.proteinG, places: 1)} g protein',
-                                      style: text.bodySmall?.copyWith(
-                                        color: AuraColors.muted,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          tileColours[index %
+                                              tileColours.length],
+                                      borderRadius: const BorderRadius.all(
+                                        Radius.circular(14),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                    child: Icon(
+                                      iconForPortionUnit(defaultPortion.unit),
+                                      size: 22,
+                                      color: AuraColors.ink,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          food.name,
+                                          style: text.titleMedium,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '1 ${defaultPortion.unit} '
+                                          '(${formatDecimal(preview.grams, places: 0)} g) · '
+                                          '${formatDecimal(preview.proteinG, places: 1)} g protein',
+                                          style: text.bodySmall?.copyWith(
+                                            color: AuraColors.muted,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    '${formatWhole(preview.kcal.round())} KCAL',
+                                    style: AuraType.display(
+                                      20,
+                                      color: AuraColors.accentSoft,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 12),
-                              Text(
-                                '${formatWhole(preview.kcal.round())} kcal',
-                                style: text.titleMedium?.copyWith(
-                                  color: AuraColors.accentSoft,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -1080,7 +1094,7 @@ class _FoodPortionSheetState extends ConsumerState<_FoodPortionSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(widget.food.name, style: text.titleLarge),
+            Text(widget.food.name, style: text.headlineSmall),
             if (widget.food.assumption.isNotEmpty) ...[
               const SizedBox(height: 2),
               Text(
@@ -1089,35 +1103,11 @@ class _FoodPortionSheetState extends ConsumerState<_FoodPortionSheet> {
               ),
             ],
             const SizedBox(height: 12),
-            Card(
-              color: AuraColors.surfaceStrong,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 14,
-                ),
-                child: Row(
-                  children: [
-                    _MacroPill(
-                      label: 'Calories',
-                      value: '${formatWhole(calc.kcal.round())} kcal',
-                      highlight: true,
-                    ),
-                    _MacroPill(
-                      label: 'Protein',
-                      value: '${formatDecimal(calc.proteinG, places: 1)} g',
-                    ),
-                    _MacroPill(
-                      label: 'Carbs',
-                      value: '${formatDecimal(calc.carbsG, places: 1)} g',
-                    ),
-                    _MacroPill(
-                      label: 'Fat',
-                      value: '${formatDecimal(calc.fatG, places: 1)} g',
-                    ),
-                  ],
-                ),
-              ),
+            MacroTiles(
+              kcal: calc.kcal,
+              proteinG: calc.proteinG,
+              carbsG: calc.carbsG,
+              fatG: calc.fatG,
             ),
             const SizedBox(height: 14),
             Flexible(
@@ -1140,7 +1130,10 @@ class _FoodPortionSheetState extends ConsumerState<_FoodPortionSheet> {
                     ),
                     if (_hasCookingOil) ...[
                       const SizedBox(height: 14),
-                      Text('Oil & ghee', style: text.labelLarge),
+                      Text(
+                        'OIL & GHEE',
+                        style: AuraType.kicker(color: AuraColors.muted),
+                      ),
                       const SizedBox(height: 8),
                       OilSelectorBar(
                         selected: _oil,
@@ -1219,43 +1212,96 @@ class _FoodPortionSheetState extends ConsumerState<_FoodPortionSheet> {
   }
 }
 
-class _MacroPill extends StatelessWidget {
-  const _MacroPill({
-    required this.label,
-    required this.value,
-    this.highlight = false,
+/// The bright colours list items take in turn.
+const tileColours = [
+  AuraColors.mint,
+  AuraColors.sky,
+  AuraColors.yellow,
+  AuraColors.lilacLight,
+];
+
+/// Calories, protein, carbs and fat as four bright tiles. The numbers count
+/// to their new value whenever the portion changes.
+class MacroTiles extends StatelessWidget {
+  const MacroTiles({
+    super.key,
+    required this.kcal,
+    required this.proteinG,
+    required this.carbsG,
+    required this.fatG,
   });
 
-  final String label;
-  final String value;
-  final bool highlight;
+  final double kcal;
+  final double proteinG;
+  final double carbsG;
+  final double fatG;
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    // Flexible and scaled down, so four values fit a 320 dp phone even at
-    // large system text sizes.
-    return Expanded(
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: text.bodySmall?.copyWith(color: AuraColors.muted),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value,
-              style: text.titleSmall?.copyWith(
-                color: highlight ? AuraColors.accent : AuraColors.foreground,
-                fontWeight: FontWeight.w600,
+    final tiles = <(Color, String, double, String Function(double))>[
+      (AuraColors.accent, 'KCAL', kcal, (v) => formatWhole(v.round())),
+      (
+        AuraColors.mint,
+        'PROTEIN',
+        proteinG,
+        (v) => '${formatDecimal(v, places: 1)} g',
+      ),
+      (
+        AuraColors.sky,
+        'CARBS',
+        carbsG,
+        (v) => '${formatDecimal(v, places: 1)} g',
+      ),
+      (
+        AuraColors.yellow,
+        'FAT',
+        fatG,
+        (v) => '${formatDecimal(v, places: 1)} g',
+      ),
+    ];
+    return Row(
+      children: [
+        for (final (index, (colour, label, value, format))
+            in tiles.indexed) ...[
+          if (index > 0) const SizedBox(width: 8),
+          Expanded(
+            child: MergeSemantics(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colour,
+                  borderRadius: const BorderRadius.all(Radius.circular(18)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 12,
+                  ),
+                  // Scaled down, so four fit a 320 dp phone at large text.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      children: [
+                        CountUp(
+                          value: value,
+                          fromZero: false,
+                          format: format,
+                          style: AuraType.display(24, color: AuraColors.ink),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          label,
+                          style: AuraType.kicker(color: AuraColors.ink)
+                              .copyWith(fontSize: 10, letterSpacing: 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -1386,37 +1432,13 @@ class _EditMealEntrySheetState extends ConsumerState<_EditMealEntrySheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(widget.entry.name, style: text.titleLarge),
+            Text(widget.entry.name, style: text.headlineSmall),
             const SizedBox(height: 10),
-            Card(
-              color: AuraColors.surfaceStrong,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 14,
-                ),
-                child: Row(
-                  children: [
-                    _MacroPill(
-                      label: 'Calories',
-                      value: '${formatWhole(calc.kcal.round())} kcal',
-                      highlight: true,
-                    ),
-                    _MacroPill(
-                      label: 'Protein',
-                      value: '${formatDecimal(calc.proteinG, places: 1)} g',
-                    ),
-                    _MacroPill(
-                      label: 'Carbs',
-                      value: '${formatDecimal(calc.carbsG, places: 1)} g',
-                    ),
-                    _MacroPill(
-                      label: 'Fat',
-                      value: '${formatDecimal(calc.fatG, places: 1)} g',
-                    ),
-                  ],
-                ),
-              ),
+            MacroTiles(
+              kcal: calc.kcal,
+              proteinG: calc.proteinG,
+              carbsG: calc.carbsG,
+              fatG: calc.fatG,
             ),
             const SizedBox(height: 14),
             Flexible(
@@ -1429,7 +1451,7 @@ class _EditMealEntrySheetState extends ConsumerState<_EditMealEntrySheet> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          for (final m in Meal.values)
+                          for (final m in Meal.inDayOrder)
                             Padding(
                               padding: const EdgeInsets.only(right: 8),
                               child: ChoiceChip(
@@ -1456,7 +1478,10 @@ class _EditMealEntrySheetState extends ConsumerState<_EditMealEntrySheet> {
                     ),
                     if (_hasCookingOil) ...[
                       const SizedBox(height: 14),
-                      Text('Oil & ghee', style: text.labelLarge),
+                      Text(
+                        'OIL & GHEE',
+                        style: AuraType.kicker(color: AuraColors.muted),
+                      ),
                       const SizedBox(height: 8),
                       OilSelectorBar(
                         selected: _oil,
