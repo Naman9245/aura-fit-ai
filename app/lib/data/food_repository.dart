@@ -332,9 +332,11 @@ class FoodRepository {
     String foldedQuery,
     List<String> foldedTokens,
   ) {
-    final name = food.name.toLowerCase();
-    final aliases = [for (final a in food.aliases) a.toLowerCase()];
-    final haystack = [name, ...aliases].join(' ');
+    final (:name, :aliases, :haystack) = _lowered[food] ??= (
+      name: food.name.toLowerCase(),
+      aliases: [for (final a in food.aliases) a.toLowerCase()],
+      haystack: [food.name, ...food.aliases].join(' ').toLowerCase(),
+    );
 
     for (final token in tokens) {
       if (!haystack.contains(token)) {
@@ -356,6 +358,11 @@ class FoodRepository {
     }
     return 6;
   }
+
+  // Each food's name, aliases and both together in lower case, worked out
+  // once rather than on every key pressed.
+  static final _lowered =
+      Expando<({String name, List<String> aliases, String haystack})>();
 
   /// Joining words, folded: ki, ka, ke, di, da, de, wala, aur, with...
   static final _fillers = {

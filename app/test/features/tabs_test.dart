@@ -70,6 +70,20 @@ void main() {
       expect(find.text('TODAY'), findsOneWidget);
       expect(find.text('DAY 1'), findsOneWidget);
       expect(find.text('GOOD MORNING'), findsOneWidget);
+      expect(find.text("TODAY'S GOALS"), findsOneWidget);
+      expect(find.textContaining('4 goals today'), findsOneWidget);
+
+      // Drag the pill from Today to Progress, and let go.
+      Offset tab(String label) => tester.getCenter(
+        find.descendant(
+          of: find.byType(AuraTabBar),
+          matching: find.text(label),
+        ),
+      );
+      await tester.dragFrom(tab('Today'), tab('Progress') - tab('Today'));
+      await tester.pumpAndSettle();
+      expect(find.text('PROGRESS'), findsOneWidget);
+      await _openTab(tester, 'Today');
 
       await _openTab(tester, 'Train');
       expect(find.text('TRAIN'), findsOneWidget);
@@ -149,6 +163,20 @@ void main() {
         );
         expect(button.onPressed, isNull);
       }
+
+      // Tapping a day: Josh says how it went.
+      await tester.tap(find.bySemanticsLabel('18 November: logged'));
+      await tester.pumpAndSettle();
+      expect(find.text('WEDNESDAY 18 NOVEMBER'), findsOneWidget);
+      expect(find.text("THAT DAY'S GOALS"), findsOneWidget);
+      expect(find.textContaining('new chance'), findsOneWidget);
+      Navigator.of(tester.element(find.text('WEDNESDAY 18 NOVEMBER'))).pop();
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('19 November: no log'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('No guilt'), findsOneWidget);
+      Navigator.of(tester.element(find.textContaining('No guilt'))).pop();
+      await tester.pumpAndSettle();
 
       await _scrollTo(tester, find.text('0.8 kg down since 8 November'));
       expect(find.text('65.2 KG'), findsOneWidget);

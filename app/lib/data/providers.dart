@@ -83,10 +83,18 @@ final savedMealsProvider = StreamProvider<List<SavedMealBundle>>(
   (ref) => ref.watch(logRepositoryProvider).watchSavedMeals(),
 );
 
-/// Every day with a meal logged: Josh's streak and the Progress calendar.
-final loggedDaysProvider = StreamProvider<Set<DateTime>>(
+/// Every day with a meal logged.
+final mealDaysProvider = StreamProvider<Set<DateTime>>(
   (ref) => ref.watch(logRepositoryProvider).watchLoggedDays(),
 );
+
+/// Every day with a meal or a workout logged: Josh's streak and the
+/// Progress calendar.
+final loggedDaysProvider = Provider<AsyncValue<Set<DateTime>>>((ref) {
+  final meals = ref.watch(mealDaysProvider).value;
+  final workouts = ref.watch(workoutDaysProvider).value;
+  return AsyncData({...?meals, ...?workouts});
+});
 
 /// How far back the weight trend looks: 12 weeks.
 const weightTrendDays = 84;

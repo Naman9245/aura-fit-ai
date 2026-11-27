@@ -123,12 +123,36 @@ class _TabsContainerState extends State<TabsContainer>
   }
 }
 
-/// The bar of tabs: an orange pill slides to the open one.
-class AuraTabBar extends StatelessWidget {
+/// The bar of tabs: an orange pill slides to the open one. Hold the pill
+/// and drag it along the bar, and the tab it's let go on opens.
+class AuraTabBar extends StatefulWidget {
   const AuraTabBar({super.key, required this.current, required this.onSelect});
 
   final AppTab current;
   final ValueChanged<AppTab> onSelect;
+
+  @override
+  State<AuraTabBar> createState() => _AuraTabBarState();
+}
+
+class _AuraTabBarState extends State<AuraTabBar> {
+  /// Where the finger is along the bar while the pill is dragged.
+  double? _dragX;
+
+  int _tabAt(double x, double width) =>
+      (x / width).floor().clamp(0, AppTab.values.length - 1);
+
+  /// The pill's left edge with the finger at [dragX]: centred on it, kept
+  /// on the bar.
+  double _pillLeft(double dragX, double width, double barWidth) =>
+      (dragX - width / 2).clamp(0.0, barWidth - width);
+
+  /// The tab the pill is over with the finger at [dragX].
+  AppTab _tabUnder(double dragX, double width, double barWidth) =>
+      AppTab.values[_tabAt(
+        _pillLeft(dragX, width, barWidth) + width / 2,
+        width,
+      )];
 
   @override
   Widget build(BuildContext context) {
@@ -145,40 +169,76 @@ class AuraTabBar extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth / AppTab.values.length;
-              return Stack(
-                children: [
-                  AnimatedPositioned(
-                    duration: still
-                        ? Duration.zero
-                        : const Duration(milliseconds: 380),
-                    curve: Curves.easeOutBack,
-                    left: current.index * width + 3,
-                    width: width - 6,
-                    top: 0,
-                    bottom: 0,
-                    child: const DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: AuraColors.accent,
-                        borderRadius: BorderRadius.all(Radius.circular(16)),
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      for (final tab in AppTab.values)
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 3),
-                            child: _TabButton(
-                              tab: tab,
-                              selected: tab == current,
-                              onTap: () => onSelect(tab),
-                            ),
+              final dragX = _dragX;
+              final barWidth = constraints.maxWidth;
+              final left = dragX == null
+                  ? widget.current.index * width
+                  : _pillLeft(dragX, width, barWidth);
+              // The tab under the pill: the open one, or the one it's over.
+              final under = dragX == null
+                  ? widget.current
+                  : _tabUnder(dragX, width, barWidth);
+              return GestureDetector(
+                onHorizontalDragStart: (details) =>
+                    setState(() => _dragX = details.localPosition.dx),
+                onHorizontalDragUpdate: (details) {
+                  final before = _dragX == null ? null : _tabAt(_dragX!, width);
+                  setState(() => _dragX = details.localPosition.dx);
+                  if (before != _tabAt(_dragX!, width)) {
+                    HapticFeedback.selectionClick().ignore();
+                  }
+                },
+                onHorizontalDragEnd: (_) {
+                  // Where the finger let go, not the last frame drawn.
+                  final x = _dragX;
+                  setState(() => _dragX = null);
+                  if (x == null) return;
+                  final target = _tabUnder(x, width, barWidth);
+                  if (target != widget.current) widget.onSelect(target);
+                },
+                onHorizontalDragCancel: () => setState(() => _dragX = null),
+                child: Stack(
+                  children: [
+                    AnimatedPositioned(
+                      // Under the finger while dragged; a springy slide after.
+                      duration: still || dragX != null
+                          ? Duration.zero
+                          : const Duration(milliseconds: 380),
+                      curve: Curves.easeOutBack,
+                      left: left + 3,
+                      width: width - 6,
+                      top: 0,
+                      bottom: 0,
+                      child: AnimatedScale(
+                        scale: dragX == null ? 1 : 1.06,
+                        duration: const Duration(milliseconds: 150),
+                        child: const DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AuraColors.accent,
+                            borderRadius: BorderRadius.all(Radius.circular(16)),
                           ),
                         ),
-                    ],
-                  ),
-                ],
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        for (final tab in AppTab.values)
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 3,
+                              ),
+                              child: _TabButton(
+                                tab: tab,
+                                selected: tab == under,
+                                onTap: () => widget.onSelect(tab),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               );
             },
           ),
