@@ -101,6 +101,35 @@ ThemeData buildAuraTheme() {
         side: BorderSide(color: AuraColors.border),
       ),
     ),
+    // Yesterday / Today: the chosen one in paper, like the design's chips.
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: SegmentedButton.styleFrom(
+        backgroundColor: AuraColors.surface,
+        foregroundColor: AuraColors.muted,
+        selectedBackgroundColor: AuraColors.paper,
+        selectedForegroundColor: AuraColors.ink,
+        side: BorderSide.none,
+        minimumSize: const Size(0, 44),
+        textStyle: buttonText?.copyWith(fontSize: 14),
+      ),
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: AuraColors.surface,
+      selectedColor: AuraColors.paper,
+      side: BorderSide.none,
+      shape: const StadiumBorder(),
+      showCheckmark: false,
+      labelStyle: base.textTheme.labelLarge?.copyWith(
+        color: WidgetStateColor.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? AuraColors.ink
+              : AuraColors.foreground,
+        ),
+      ),
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: AuraColors.surface,
+    ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: AuraColors.accent,
       linearTrackColor: AuraColors.surfaceStrong,

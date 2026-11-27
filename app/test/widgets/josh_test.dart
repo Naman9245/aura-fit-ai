@@ -56,6 +56,30 @@ void main() {
     expect(tester.hasRunningAnimations, isFalse);
   });
 
+  testWidgets('on a tab he moves for a while, rests, and wakes when tapped', (
+    tester,
+  ) async {
+    Widget josh(JoshMood mood) => _frame(
+      Josh(mood: mood, playFor: const Duration(seconds: 2)),
+      still: false,
+    );
+    await tester.pumpWidget(josh(JoshMood.happy));
+    expect(tester.hasRunningAnimations, isTrue);
+    await tester.pump(const Duration(milliseconds: 2100));
+    expect(tester.hasRunningAnimations, isFalse);
+
+    await tester.tap(find.byType(Josh));
+    await tester.pump();
+    expect(tester.hasRunningAnimations, isTrue);
+    await tester.pumpAndSettle();
+    expect(tester.hasRunningAnimations, isFalse);
+
+    // A new mood, like reaching the protein target, wakes him too.
+    await tester.pumpWidget(josh(JoshMood.proud));
+    expect(tester.hasRunningAnimations, isTrue);
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('his height follows his width', (tester) async {
     await tester.pumpWidget(
       _frame(const Josh(mood: JoshMood.calm, width: 100)),

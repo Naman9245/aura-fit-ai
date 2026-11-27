@@ -5,8 +5,12 @@ import 'package:aurafit/app.dart';
 import 'package:aurafit/core/router.dart';
 import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/db/app_database.dart';
+import 'package:aurafit/data/log_repository.dart';
+import 'package:aurafit/data/profile_repository.dart';
 import 'package:aurafit/data/providers.dart';
 import 'package:aurafit/data/sync/sync_controller.dart';
+import 'package:aurafit/features/shell/app_shell.dart';
+import 'package:aurafit/models/options.dart';
 import 'package:clock/clock.dart';
 import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
@@ -51,6 +55,38 @@ void main() {
         await _shot(tester, '00d_intro_food$suffix');
         await _tap(tester, 'Next');
         await _shot(tester, '00e_intro_together$suffix');
+      });
+    });
+
+    testWidgets('render the tabs$suffix', (tester) async {
+      final now = DateTime(2026, 11, 26, 13);
+      await withClock(Clock.fixed(now), () async {
+        await _loadFonts();
+        tester.platformDispatcher.accessibilityFeaturesTestValue =
+            const FakeAccessibilityFeatures(disableAnimations: true);
+        addTearDown(
+          tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+        );
+        await _pump(
+          tester,
+          scale,
+          startAt: Routes.today,
+          seed: (db) => _seedDiary(db, now),
+        );
+
+        await _shot(tester, '20_today$suffix');
+        await _scroll(tester, -700);
+        await _shot(tester, '21_today_more$suffix');
+        await _tapTab(tester, 'Food');
+        await _shot(tester, '22_food$suffix');
+        await _scroll(tester, -900);
+        await _shot(tester, '23_food_meals$suffix');
+        await _tapTab(tester, 'Progress');
+        await _shot(tester, '24_progress$suffix');
+        await _scroll(tester, -700);
+        await _shot(tester, '25_progress_weight$suffix');
+        await _tapTab(tester, 'Train');
+        await _shot(tester, '26_train$suffix');
       });
     });
 
@@ -126,6 +162,94 @@ void main() {
 
 Finder _field(String label) => find.widgetWithText(TextField, label);
 
+Future<void> _tapTab(WidgetTester tester, String label) async {
+  await tester.tap(
+    find.descendant(of: find.byType(AuraTabBar), matching: find.text(label)),
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Two weeks of meals this month, water and steps today, and twelve weeks
+/// of weigh-ins, as someone a fortnight in would have.
+Future<void> _seedDiary(AppDatabase db, DateTime now) async {
+  await ProfileRepository(db).saveProfile(
+    ProfileAnswers(
+      goal: GoalType.loseFat,
+      birthDate: DateTime(1996, 5, 10),
+      sex: Sex.female,
+      heightCm: 160,
+      weightKg: 63.9,
+      activity: ActivityLevel.lightlyActive,
+      diet: DietType.veg,
+    ),
+  );
+  final log = LogRepository(db);
+  final today = DateTime(now.year, now.month, now.day);
+  Future<void> meal(
+    DateTime day,
+    Meal meal,
+    String name,
+    double kcal,
+    double protein, {
+    String unit = 'katori',
+    double count = 1,
+  }) => log.logEntry(
+    NewMealEntry(
+      name: name,
+      meal: meal,
+      day: day,
+      portionUnit: unit,
+      portionCount: count,
+      oilLevel: OilLevel.home,
+      grams: 150 * count,
+      kcal: kcal,
+      proteinG: protein,
+      carbsG: kcal * 0.12,
+      fatG: kcal * 0.03,
+      source: EntrySource.search,
+    ),
+  );
+  for (final d in [2, 3, 5, 6, 9, 10, 12, 16, 17, 19, 20, 23, 24]) {
+    final day = DateTime(now.year, now.month, d);
+    await meal(day, Meal.breakfast, 'Poha', 270, 6, unit: 'plate');
+    await meal(day, Meal.lunch, 'Rajma', 240, 11);
+  }
+  await meal(today, Meal.breakfast, 'Poha', 270, 6, unit: 'plate');
+  await meal(
+    today,
+    Meal.lunch,
+    'Phulka / Plain Roti',
+    194,
+    7,
+    unit: 'piece',
+    count: 2,
+  );
+  await meal(today, Meal.lunch, 'Moong Dal', 160, 10);
+  await meal(today, Meal.snack, 'Curd', 98, 5);
+  for (var i = 0; i < 6; i++) {
+    await log.addWater(day: today);
+  }
+  await log.setStepsForDay(day: today, steps: 6400);
+  const kg = [
+    66.0,
+    65.8,
+    65.9,
+    65.5,
+    65.2,
+    65.3,
+    64.9,
+    64.6,
+    64.7,
+    64.3,
+    64.1,
+    63.9,
+  ];
+  for (var week = 0; week < kg.length; week++) {
+    final day = DateTime(today.year, today.month, today.day - 7 * (11 - week));
+    await log.saveWeightForDay(day: day, weightKg: kg[week]);
+  }
+}
+
 Future<void> _tap(WidgetTester tester, String text) async {
   // Rebuild first, so a button enabled by the last change is tappable.
   await tester.pumpAndSettle();
@@ -138,6 +262,7 @@ Future<void> _pump(
   WidgetTester tester,
   double textScale, {
   String startAt = Routes.onboarding,
+  Future<void> Function(AppDatabase db)? seed,
 }) async {
   tester.view
     ..physicalSize = const Size(1080, 2400)
@@ -153,6 +278,7 @@ Future<void> _pump(
     ),
   );
   addTearDown(db.close);
+  if (seed != null) await tester.runAsync(() => seed(db));
   await tester.pumpWidget(
     RepaintBoundary(
       key: _app,

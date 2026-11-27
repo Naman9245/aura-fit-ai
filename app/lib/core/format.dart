@@ -45,3 +45,10 @@ const _months = [
 /// A date in words: "14 March 1998".
 String formatDate(DateTime date) =>
     '${date.day} ${_months[date.month - 1]} ${date.year}';
+
+/// A month's name: "March".
+String monthName(int month) => _months[month - 1];
+
+/// A day without the year: "14 March".
+String formatDayMonth(DateTime date) =>
+    '${date.day} ${_months[date.month - 1]}';
