@@ -57,6 +57,11 @@ android {
 
     buildTypes {
         release {
+            // Kept from shrinking: WorkManager's database (proguard-rules.pro).
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             manifestPlaceholders["crashReportsOn"] = "true"
             signingConfig = signingConfigs.findByName("upload")
                 ?: signingConfigs.getByName("debug")
