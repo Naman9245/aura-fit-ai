@@ -4,6 +4,8 @@ import 'package:aurafit/data/db/app_database.dart';
 import 'package:aurafit/data/food_repository.dart';
 import 'package:aurafit/data/log_repository.dart';
 import 'package:aurafit/data/profile_repository.dart';
+import 'package:aurafit/data/workout_repository.dart';
+import 'package:aurafit/services/workouts.dart';
 import 'package:aurafit/services/meal_text_parser.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -99,6 +101,37 @@ final weighInsProvider = StreamProvider<List<WeightLogRow>>((ref) {
   );
   return ref.watch(logRepositoryProvider).watchWeighIns(from: from);
 });
+
+final workoutRepositoryProvider = Provider<WorkoutRepository>(
+  (ref) => WorkoutRepository(ref.watch(appDatabaseProvider)),
+);
+
+/// This week's training plan, or null until where and how often to train
+/// are chosen.
+final trainingPlanProvider = Provider<TrainingPlan?>((ref) {
+  final profile = ref.watch(profileProvider).value;
+  final place = profile?.trainingPlace;
+  if (place == null) return null;
+  return TrainingPlan(
+    place: place,
+    days: profile?.trainingDays ?? suggestedDays(profile?.experience),
+    experience: profile?.experience,
+  );
+});
+
+/// Workouts done in the week (Monday to Sunday) that holds a day.
+final weekWorkoutsProvider =
+    StreamProvider.family<List<WorkoutSessionRow>, DateTime>((ref, day) {
+      final d = diaryDay(day);
+      final monday = DateTime(d.year, d.month, d.day - (d.weekday - 1));
+      final sunday = DateTime(monday.year, monday.month, monday.day + 6);
+      return ref.watch(workoutRepositoryProvider).watchBetween(monday, sunday);
+    });
+
+/// Every day with a workout, for the calendar and the goals.
+final workoutDaysProvider = StreamProvider<Set<DateTime>>(
+  (ref) => ref.watch(workoutRepositoryProvider).watchWorkoutDays(),
+);
 
 /// Recent distinct dishes for thumb-reach re-logging.
 final recentFoodsProvider = StreamProvider<List<MealEntryRow>>(

@@ -1623,10 +1623,497 @@ i1.GeneratedColumn<int> _column_69(String aliasedName) =>
       $customConstraints: 'NOT NULL DEFAULT 0',
       defaultValue: const i1.CustomExpression('0'),
     );
+
+final class Schema5 extends i0.VersionedSchema {
+  Schema5({required super.database}) : super(version: 5);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    profiles,
+    profilesStampForward,
+    goals,
+    goalsStampForward,
+    weightLogs,
+    weightLogsStampForward,
+    mealEntries,
+    mealEntriesStampForward,
+    savedMeals,
+    savedMealsStampForward,
+    savedMealItems,
+    savedMealItemsStampForward,
+    healthSamples,
+    healthSamplesStampForward,
+    workoutSessions,
+    workoutSessionsStampForward,
+    foods,
+    syncCursors,
+    syncAccount,
+    foodsName,
+    goalsOneActive,
+    weightLogsOneADay,
+    mealEntriesEatenAt,
+    mealEntriesDay,
+    savedMealItemsMeal,
+    healthSamplesMetricTime,
+    healthSamplesDayMetric,
+    workoutSessionsDay,
+  ];
+  late final Shape12 profiles = Shape12(
+    source: i0.VersionedTable(
+      entityName: 'profiles',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_2,
+        _column_3,
+        _column_45,
+        _column_5,
+        _column_6,
+        _column_7,
+        _column_8,
+        _column_70,
+        _column_9,
+        _column_10,
+        _column_11,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger profilesStampForward = i1.Trigger(
+    'CREATE TRIGGER profiles_stamp_forward AFTER UPDATE OF updated_at ON profiles WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE profiles SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END',
+    'profiles_stamp_forward',
+  );
+  late final Shape1 goals = Shape1(
+    source: i0.VersionedTable(
+      entityName: 'goals',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'CHECK(ended_at IS NULL OR ended_at >= started_at)',
+      ],
+      columns: [
+        _column_0,
+        _column_12,
+        _column_13,
+        _column_46,
+        _column_47,
+        _column_48,
+        _column_49,
+        _column_50,
+        _column_51,
+        _column_52,
+        _column_53,
+        _column_22,
+        _column_23,
+        _column_24,
+        _column_9,
+        _column_10,
+        _column_11,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger goalsStampForward = i1.Trigger(
+    'CREATE TRIGGER goals_stamp_forward AFTER UPDATE OF updated_at ON goals WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE goals SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END',
+    'goals_stamp_forward',
+  );
+  late final Shape2 weightLogs = Shape2(
+    source: i0.VersionedTable(
+      entityName: 'weight_logs',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_12,
+        _column_25,
+        _column_54,
+        _column_9,
+        _column_10,
+        _column_11,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger weightLogsStampForward = i1.Trigger(
+    'CREATE TRIGGER weight_logs_stamp_forward AFTER UPDATE OF updated_at ON weight_logs WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE weight_logs SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END',
+    'weight_logs_stamp_forward',
+  );
+  late final Shape7 mealEntries = Shape7(
+    source: i0.VersionedTable(
+      entityName: 'meal_entries',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_12,
+        _column_27,
+        _column_28,
+        _column_29,
+        _column_25,
+        _column_57,
+        _column_58,
+        _column_59,
+        _column_55,
+        _column_56,
+        _column_32,
+        _column_33,
+        _column_34,
+        _column_35,
+        _column_36,
+        _column_9,
+        _column_10,
+        _column_11,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger mealEntriesStampForward = i1.Trigger(
+    'CREATE TRIGGER meal_entries_stamp_forward AFTER UPDATE OF updated_at ON meal_entries WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE meal_entries SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END',
+    'meal_entries_stamp_forward',
+  );
+  late final Shape8 savedMeals = Shape8(
+    source: i0.VersionedTable(
+      entityName: 'saved_meals',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_12,
+        _column_28,
+        _column_9,
+        _column_10,
+        _column_11,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger savedMealsStampForward = i1.Trigger(
+    'CREATE TRIGGER saved_meals_stamp_forward AFTER UPDATE OF updated_at ON saved_meals WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE saved_meals SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END',
+    'saved_meals_stamp_forward',
+  );
+  late final Shape9 savedMealItems = Shape9(
+    source: i0.VersionedTable(
+      entityName: 'saved_meal_items',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_12,
+        _column_60,
+        _column_27,
+        _column_28,
+        _column_57,
+        _column_58,
+        _column_59,
+        _column_55,
+        _column_56,
+        _column_32,
+        _column_33,
+        _column_34,
+        _column_61,
+        _column_9,
+        _column_10,
+        _column_11,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger savedMealItemsStampForward = i1.Trigger(
+    'CREATE TRIGGER saved_meal_items_stamp_forward AFTER UPDATE OF updated_at ON saved_meal_items WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE saved_meal_items SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END',
+    'saved_meal_items_stamp_forward',
+  );
+  late final Shape10 healthSamples = Shape10(
+    source: i0.VersionedTable(
+      entityName: 'health_samples',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'CHECK((metric = \'water_ml\' AND value <= 5000)OR(metric = \'steps\' AND value <= 100000))',
+      ],
+      columns: [
+        _column_0,
+        _column_12,
+        _column_37,
+        _column_25,
+        _column_38,
+        _column_39,
+        _column_36,
+        _column_9,
+        _column_10,
+        _column_11,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger healthSamplesStampForward = i1.Trigger(
+    'CREATE TRIGGER health_samples_stamp_forward AFTER UPDATE OF updated_at ON health_samples WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE health_samples SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END',
+    'health_samples_stamp_forward',
+  );
+  late final Shape13 workoutSessions = Shape13(
+    source: i0.VersionedTable(
+      entityName: 'workout_sessions',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_12,
+        _column_25,
+        _column_71,
+        _column_72,
+        _column_73,
+        _column_74,
+        _column_75,
+        _column_76,
+        _column_23,
+        _column_77,
+        _column_9,
+        _column_10,
+        _column_11,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger workoutSessionsStampForward = i1.Trigger(
+    'CREATE TRIGGER workout_sessions_stamp_forward AFTER UPDATE OF updated_at ON workout_sessions WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE workout_sessions SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END',
+    'workout_sessions_stamp_forward',
+  );
+  late final Shape11 foods = Shape11(
+    source: i0.VersionedTable(
+      entityName: 'foods',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'CHECK(protein_g_per_100g + carbs_g_per_100g + fat_g_per_100g <= 100.5)',
+      ],
+      columns: [
+        _column_12,
+        _column_28,
+        _column_62,
+        _column_63,
+        _column_64,
+        _column_65,
+        _column_66,
+        _column_67,
+        _column_68,
+        _column_36,
+        _column_11,
+        _column_69,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape5 syncCursors = Shape5(
+    source: i0.VersionedTable(
+      entityName: 'sync_cursors',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(kind)'],
+      columns: [_column_40, _column_41],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape6 syncAccount = Shape6(
+    source: i0.VersionedTable(
+      entityName: 'sync_account',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [_column_1, _column_42, _column_43, _column_44],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Index foodsName = i1.Index(
+    'foods_name',
+    'CREATE INDEX foods_name ON foods (name)',
+  );
+  final i1.Index goalsOneActive = i1.Index(
+    'goals_one_active',
+    'CREATE UNIQUE INDEX goals_one_active ON goals ((ended_at IS NULL)) WHERE ended_at IS NULL AND deleted_at IS NULL',
+  );
+  final i1.Index weightLogsOneADay = i1.Index(
+    'weight_logs_one_a_day',
+    'CREATE UNIQUE INDEX weight_logs_one_a_day ON weight_logs (day) WHERE deleted_at IS NULL',
+  );
+  final i1.Index mealEntriesEatenAt = i1.Index(
+    'meal_entries_eaten_at',
+    'CREATE INDEX meal_entries_eaten_at ON meal_entries (eaten_at)',
+  );
+  final i1.Index mealEntriesDay = i1.Index(
+    'meal_entries_day',
+    'CREATE INDEX meal_entries_day ON meal_entries (day)',
+  );
+  final i1.Index savedMealItemsMeal = i1.Index(
+    'saved_meal_items_meal',
+    'CREATE INDEX saved_meal_items_meal ON saved_meal_items (saved_meal_id, sort_order)',
+  );
+  final i1.Index healthSamplesMetricTime = i1.Index(
+    'health_samples_metric_time',
+    'CREATE INDEX health_samples_metric_time ON health_samples (metric, measured_at)',
+  );
+  final i1.Index healthSamplesDayMetric = i1.Index(
+    'health_samples_day_metric',
+    'CREATE INDEX health_samples_day_metric ON health_samples (day, metric)',
+  );
+  final i1.Index workoutSessionsDay = i1.Index(
+    'workout_sessions_day',
+    'CREATE INDEX workout_sessions_day ON workout_sessions (day)',
+  );
+}
+
+class Shape12 extends i0.VersionedTable {
+  Shape12({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get dirty =>
+      columnsByName['dirty']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get birthDate =>
+      columnsByName['birth_date']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get sex =>
+      columnsByName['sex']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<double> get heightCm =>
+      columnsByName['height_cm']! as i1.GeneratedColumn<double>;
+  i1.GeneratedColumn<String> get activityLevel =>
+      columnsByName['activity_level']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get dietType =>
+      columnsByName['diet_type']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get trainingPlace =>
+      columnsByName['training_place']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get experience =>
+      columnsByName['experience']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get trainingDays =>
+      columnsByName['training_days']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get createdAt =>
+      columnsByName['created_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get updatedAt =>
+      columnsByName['updated_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get deletedAt =>
+      columnsByName['deleted_at']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<int> _column_70(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'training_days',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NULL CHECK (training_days BETWEEN 3 AND 6)',
+    );
+
+class Shape13 extends i0.VersionedTable {
+  Shape13({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<int> get dirty =>
+      columnsByName['dirty']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get day =>
+      columnsByName['day']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get workoutKey =>
+      columnsByName['workout_key']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get title =>
+      columnsByName['title']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get sets =>
+      columnsByName['sets']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get setsDone =>
+      columnsByName['sets_done']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get setsPlanned =>
+      columnsByName['sets_planned']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get durationMin =>
+      columnsByName['duration_min']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get startedAt =>
+      columnsByName['started_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get finishedAt =>
+      columnsByName['finished_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get createdAt =>
+      columnsByName['created_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get updatedAt =>
+      columnsByName['updated_at']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get deletedAt =>
+      columnsByName['deleted_at']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<String> _column_71(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'workout_key',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_72(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'title',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_73(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'sets',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL DEFAULT \'[]\'',
+      defaultValue: const i1.CustomExpression('\'[]\''),
+    );
+i1.GeneratedColumn<int> _column_74(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'sets_done',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL CHECK (sets_done BETWEEN 0 AND 200)',
+    );
+i1.GeneratedColumn<int> _column_75(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'sets_planned',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL CHECK (sets_planned BETWEEN 0 AND 200)',
+    );
+i1.GeneratedColumn<int> _column_76(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'duration_min',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NULL CHECK (duration_min BETWEEN 0 AND 600)',
+    );
+i1.GeneratedColumn<int> _column_77(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'finished_at',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NULL',
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
+  required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -1645,6 +2132,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from3To4(migrator, schema);
         return 4;
+      case 4:
+        final schema = Schema5(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from4To5(migrator, schema);
+        return 5;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -1655,10 +2147,12 @@ i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
   required Future<void> Function(i1.Migrator m, Schema4 schema) from3To4,
+  required Future<void> Function(i1.Migrator m, Schema5 schema) from4To5,
 }) => i0.VersionedSchema.stepByStepHelper(
   step: migrationSteps(
     from1To2: from1To2,
     from2To3: from2To3,
     from3To4: from3To4,
+    from4To5: from4To5,
   ),
 );

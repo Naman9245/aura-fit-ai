@@ -55,3 +55,11 @@ BEGIN
   UPDATE health_samples SET updated_at = OLD.updated_at + 1
     WHERE id = NEW.id;
 END;
+
+CREATE TRIGGER workout_sessions_stamp_forward
+  AFTER UPDATE OF updated_at ON workout_sessions
+  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at
+BEGIN
+  UPDATE workout_sessions SET updated_at = OLD.updated_at + 1
+    WHERE id = NEW.id;
+END;

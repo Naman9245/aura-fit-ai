@@ -19,7 +19,7 @@ declare
 begin
   foreach t in array array[
     'profiles', 'goals', 'weight_logs', 'meal_entries', 'health_samples',
-    'saved_meals', 'saved_meal_items'
+    'saved_meals', 'saved_meal_items', 'workout_sessions'
   ] loop
     assert (select relrowsecurity from pg_class
       where oid = ('public.' || t)::regclass),

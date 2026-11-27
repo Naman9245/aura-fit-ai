@@ -19,6 +19,7 @@ part 'app_database.g.dart';
     SavedMeals,
     SavedMealItems,
     HealthSamples,
+    WorkoutSessions,
     SyncCursors,
     SyncAccount,
   ],
@@ -35,7 +36,7 @@ class AppDatabase extends _$AppDatabase {
   // To change the schema: bump this, add a step to [migration], then run
   // `dart run drift_dev make-migrations` so the new step gets a test.
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -100,6 +101,13 @@ class AppDatabase extends _$AppDatabase {
           ),
         );
         await m.createIndex(schema.healthSamplesDayMetric);
+      },
+      // v5: workouts, and how many days a week to train.
+      from4To5: (m, schema) async {
+        await m.addColumn(schema.profiles, schema.profiles.trainingDays);
+        await m.createTable(schema.workoutSessions);
+        await m.createIndex(schema.workoutSessionsDay);
+        await m.createTrigger(schema.workoutSessionsStampForward);
       },
     ),
   );
