@@ -87,6 +87,12 @@ class DataExporter {
               ..orderBy([(h) => OrderingTerm.asc(h.measuredAt)]))
             .get();
 
+    final workouts =
+        await (_db.select(_db.workoutSessions)
+              ..where((w) => w.deletedAt.isNull())
+              ..orderBy([(w) => OrderingTerm.asc(w.startedAt)]))
+            .get();
+
     final itemsByMeal = <String, List<SavedMealItemRow>>{};
     for (final item in savedItems) {
       (itemsByMeal[item.savedMealId] ??= []).add(item);
@@ -105,6 +111,7 @@ class DataExporter {
               'diet_type': profile.dietType?.storage,
               'training_place': profile.trainingPlace?.storage,
               'experience': profile.experience?.storage,
+              'training_days': profile.trainingDays,
               'created_at': profile.createdAt.toUtc().toIso8601String(),
               'updated_at': profile.updatedAt.toUtc().toIso8601String(),
             },
@@ -183,6 +190,21 @@ class DataExporter {
             'value': h.value,
             'source': h.source.storage,
             'measured_at': h.measuredAt.toUtc().toIso8601String(),
+          },
+      ],
+      'workouts': [
+        for (final w in workouts)
+          {
+            'id': w.id,
+            'day': _dates.toSql(w.day),
+            'workout': w.workoutKey,
+            'title': w.title,
+            'sets_done': w.setsDone,
+            'sets_planned': w.setsPlanned,
+            'duration_min': w.durationMin,
+            'started_at': w.startedAt.toUtc().toIso8601String(),
+            'finished_at': w.finishedAt?.toUtc().toIso8601String(),
+            'sets': jsonDecode(w.sets),
           },
       ],
     };
@@ -284,6 +306,25 @@ class DataExporter {
           '',
           '',
           h.source.storage,
+        ]),
+      );
+    }
+    for (final w in workouts) {
+      csv.writeln(
+        _csvRow([
+          'workout',
+          _dates.toSql(w.day),
+          w.startedAt.toUtc().toIso8601String(),
+          w.workoutKey,
+          w.title,
+          w.setsDone,
+          'sets',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '${w.setsPlanned} planned, ${w.durationMin ?? 0} min',
         ]),
       );
     }
