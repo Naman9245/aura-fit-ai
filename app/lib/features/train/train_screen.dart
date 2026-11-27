@@ -11,6 +11,7 @@ import 'package:aurafit/features/today/health_sheets.dart';
 import 'package:aurafit/features/train/training_setup.dart';
 import 'package:aurafit/features/train/workout_screen.dart';
 import 'package:aurafit/models/options.dart';
+import 'package:aurafit/services/step_counter.dart';
 import 'package:aurafit/services/workouts.dart';
 import 'package:aurafit/widgets/bright_card.dart';
 import 'package:aurafit/widgets/josh.dart';
@@ -554,6 +555,10 @@ class _StepsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
     final summary = ref.watch(daySummaryProvider(today)).value;
+    final status = ref.watch(stepStatusProvider).value ?? StepStatus.none;
+    final byPhone =
+        summary?.stepsSamples.any((s) => s.source == SampleSource.phone) ??
+        false;
     final goalSteps = ref.watch(explainedGoalProvider).value?.goal.steps ?? 0;
     final steps = summary?.steps ?? 0;
     return BrightCard(
@@ -600,9 +605,28 @@ class _StepsCard extends ConsumerWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              'Tap to log today\'s steps.',
+              status.counting
+                  ? (byPhone
+                        ? 'Counted by your phone. Tap to correct it.'
+                        : 'Your phone counts them from now. Tap to add more.')
+                  : 'Tap to log today\'s steps.',
               style: text.bodySmall?.copyWith(color: AuraColors.muted),
             ),
+            if (status.available && !status.allowed) ...[
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  final counter = ref.read(stepCounterProvider);
+                  if (await counter.requestPermission()) {
+                    await counter.start();
+                    ref.invalidate(stepStatusProvider);
+                    ref.invalidate(phoneStepsProvider);
+                  }
+                },
+                icon: const Icon(Icons.directions_walk_rounded),
+                label: const Text('Count my steps'),
+              ),
+            ],
           ],
         ),
       ),

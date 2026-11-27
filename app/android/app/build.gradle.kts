@@ -74,6 +74,11 @@ flutter {
     source = "../.."
 }
 
+dependencies {
+    // Step readings every 15 minutes in the background (StepCounter.kt).
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+}
+
 // Crash reports need the Firebase project's google-services.json, which each
 // checkout keeps for itself (gitignored, like env/supabase.json). A build
 // without it is the same app with crash reports off.

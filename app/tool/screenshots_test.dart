@@ -94,10 +94,22 @@ void main() {
         await _shot(tester, '23_food_meals$suffix');
         await _tapTab(tester, 'Progress');
         await _shot(tester, '24_progress$suffix');
+        await tester.tap(find.bySemanticsLabel('24 November: logged'));
+        await tester.pumpAndSettle();
+        await _shot(tester, '24a_progress_day$suffix');
+        Navigator.of(tester.element(find.text('TUESDAY 24 NOVEMBER'))).pop();
+        await tester.pumpAndSettle();
         await _scroll(tester, -700);
         await _shot(tester, '25_progress_weight$suffix');
         await _tapTab(tester, 'Train');
         await _shot(tester, '26_train$suffix');
+        await _scroll(tester, -700);
+        await _shot(tester, '26a_train_exercises$suffix');
+        await _scroll(tester, 700);
+        await _tap(tester, 'Start workout');
+        await tester.tap(find.bySemanticsLabel('Mark set 1 done').first);
+        await tester.pumpAndSettle();
+        await _shot(tester, '27_workout$suffix');
       });
     });
 
@@ -241,6 +253,11 @@ Future<void> _seedDiary(AppDatabase db, DateTime now) async {
     await log.addWater(day: today);
   }
   await log.setStepsForDay(day: today, steps: 6400);
+  await ProfileRepository(db).saveTraining(
+    place: TrainingPlace.gym,
+    days: 4,
+    experience: Experience.intermediate,
+  );
   const kg = [
     66.0,
     65.8,

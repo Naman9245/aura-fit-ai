@@ -10,6 +10,7 @@ import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fake_account_service.dart';
@@ -36,6 +37,7 @@ Future<AppDatabase> pumpAura(
   FakeSyncRemote? remote,
   CrashReportSwitch? crashReports,
   Future<void> Function(Uri)? openLink,
+  List<Override> overrides = const [],
 }) async {
   tester.view
     ..physicalSize = const Size(1080, 2400)
@@ -63,6 +65,7 @@ Future<AppDatabase> pumpAura(
         if (crashReports != null)
           crashReportsProvider.overrideWithValue(crashReports),
         if (openLink != null) openLinkProvider.overrideWithValue(openLink),
+        ...overrides,
       ],
       child: AuraApp(startAt: startAt, startExtra: startExtra),
     ),

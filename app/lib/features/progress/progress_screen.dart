@@ -125,8 +125,8 @@ class _StreakCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'A day counts when you log a meal. Missing one only pauses '
-                  'it.',
+                  'A day counts when you log a meal or a workout. Missing one '
+                  'only pauses it.',
                   style: text.bodySmall?.copyWith(color: AuraColors.ink),
                 ),
               ],
