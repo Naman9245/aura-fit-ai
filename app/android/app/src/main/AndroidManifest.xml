@@ -2,6 +2,13 @@
     <!-- Sign-in and sync with the account's copy on Supabase. -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
+    <!-- Counting steps with the phone's own step sensor, once the person
+         allows it. Phones without the sensor install too. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <uses-feature
+        android:name="android.hardware.sensor.stepcounter"
+        android:required="false"/>
+
     <!-- The account is the backup. Android's own backup and phone-to-phone
          transfer would carry a stale copy of the data and the sign-in to
          another phone, so they take nothing. -->

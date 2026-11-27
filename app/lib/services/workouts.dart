@@ -755,6 +755,17 @@ const Map<String, (String, List<Move>)> _templates = {
   ),
 };
 
+/// The moves that work several joints at once: the big lifts.
+const _compound = {
+  Move.squat,
+  Move.hinge,
+  Move.lunge,
+  Move.push,
+  Move.overheadPush,
+  Move.pull,
+  Move.pullDown,
+};
+
 /// Which workout falls on which weekday (1 = Monday), by days a week.
 /// Sunday (7) is never in it.
 const Map<int, Map<int, String>> _weeks = {
@@ -882,14 +893,14 @@ class TrainingPlan {
     final (title, moves) = _templates[key]!;
     final used = <String>{};
     final exercises = <PlannedExercise>[];
-    for (final (index, move) in moves.indexed) {
+    for (final move in moves) {
       final pick = _moves[place]![move];
       if (pick == null) continue;
       final id = _easier ? pick.$1 : pick.$2;
       if (!used.add(id)) continue;
       final exercise = exerciseLibrary[id]!;
-      // The first moves are the big ones: more sets, longer rests.
-      final big = index < 2 && exercise.seconds == null;
+      // Big lifts that move several joints get more sets and longer rests.
+      final big = _compound.contains(move) && exercise.seconds == null;
       final sets = switch (experience) {
         Experience.advanced => big ? 4 : 3,
         Experience.intermediate => 3,

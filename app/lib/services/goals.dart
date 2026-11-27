@@ -61,14 +61,14 @@ List<DailyGoal> dailyGoals({
     int have,
     int want,
     String Function(int) amount,
-    String what,
+    String Function(String left) toGo,
   ) => DailyGoal(
     kind: kind,
     title: title,
     detail: '${amount(have)} of ${amount(want)}',
     progress: want <= 0 ? 0 : (have / want).clamp(0.0, 1.0),
     done: want > 0 && have >= want,
-    toGo: want > have ? '${amount(want - have)} of $what' : null,
+    toGo: want > have ? toGo(amount(want - have)) : null,
   );
 
   return [
@@ -86,7 +86,7 @@ List<DailyGoal> dailyGoals({
       protein,
       goal.proteinG,
       (g) => '$g g',
-      'protein',
+      (left) => '$left of protein',
     ),
     measured(
       GoalKind.water,
@@ -94,7 +94,7 @@ List<DailyGoal> dailyGoals({
       summary.waterMl,
       goal.waterMl,
       formatLitres,
-      'water',
+      (left) => '$left of water',
     ),
     measured(
       GoalKind.steps,
@@ -102,7 +102,7 @@ List<DailyGoal> dailyGoals({
       summary.steps,
       goal.steps,
       formatWhole,
-      'steps',
+      (left) => '$left steps',
     ),
     if (planDay != null)
       switch (planDay) {

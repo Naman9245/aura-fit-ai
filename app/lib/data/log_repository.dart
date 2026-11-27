@@ -750,6 +750,63 @@ class LogRepository {
     );
   }
 
+  /// Saves the steps the phone counted on [day]. Only ever raises the day's
+  /// steps: a higher number typed in by hand stays. Returns whether it
+  /// changed anything.
+  Future<bool> savePhoneSteps({
+    required DateTime day,
+    required int steps,
+  }) async {
+    final d = diaryDay(day);
+    final now = clock.now();
+    final counted = _clampRound(steps.toDouble(), 0, 100000, 0);
+    if (counted <= 0) return false;
+    final existing =
+        await (_db.select(_db.healthSamples)..where(
+              (s) =>
+                  s.day.equalsValue(d) &
+                  s.metric.equalsValue(HealthMetric.steps) &
+                  s.deletedAt.isNull(),
+            ))
+            .get();
+    if (existing.isEmpty) {
+      await _db
+          .into(_db.healthSamples)
+          .insert(
+            HealthSamplesCompanion.insert(
+              id: _uuid.v7(),
+              metric: HealthMetric.steps,
+              day: d,
+              value: counted,
+              measuredAt: now,
+              source: SampleSource.phone,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      return true;
+    }
+    final total = existing.fold<double>(0, (sum, s) => sum + s.value);
+    if (counted <= total) return false;
+    await _db.transaction(() async {
+      await (_db.update(
+        _db.healthSamples,
+      )..where((s) => s.id.equals(existing.first.id))).write(
+        HealthSamplesCompanion(
+          value: Value(counted),
+          source: const Value(SampleSource.phone),
+          measuredAt: Value(now),
+          updatedAt: Value(now),
+          dirty: const Value(true),
+        ),
+      );
+      for (final extra in existing.skip(1)) {
+        await _softDeleteHealthSample(extra.id);
+      }
+    });
+    return true;
+  }
+
   /// Logs or updates the weigh-in for [day] with Undo (PRD N11).
   Future<UndoAction> saveWeightForDay({
     required DateTime day,

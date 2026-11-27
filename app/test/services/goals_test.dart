@@ -98,7 +98,7 @@ void main() {
       trained: false,
     );
     expect([for (final g in monday) g.done], [true, true, true, false, false]);
-    expect(monday[3].toGo, '4,000 of steps');
+    expect(monday[3].toGo, '4,000 steps');
     expect(monday[4].toGo, 'your Full Body A workout');
 
     final sunday = dailyGoals(

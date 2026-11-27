@@ -186,7 +186,8 @@ enum HealthMetric implements StoredOption {
 
 /// Where a health sample came from. Health Connect joins after launch.
 enum SampleSource implements StoredOption {
-  manual('manual', 'Entered by hand');
+  manual('manual', 'Entered by hand'),
+  phone('phone', 'Counted by the phone');
 
   const SampleSource(this.storage, this.label);
 

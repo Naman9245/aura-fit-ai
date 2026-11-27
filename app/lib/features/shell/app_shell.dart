@@ -1,9 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:aurafit/core/theme/aura_colors.dart';
+import 'package:aurafit/services/step_counter.dart';
 import 'package:aurafit/widgets/motion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// The four tabs, in the order the bar shows them.
@@ -21,13 +23,15 @@ enum AppTab {
 
 /// Today, Train, Food and Progress, with the tab bar under them. Each tab
 /// keeps its place while another one is open.
-class AppShell extends StatelessWidget {
+class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.shell});
 
   final StatefulNavigationShell shell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // The phone's steps come in while the tabs are open.
+    ref.watch(phoneStepsProvider);
     return Scaffold(
       body: shell,
       bottomNavigationBar: AuraTabBar(

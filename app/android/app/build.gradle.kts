@@ -57,6 +57,11 @@ android {
 
     buildTypes {
         release {
+            // Kept from shrinking: WorkManager's database (proguard-rules.pro).
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             manifestPlaceholders["crashReportsOn"] = "true"
             signingConfig = signingConfigs.findByName("upload")
                 ?: signingConfigs.getByName("debug")
@@ -72,6 +77,11 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Step readings every 15 minutes in the background (StepCounter.kt).
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 }
 
 // Crash reports need the Firebase project's google-services.json, which each
