@@ -11,6 +11,7 @@ import 'package:aurafit/features/targets/how_we_calculated_screen.dart';
 import 'package:aurafit/features/targets/targets_screen.dart';
 import 'package:aurafit/features/today/today_screen.dart';
 import 'package:aurafit/features/train/train_screen.dart';
+import 'package:aurafit/features/train/workout_screen.dart';
 import 'package:aurafit/data/log_repository.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
@@ -23,6 +24,7 @@ abstract final class Routes {
   static const food = '/food';
   static const progress = '/progress';
   static const logMeal = '/log-meal';
+  static const workout = '/workout';
   static const editDetails = '/edit-details';
   static const targets = '/targets';
   static const howWeCalculated = '/targets/how';
@@ -66,6 +68,11 @@ GoRouter buildRouter({
       builder: (context, state) => LogMealScreen(
         args: state.extra as LogMealArgs? ?? const LogMealArgs(),
       ),
+    ),
+    GoRoute(
+      path: Routes.workout,
+      builder: (context, state) =>
+          WorkoutScreen(args: state.extra! as WorkoutArgs),
     ),
     GoRoute(
       path: Routes.editDetails,

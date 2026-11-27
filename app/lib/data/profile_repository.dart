@@ -167,6 +167,26 @@ class ProfileRepository {
     return (await activeGoal())!;
   });
 
+  /// Where and how often to train, and for how long it's been. Targets
+  /// don't change with training, so the goal stays as it is.
+  Future<void> saveTraining({
+    required TrainingPlace place,
+    required int days,
+    required Experience? experience,
+  }) async {
+    await _db
+        .update(_db.profiles)
+        .write(
+          ProfilesCompanion(
+            trainingPlace: Value(place),
+            trainingDays: Value(days.clamp(3, 6)),
+            experience: Value(experience),
+            updatedAt: Value(clock.now()),
+            dirty: const Value(true),
+          ),
+        );
+  }
+
   /// One weigh-in a day: a second one today replaces the first.
   Future<void> _saveWeight(
     DateTime today,

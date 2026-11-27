@@ -26,6 +26,7 @@ class AccountData {
       _db.savedMealItems,
       _db.savedMeals,
       _db.healthSamples,
+      _db.workoutSessions,
       _db.syncCursors,
       _db.syncAccount,
     ]) {

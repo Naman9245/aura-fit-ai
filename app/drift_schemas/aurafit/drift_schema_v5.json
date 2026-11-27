@@ -1,0 +1,2814 @@
+{
+  "_meta": {
+    "description": "This file contains a serialized version of schema entities for drift.",
+    "version": "1.3.0"
+  },
+  "options": {
+    "store_date_time_values_as_text": false
+  },
+  "entities": [
+    {
+      "id": 0,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "profiles",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "dirty",
+            "getter_name": "dirty",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"dirty\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"dirty\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "id",
+                        "tag": "id"
+                      },
+                      ".equals(1)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "birth_date",
+            "getter_name": "birthDate",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DateConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "sex",
+            "getter_name": "sex",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<Sex>(Sex.values)",
+              "dart_type_name": "Sex"
+            }
+          },
+          {
+            "name": "height_cm",
+            "getter_name": "heightCm",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "heightCm",
+                        "tag": "heightCm"
+                      },
+                      ").isBetweenValues(100,250)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "activity_level",
+            "getter_name": "activityLevel",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<ActivityLevel>(ActivityLevel.values)",
+              "dart_type_name": "ActivityLevel"
+            }
+          },
+          {
+            "name": "diet_type",
+            "getter_name": "dietType",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<DietType>(DietType.values)",
+              "dart_type_name": "DietType"
+            }
+          },
+          {
+            "name": "training_place",
+            "getter_name": "trainingPlace",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<TrainingPlace>(TrainingPlace.values)",
+              "dart_type_name": "TrainingPlace"
+            }
+          },
+          {
+            "name": "experience",
+            "getter_name": "experience",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<Experience>(Experience.values)",
+              "dart_type_name": "Experience"
+            }
+          },
+          {
+            "name": "training_days",
+            "getter_name": "trainingDays",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "trainingDays",
+                        "tag": "trainingDays"
+                      },
+                      ").isBetweenValues(3,6)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 1,
+      "references": [
+        0
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 0,
+        "references_in_body": [
+          0
+        ],
+        "name": "profiles_stamp_forward",
+        "sql": "CREATE TRIGGER profiles_stamp_forward AFTER UPDATE OF updated_at ON profiles\r\n  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at\r\nBEGIN\r\n  UPDATE profiles SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;\r\nEND;"
+      }
+    },
+    {
+      "id": 2,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "goals",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "dirty",
+            "getter_name": "dirty",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"dirty\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"dirty\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "goal_type",
+            "getter_name": "goalType",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<GoalType>(GoalType.values)",
+              "dart_type_name": "GoalType"
+            }
+          },
+          {
+            "name": "target_weight_kg",
+            "getter_name": "targetWeightKg",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "targetWeightKg",
+                        "tag": "targetWeightKg"
+                      },
+                      ").isBetweenValues(20,400)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "basis_weight_kg",
+            "getter_name": "basisWeightKg",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "basisWeightKg",
+                        "tag": "basisWeightKg"
+                      },
+                      ").isBetweenValues(20,400)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "calories_kcal",
+            "getter_name": "caloriesKcal",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "caloriesKcal",
+                        "tag": "caloriesKcal"
+                      },
+                      ").isBetweenValues(1200,10000)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "protein_g",
+            "getter_name": "proteinG",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "proteinG",
+                        "tag": "proteinG"
+                      },
+                      ").isBiggerOrEqualValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "carbs_g",
+            "getter_name": "carbsG",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "carbsG",
+                        "tag": "carbsG"
+                      },
+                      ").isBiggerOrEqualValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "fat_g",
+            "getter_name": "fatG",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "fatG",
+                        "tag": "fatG"
+                      },
+                      ").isBiggerOrEqualValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "water_ml",
+            "getter_name": "waterMl",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "waterMl",
+                        "tag": "waterMl"
+                      },
+                      ").isBiggerThanValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "steps",
+            "getter_name": "steps",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "steps",
+                        "tag": "steps"
+                      },
+                      ").isBiggerThanValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "formula_version",
+            "getter_name": "formulaVersion",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "started_at",
+            "getter_name": "startedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "ended_at",
+            "getter_name": "endedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (ended_at IS NULL OR ended_at >= started_at)"
+        ],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "references": [
+        2
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 2,
+        "references_in_body": [
+          2
+        ],
+        "name": "goals_stamp_forward",
+        "sql": "CREATE TRIGGER goals_stamp_forward AFTER UPDATE OF updated_at ON goals\r\n  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at\r\nBEGIN\r\n  UPDATE goals SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;\r\nEND;"
+      }
+    },
+    {
+      "id": 4,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "weight_logs",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "dirty",
+            "getter_name": "dirty",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"dirty\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"dirty\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "day",
+            "getter_name": "day",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DateConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "weight_kg",
+            "getter_name": "weightKg",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "weightKg",
+                        "tag": "weightKg"
+                      },
+                      ").isBetweenValues(20,400)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "references": [
+        4
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 4,
+        "references_in_body": [
+          4
+        ],
+        "name": "weight_logs_stamp_forward",
+        "sql": "CREATE TRIGGER weight_logs_stamp_forward\r\n  AFTER UPDATE OF updated_at ON weight_logs\r\n  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at\r\nBEGIN\r\n  UPDATE weight_logs SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;\r\nEND;"
+      }
+    },
+    {
+      "id": 6,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "meal_entries",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "dirty",
+            "getter_name": "dirty",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"dirty\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"dirty\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "food_id",
+            "getter_name": "foodId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": 1,
+                  "max": 200
+                }
+              }
+            ]
+          },
+          {
+            "name": "meal",
+            "getter_name": "meal",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<Meal>(Meal.values)",
+              "dart_type_name": "Meal"
+            }
+          },
+          {
+            "name": "day",
+            "getter_name": "day",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DateConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "portion_unit",
+            "getter_name": "portionUnit",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": 1,
+                  "max": 40
+                }
+              }
+            ]
+          },
+          {
+            "name": "portion_count",
+            "getter_name": "portionCount",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "portionCount",
+                        "tag": "portionCount"
+                      },
+                      ").isBiggerThanValue(0) & ",
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "portionCount",
+                        "tag": "portionCount"
+                      },
+                      ").isSmallerOrEqualValue(5000)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "oil_level",
+            "getter_name": "oilLevel",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<OilLevel>(OilLevel.values)",
+              "dart_type_name": "OilLevel"
+            }
+          },
+          {
+            "name": "grams",
+            "getter_name": "grams",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "grams",
+                        "tag": "grams"
+                      },
+                      ").isBiggerThanValue(0) & ",
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "grams",
+                        "tag": "grams"
+                      },
+                      ").isSmallerOrEqualValue(5000)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "kcal",
+            "getter_name": "kcal",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "kcal",
+                        "tag": "kcal"
+                      },
+                      ").isBetweenValues(0,10000)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "protein_g",
+            "getter_name": "proteinG",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "proteinG",
+                        "tag": "proteinG"
+                      },
+                      ").isBiggerOrEqualValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "carbs_g",
+            "getter_name": "carbsG",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "carbsG",
+                        "tag": "carbsG"
+                      },
+                      ").isBiggerOrEqualValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "fat_g",
+            "getter_name": "fatG",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "fatG",
+                        "tag": "fatG"
+                      },
+                      ").isBiggerOrEqualValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "eaten_at",
+            "getter_name": "eatenAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "source",
+            "getter_name": "source",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<EntrySource>(EntrySource.values)",
+              "dart_type_name": "EntrySource"
+            }
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "references": [
+        6
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 6,
+        "references_in_body": [
+          6
+        ],
+        "name": "meal_entries_stamp_forward",
+        "sql": "CREATE TRIGGER meal_entries_stamp_forward\r\n  AFTER UPDATE OF updated_at ON meal_entries\r\n  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at\r\nBEGIN\r\n  UPDATE meal_entries SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;\r\nEND;"
+      }
+    },
+    {
+      "id": 8,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "saved_meals",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "dirty",
+            "getter_name": "dirty",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"dirty\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"dirty\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": 1,
+                  "max": 120
+                }
+              }
+            ]
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "references": [
+        8
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 8,
+        "references_in_body": [
+          8
+        ],
+        "name": "saved_meals_stamp_forward",
+        "sql": "CREATE TRIGGER saved_meals_stamp_forward\r\n  AFTER UPDATE OF updated_at ON saved_meals\r\n  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at\r\nBEGIN\r\n  UPDATE saved_meals SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;\r\nEND;"
+      }
+    },
+    {
+      "id": 10,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "saved_meal_items",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "dirty",
+            "getter_name": "dirty",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"dirty\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"dirty\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "saved_meal_id",
+            "getter_name": "savedMealId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "food_id",
+            "getter_name": "foodId",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": 1,
+                  "max": 200
+                }
+              }
+            ]
+          },
+          {
+            "name": "portion_unit",
+            "getter_name": "portionUnit",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": 1,
+                  "max": 40
+                }
+              }
+            ]
+          },
+          {
+            "name": "portion_count",
+            "getter_name": "portionCount",
+            "moor_type": "double",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "portionCount",
+                        "tag": "portionCount"
+                      },
+                      ").isBiggerThanValue(0) & ",
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "portionCount",
+                        "tag": "portionCount"
+                      },
+                      ").isSmallerOrEqualValue(5000)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "oil_level",
+            "getter_name": "oilLevel",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<OilLevel>(OilLevel.values)",
+              "dart_type_name": "OilLevel"
+            }
+          },
+          {
+            "name": "grams",
+            "getter_name": "grams",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "grams",
+                        "tag": "grams"
+                      },
+                      ").isBiggerThanValue(0) & ",
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "grams",
+                        "tag": "grams"
+                      },
+                      ").isSmallerOrEqualValue(5000)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "kcal",
+            "getter_name": "kcal",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "kcal",
+                        "tag": "kcal"
+                      },
+                      ").isBetweenValues(0,10000)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "protein_g",
+            "getter_name": "proteinG",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "proteinG",
+                        "tag": "proteinG"
+                      },
+                      ").isBiggerOrEqualValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "carbs_g",
+            "getter_name": "carbsG",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "carbsG",
+                        "tag": "carbsG"
+                      },
+                      ").isBiggerOrEqualValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "fat_g",
+            "getter_name": "fatG",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "fatG",
+                        "tag": "fatG"
+                      },
+                      ").isBiggerOrEqualValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "sort_order",
+            "getter_name": "sortOrder",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "sortOrder",
+                        "tag": "sortOrder"
+                      },
+                      ").isBetweenValues(0,200)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 11,
+      "references": [
+        10
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 10,
+        "references_in_body": [
+          10
+        ],
+        "name": "saved_meal_items_stamp_forward",
+        "sql": "CREATE TRIGGER saved_meal_items_stamp_forward\r\n  AFTER UPDATE OF updated_at ON saved_meal_items\r\n  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at\r\nBEGIN\r\n  UPDATE saved_meal_items SET updated_at = OLD.updated_at + 1\r\n    WHERE id = NEW.id;\r\nEND;"
+      }
+    },
+    {
+      "id": 12,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "health_samples",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "dirty",
+            "getter_name": "dirty",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"dirty\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"dirty\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "metric",
+            "getter_name": "metric",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<HealthMetric>(HealthMetric.values)",
+              "dart_type_name": "HealthMetric"
+            }
+          },
+          {
+            "name": "day",
+            "getter_name": "day",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DateConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "value",
+            "getter_name": "value",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "value",
+                        "tag": "value"
+                      },
+                      ").isBiggerOrEqualValue(0)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "measured_at",
+            "getter_name": "measuredAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "source",
+            "getter_name": "source",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const OptionConverter<SampleSource>(SampleSource.values)",
+              "dart_type_name": "SampleSource"
+            }
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK ((metric = 'water_ml' AND value <= 5000) OR (metric = 'steps' AND value <= 100000))"
+        ],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "references": [
+        12
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 12,
+        "references_in_body": [
+          12
+        ],
+        "name": "health_samples_stamp_forward",
+        "sql": "CREATE TRIGGER health_samples_stamp_forward\r\n  AFTER UPDATE OF updated_at ON health_samples\r\n  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at\r\nBEGIN\r\n  UPDATE health_samples SET updated_at = OLD.updated_at + 1\r\n    WHERE id = NEW.id;\r\nEND;"
+      }
+    },
+    {
+      "id": 14,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "workout_sessions",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "dirty",
+            "getter_name": "dirty",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"dirty\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"dirty\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "day",
+            "getter_name": "day",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const DateConverter()",
+              "dart_type_name": "DateTime"
+            }
+          },
+          {
+            "name": "workout_key",
+            "getter_name": "workoutKey",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": 1,
+                  "max": 40
+                }
+              }
+            ]
+          },
+          {
+            "name": "title",
+            "getter_name": "title",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": 1,
+                  "max": 80
+                }
+              }
+            ]
+          },
+          {
+            "name": "sets",
+            "getter_name": "sets",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'[]\\'')",
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": null,
+                  "max": 20000
+                }
+              }
+            ]
+          },
+          {
+            "name": "sets_done",
+            "getter_name": "setsDone",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "setsDone",
+                        "tag": "setsDone"
+                      },
+                      ").isBetweenValues(0,200)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "sets_planned",
+            "getter_name": "setsPlanned",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "setsPlanned",
+                        "tag": "setsPlanned"
+                      },
+                      ").isBetweenValues(0,200)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "duration_min",
+            "getter_name": "durationMin",
+            "moor_type": "int",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "durationMin",
+                        "tag": "durationMin"
+                      },
+                      ").isBetweenValues(0,600)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "started_at",
+            "getter_name": "startedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "finished_at",
+            "getter_name": "finishedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "created_at",
+            "getter_name": "createdAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "updated_at",
+            "getter_name": "updatedAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 15,
+      "references": [
+        14
+      ],
+      "type": "trigger",
+      "data": {
+        "on": 14,
+        "references_in_body": [
+          14
+        ],
+        "name": "workout_sessions_stamp_forward",
+        "sql": "CREATE TRIGGER workout_sessions_stamp_forward\r\n  AFTER UPDATE OF updated_at ON workout_sessions\r\n  WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at\r\nBEGIN\r\n  UPDATE workout_sessions SET updated_at = OLD.updated_at + 1\r\n    WHERE id = NEW.id;\r\nEND;"
+      }
+    },
+    {
+      "id": 16,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "foods",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "name",
+            "getter_name": "name",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": 1,
+                  "max": 200
+                }
+              }
+            ]
+          },
+          {
+            "name": "aliases_json",
+            "getter_name": "aliasesJson",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'[]\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "kcal_per_100g",
+            "getter_name": "kcalPer100g",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "kcalPer100g",
+                        "tag": "kcalPer100g"
+                      },
+                      ").isBetweenValues(0,900)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "protein_g_per_100g",
+            "getter_name": "proteinGPer100g",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "proteinGPer100g",
+                        "tag": "proteinGPer100g"
+                      },
+                      ").isBetweenValues(0,100)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "carbs_g_per_100g",
+            "getter_name": "carbsGPer100g",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "carbsGPer100g",
+                        "tag": "carbsGPer100g"
+                      },
+                      ").isBetweenValues(0,100)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "fat_g_per_100g",
+            "getter_name": "fatGPer100g",
+            "moor_type": "double",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "ComparableExpr",
+                        "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+                      },
+                      "(",
+                      {
+                        "lexeme": "fatGPer100g",
+                        "tag": "fatGPer100g"
+                      },
+                      ").isBetweenValues(0,100)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "portions_json",
+            "getter_name": "portionsJson",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'[]\\'')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "assumption",
+            "getter_name": "assumption",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('\\'\\'')",
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": 0,
+                  "max": 300
+                }
+              }
+            ]
+          },
+          {
+            "name": "source",
+            "getter_name": "source",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "allowed-lengths": {
+                  "min": 1,
+                  "max": 40
+                }
+              }
+            ]
+          },
+          {
+            "name": "deleted_at",
+            "getter_name": "deletedAt",
+            "moor_type": "dateTime",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "seq",
+            "getter_name": "seq",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [
+          "CHECK (protein_g_per_100g + carbs_g_per_100g + fat_g_per_100g <= 100.5)"
+        ],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "sync_cursors",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "kind",
+            "getter_name": "kind",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "seq",
+            "getter_name": "seq",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "kind"
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "references": [],
+      "type": "table",
+      "data": {
+        "name": "sync_account",
+        "was_declared_in_moor": false,
+        "columns": [
+          {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('1')",
+            "default_client_dart": null,
+            "dsl_features": [
+              {
+                "check": {
+                  "dart_expression": {
+                    "elements": [
+                      {
+                        "lexeme": "id",
+                        "tag": "id"
+                      },
+                      ".equals(1)"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "account_id",
+            "getter_name": "accountId",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "email",
+            "getter_name": "email",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "bound_at",
+            "getter_name": "boundAt",
+            "moor_type": "dateTime",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          }
+        ],
+        "is_virtual": false,
+        "without_rowid": false,
+        "constraints": [],
+        "explicit_pk": [
+          "id"
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "references": [
+        16
+      ],
+      "type": "index",
+      "data": {
+        "on": 16,
+        "name": "foods_name",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "name",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "references": [
+        2
+      ],
+      "type": "index",
+      "data": {
+        "on": 2,
+        "name": "goals_one_active",
+        "sql": "CREATE UNIQUE INDEX goals_one_active ON goals ((ended_at IS NULL)) WHERE ended_at IS NULL AND deleted_at IS NULL",
+        "unique": true,
+        "columns": []
+      }
+    },
+    {
+      "id": 21,
+      "references": [
+        4
+      ],
+      "type": "index",
+      "data": {
+        "on": 4,
+        "name": "weight_logs_one_a_day",
+        "sql": "CREATE UNIQUE INDEX weight_logs_one_a_day ON weight_logs (day) WHERE deleted_at IS NULL",
+        "unique": true,
+        "columns": []
+      }
+    },
+    {
+      "id": 22,
+      "references": [
+        6
+      ],
+      "type": "index",
+      "data": {
+        "on": 6,
+        "name": "meal_entries_eaten_at",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "eaten_at",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 23,
+      "references": [
+        6
+      ],
+      "type": "index",
+      "data": {
+        "on": 6,
+        "name": "meal_entries_day",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "day",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 24,
+      "references": [
+        10
+      ],
+      "type": "index",
+      "data": {
+        "on": 10,
+        "name": "saved_meal_items_meal",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "saved_meal_id",
+            "order_by": null
+          },
+          {
+            "column": "sort_order",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 25,
+      "references": [
+        12
+      ],
+      "type": "index",
+      "data": {
+        "on": 12,
+        "name": "health_samples_metric_time",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "metric",
+            "order_by": null
+          },
+          {
+            "column": "measured_at",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 26,
+      "references": [
+        12
+      ],
+      "type": "index",
+      "data": {
+        "on": 12,
+        "name": "health_samples_day_metric",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "day",
+            "order_by": null
+          },
+          {
+            "column": "metric",
+            "order_by": null
+          }
+        ]
+      }
+    },
+    {
+      "id": 27,
+      "references": [
+        14
+      ],
+      "type": "index",
+      "data": {
+        "on": 14,
+        "name": "workout_sessions_day",
+        "sql": null,
+        "unique": false,
+        "columns": [
+          {
+            "column": "day",
+            "order_by": null
+          }
+        ]
+      }
+    }
+  ],
+  "fixed_sql": [
+    {
+      "name": "profiles",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"profiles\" (\"dirty\" INTEGER NOT NULL DEFAULT 1 CHECK (\"dirty\" IN (0, 1)), \"id\" INTEGER NOT NULL DEFAULT 1 CHECK(\"id\" = 1), \"birth_date\" TEXT NOT NULL, \"sex\" TEXT NULL, \"height_cm\" REAL NOT NULL CHECK(\"height_cm\" BETWEEN 100.0 AND 250.0), \"activity_level\" TEXT NOT NULL, \"diet_type\" TEXT NULL, \"training_place\" TEXT NULL, \"experience\" TEXT NULL, \"training_days\" INTEGER NULL CHECK(\"training_days\" BETWEEN 3 AND 6), \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "profiles_stamp_forward",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER profiles_stamp_forward AFTER UPDATE OF updated_at ON profiles WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE profiles SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END"
+        }
+      ]
+    },
+    {
+      "name": "goals",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"goals\" (\"dirty\" INTEGER NOT NULL DEFAULT 1 CHECK (\"dirty\" IN (0, 1)), \"id\" TEXT NOT NULL, \"goal_type\" TEXT NOT NULL, \"target_weight_kg\" REAL NULL CHECK(\"target_weight_kg\" BETWEEN 20.0 AND 400.0), \"basis_weight_kg\" REAL NOT NULL CHECK(\"basis_weight_kg\" BETWEEN 20.0 AND 400.0), \"calories_kcal\" INTEGER NOT NULL CHECK(\"calories_kcal\" BETWEEN 1200 AND 10000), \"protein_g\" INTEGER NOT NULL CHECK(\"protein_g\" >= 0), \"carbs_g\" INTEGER NOT NULL CHECK(\"carbs_g\" >= 0), \"fat_g\" INTEGER NOT NULL CHECK(\"fat_g\" >= 0), \"water_ml\" INTEGER NOT NULL CHECK(\"water_ml\" > 0), \"steps\" INTEGER NOT NULL CHECK(\"steps\" > 0), \"formula_version\" TEXT NOT NULL, \"started_at\" INTEGER NOT NULL, \"ended_at\" INTEGER NULL, \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"id\"), CHECK (ended_at IS NULL OR ended_at >= started_at));"
+        }
+      ]
+    },
+    {
+      "name": "goals_stamp_forward",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER goals_stamp_forward AFTER UPDATE OF updated_at ON goals WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE goals SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END"
+        }
+      ]
+    },
+    {
+      "name": "weight_logs",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"weight_logs\" (\"dirty\" INTEGER NOT NULL DEFAULT 1 CHECK (\"dirty\" IN (0, 1)), \"id\" TEXT NOT NULL, \"day\" TEXT NOT NULL, \"weight_kg\" REAL NOT NULL CHECK(\"weight_kg\" BETWEEN 20.0 AND 400.0), \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "weight_logs_stamp_forward",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER weight_logs_stamp_forward AFTER UPDATE OF updated_at ON weight_logs WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE weight_logs SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END"
+        }
+      ]
+    },
+    {
+      "name": "meal_entries",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"meal_entries\" (\"dirty\" INTEGER NOT NULL DEFAULT 1 CHECK (\"dirty\" IN (0, 1)), \"id\" TEXT NOT NULL, \"food_id\" TEXT NULL, \"name\" TEXT NOT NULL, \"meal\" TEXT NOT NULL, \"day\" TEXT NOT NULL, \"portion_unit\" TEXT NULL, \"portion_count\" REAL NULL CHECK(\"portion_count\" > 0.0 AND \"portion_count\" <= 5000.0), \"oil_level\" TEXT NULL, \"grams\" REAL NOT NULL CHECK(\"grams\" > 0.0 AND \"grams\" <= 5000.0), \"kcal\" REAL NOT NULL CHECK(\"kcal\" BETWEEN 0.0 AND 10000.0), \"protein_g\" REAL NOT NULL CHECK(\"protein_g\" >= 0.0), \"carbs_g\" REAL NOT NULL CHECK(\"carbs_g\" >= 0.0), \"fat_g\" REAL NOT NULL CHECK(\"fat_g\" >= 0.0), \"eaten_at\" INTEGER NOT NULL, \"source\" TEXT NOT NULL, \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "meal_entries_stamp_forward",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER meal_entries_stamp_forward AFTER UPDATE OF updated_at ON meal_entries WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE meal_entries SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END"
+        }
+      ]
+    },
+    {
+      "name": "saved_meals",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"saved_meals\" (\"dirty\" INTEGER NOT NULL DEFAULT 1 CHECK (\"dirty\" IN (0, 1)), \"id\" TEXT NOT NULL, \"name\" TEXT NOT NULL, \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "saved_meals_stamp_forward",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER saved_meals_stamp_forward AFTER UPDATE OF updated_at ON saved_meals WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE saved_meals SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END"
+        }
+      ]
+    },
+    {
+      "name": "saved_meal_items",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"saved_meal_items\" (\"dirty\" INTEGER NOT NULL DEFAULT 1 CHECK (\"dirty\" IN (0, 1)), \"id\" TEXT NOT NULL, \"saved_meal_id\" TEXT NOT NULL, \"food_id\" TEXT NULL, \"name\" TEXT NOT NULL, \"portion_unit\" TEXT NULL, \"portion_count\" REAL NULL CHECK(\"portion_count\" > 0.0 AND \"portion_count\" <= 5000.0), \"oil_level\" TEXT NULL, \"grams\" REAL NOT NULL CHECK(\"grams\" > 0.0 AND \"grams\" <= 5000.0), \"kcal\" REAL NOT NULL CHECK(\"kcal\" BETWEEN 0.0 AND 10000.0), \"protein_g\" REAL NOT NULL CHECK(\"protein_g\" >= 0.0), \"carbs_g\" REAL NOT NULL CHECK(\"carbs_g\" >= 0.0), \"fat_g\" REAL NOT NULL CHECK(\"fat_g\" >= 0.0), \"sort_order\" INTEGER NOT NULL DEFAULT 0 CHECK(\"sort_order\" BETWEEN 0 AND 200), \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "saved_meal_items_stamp_forward",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER saved_meal_items_stamp_forward AFTER UPDATE OF updated_at ON saved_meal_items WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE saved_meal_items SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END"
+        }
+      ]
+    },
+    {
+      "name": "health_samples",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"health_samples\" (\"dirty\" INTEGER NOT NULL DEFAULT 1 CHECK (\"dirty\" IN (0, 1)), \"id\" TEXT NOT NULL, \"metric\" TEXT NOT NULL, \"day\" TEXT NOT NULL, \"value\" REAL NOT NULL CHECK(\"value\" >= 0.0), \"measured_at\" INTEGER NOT NULL, \"source\" TEXT NOT NULL, \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"id\"), CHECK ((metric = 'water_ml' AND value <= 5000) OR (metric = 'steps' AND value <= 100000)));"
+        }
+      ]
+    },
+    {
+      "name": "health_samples_stamp_forward",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER health_samples_stamp_forward AFTER UPDATE OF updated_at ON health_samples WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE health_samples SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END"
+        }
+      ]
+    },
+    {
+      "name": "workout_sessions",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"workout_sessions\" (\"dirty\" INTEGER NOT NULL DEFAULT 1 CHECK (\"dirty\" IN (0, 1)), \"id\" TEXT NOT NULL, \"day\" TEXT NOT NULL, \"workout_key\" TEXT NOT NULL, \"title\" TEXT NOT NULL, \"sets\" TEXT NOT NULL DEFAULT '[]', \"sets_done\" INTEGER NOT NULL CHECK(\"sets_done\" BETWEEN 0 AND 200), \"sets_planned\" INTEGER NOT NULL CHECK(\"sets_planned\" BETWEEN 0 AND 200), \"duration_min\" INTEGER NULL CHECK(\"duration_min\" BETWEEN 0 AND 600), \"started_at\" INTEGER NOT NULL, \"finished_at\" INTEGER NULL, \"created_at\" INTEGER NOT NULL, \"updated_at\" INTEGER NOT NULL, \"deleted_at\" INTEGER NULL, PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "workout_sessions_stamp_forward",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TRIGGER workout_sessions_stamp_forward AFTER UPDATE OF updated_at ON workout_sessions WHEN NEW.dirty = 1 AND NEW.updated_at <= OLD.updated_at BEGIN UPDATE workout_sessions SET updated_at = OLD.updated_at + 1 WHERE id = NEW.id;END"
+        }
+      ]
+    },
+    {
+      "name": "foods",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"foods\" (\"id\" TEXT NOT NULL, \"name\" TEXT NOT NULL, \"aliases_json\" TEXT NOT NULL DEFAULT '[]', \"kcal_per_100g\" REAL NOT NULL CHECK(\"kcal_per_100g\" BETWEEN 0.0 AND 900.0), \"protein_g_per_100g\" REAL NOT NULL CHECK(\"protein_g_per_100g\" BETWEEN 0.0 AND 100.0), \"carbs_g_per_100g\" REAL NOT NULL CHECK(\"carbs_g_per_100g\" BETWEEN 0.0 AND 100.0), \"fat_g_per_100g\" REAL NOT NULL CHECK(\"fat_g_per_100g\" BETWEEN 0.0 AND 100.0), \"portions_json\" TEXT NOT NULL DEFAULT '[]', \"assumption\" TEXT NOT NULL DEFAULT '', \"source\" TEXT NOT NULL, \"deleted_at\" INTEGER NULL, \"seq\" INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (\"id\"), CHECK (protein_g_per_100g + carbs_g_per_100g + fat_g_per_100g <= 100.5));"
+        }
+      ]
+    },
+    {
+      "name": "sync_cursors",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"sync_cursors\" (\"kind\" TEXT NOT NULL, \"seq\" INTEGER NOT NULL, PRIMARY KEY (\"kind\"));"
+        }
+      ]
+    },
+    {
+      "name": "sync_account",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE TABLE IF NOT EXISTS \"sync_account\" (\"id\" INTEGER NOT NULL DEFAULT 1 CHECK(\"id\" = 1), \"account_id\" TEXT NOT NULL, \"email\" TEXT NULL, \"bound_at\" INTEGER NOT NULL, PRIMARY KEY (\"id\"));"
+        }
+      ]
+    },
+    {
+      "name": "foods_name",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX foods_name ON foods (name)"
+        }
+      ]
+    },
+    {
+      "name": "goals_one_active",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE UNIQUE INDEX goals_one_active ON goals ((ended_at IS NULL)) WHERE ended_at IS NULL AND deleted_at IS NULL"
+        }
+      ]
+    },
+    {
+      "name": "weight_logs_one_a_day",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE UNIQUE INDEX weight_logs_one_a_day ON weight_logs (day) WHERE deleted_at IS NULL"
+        }
+      ]
+    },
+    {
+      "name": "meal_entries_eaten_at",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX meal_entries_eaten_at ON meal_entries (eaten_at)"
+        }
+      ]
+    },
+    {
+      "name": "meal_entries_day",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX meal_entries_day ON meal_entries (day)"
+        }
+      ]
+    },
+    {
+      "name": "saved_meal_items_meal",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX saved_meal_items_meal ON saved_meal_items (saved_meal_id, sort_order)"
+        }
+      ]
+    },
+    {
+      "name": "health_samples_metric_time",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX health_samples_metric_time ON health_samples (metric, measured_at)"
+        }
+      ]
+    },
+    {
+      "name": "health_samples_day_metric",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX health_samples_day_metric ON health_samples (day, metric)"
+        }
+      ]
+    },
+    {
+      "name": "workout_sessions_day",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX workout_sessions_day ON workout_sessions (day)"
+        }
+      ]
+    }
+  ]
+}

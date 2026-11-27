@@ -24,21 +24,17 @@ class ChoiceCard extends StatelessWidget {
     return Semantics(
       selected: selected,
       inMutuallyExclusiveGroup: true,
+      // The chosen one in paper, like the chips and the day switch.
       child: Material(
-        color: selected
-            ? AuraColors.accent.withValues(alpha: 0.12)
-            : AuraColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(20)),
-          side: BorderSide(
-            color: selected ? AuraColors.accent : AuraColors.border,
-            width: selected ? 2 : 1,
-          ),
+        color: selected ? AuraColors.paper : AuraColors.surface,
+        animationDuration: const Duration(milliseconds: 180),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(22)),
         ),
         child: InkWell(
           onTap: onTap,
           customBorder: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(20)),
+            borderRadius: BorderRadius.all(Radius.circular(22)),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
@@ -48,13 +44,21 @@ class ChoiceCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: text.titleMedium),
+                      Text(
+                        title,
+                        style: text.titleMedium?.copyWith(
+                          color: selected
+                              ? AuraColors.ink
+                              : AuraColors.foreground,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 4),
                         Text(
                           subtitle!,
                           style: text.bodyMedium?.copyWith(
-                            color: AuraColors.muted,
+                            color: selected ? AuraColors.ink : AuraColors.muted,
                           ),
                         ),
                       ],
@@ -63,8 +67,8 @@ class ChoiceCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Icon(
-                  selected ? Icons.check_circle : Icons.circle_outlined,
-                  color: selected ? AuraColors.accent : AuraColors.muted,
+                  selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+                  color: selected ? AuraColors.ink : AuraColors.muted,
                 ),
               ],
             ),

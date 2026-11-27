@@ -92,6 +92,10 @@ class Profiles extends Table with Synced {
   TextColumn get experience => text().nullable().map(
     const OptionConverter<Experience>(Experience.values),
   )();
+
+  /// Training days a week, 3 to 6; Sunday is always rest.
+  IntColumn get trainingDays =>
+      integer().nullable().check(trainingDays.isBetweenValues(3, 6))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get deletedAt => dateTime().nullable()();
@@ -310,4 +314,36 @@ class HealthSamples extends Table with Synced {
     "CHECK ((metric = 'water_ml' AND value <= 5000) "
         "OR (metric = 'steps' AND value <= 100000))",
   ];
+}
+
+/// A workout done (or started) on a diary [day]: which plan day it was, and
+/// every set as JSON (`[{"exercise": "goblet_squat", "reps": 10, "kg": 12,
+/// "seconds": null, "done": true}, ...]`), so the next session can start
+/// from the last one's numbers.
+@DataClassName('WorkoutSessionRow')
+@TableIndex(name: 'workout_sessions_day', columns: {#day})
+class WorkoutSessions extends Table with Synced {
+  TextColumn get id => text()();
+  TextColumn get day => text().map(const DateConverter())();
+
+  /// The plan day, like `upper_a`, or `custom`.
+  TextColumn get workoutKey => text().withLength(min: 1, max: 40)();
+  TextColumn get title => text().withLength(min: 1, max: 80)();
+  TextColumn get sets =>
+      text().withDefault(const Constant('[]')).withLength(max: 20000)();
+  IntColumn get setsDone => integer().check(setsDone.isBetweenValues(0, 200))();
+  IntColumn get setsPlanned =>
+      integer().check(setsPlanned.isBetweenValues(0, 200))();
+  IntColumn get durationMin =>
+      integer().nullable().check(durationMin.isBetweenValues(0, 600))();
+  DateTimeColumn get startedAt => dateTime()();
+
+  /// Null while it's still going.
+  DateTimeColumn get finishedAt => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
 }

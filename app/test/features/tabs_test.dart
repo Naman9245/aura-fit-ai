@@ -73,7 +73,17 @@ void main() {
 
       await _openTab(tester, 'Train');
       expect(find.text('TRAIN'), findsOneWidget);
-      expect(find.textContaining('Josh is getting them ready'), findsOneWidget);
+      expect(find.text('WHERE DO YOU TRAIN?'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('STEPS TODAY'),
+        200,
+        scrollable: find
+            .byWidgetPredicate(
+              (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+            )
+            .last,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('STEPS TODAY'));
       await tester.pumpAndSettle();
       expect(find.text('Steps walked'), findsOneWidget);
