@@ -126,11 +126,14 @@ void main() {
     'syncCatalogue pulls new dishes by seq and hides retired ones',
     () async {
       await repo.ensureSeeded();
-      final beforeCount = (await repo.allFoods()).length;
+      final bundled = jsonDecode(File('assets/foods.json').readAsStringSync());
+      final bundledMaxSeq = (bundled as List<Object?>)
+          .map((f) => (f! as Map)['seq']! as int)
+          .reduce(max);
 
       final remote = FakeSyncRemote();
-      // Advance FakeSyncRemote seq past the bundled seed.
-      for (var i = 0; i <= beforeCount; i++) {
+      // Advance FakeSyncRemote seq past the bundled seed's highest number.
+      for (var i = 0; i <= bundledMaxSeq; i++) {
         remote.put('profiles', {
           'birth_date': '1995-01-01',
           'sex': 'male',
@@ -189,4 +192,59 @@ void main() {
       expect(afterRetire.where((f) => f.id.endsWith('9999')), isEmpty);
     },
   );
+
+  test('spelling the Hinglish way still finds the food', () async {
+    await repo.ensureSeeded();
+    for (final (typed, spelled) in [
+      ('parantha', 'paratha'),
+      ('gobhi', 'gobi'),
+      ('daal', 'dal'),
+      ('panner', 'paneer'),
+      ('chaval', 'chawal'),
+      ('chapatti', 'chapati'),
+      ('bhendi', 'bhindi'),
+    ]) {
+      expect(foldSpelling(typed), foldSpelling(spelled), reason: typed);
+    }
+
+    Future<String> first(String query) async =>
+        (await repo.search(query)).first.name;
+    expect(await first('plain paratha'), 'Plain Paratha (Tawa / Triangle)');
+    expect(await first('plain parantha'), 'Plain Paratha (Tawa / Triangle)');
+    expect(
+      (await repo.search('panner tikka')).map((f) => f.name),
+      contains('Paneer Tikka (Grilled / Tandoori)'),
+    );
+    expect(
+      (await repo.search('rajma chaval')).map((f) => f.name),
+      contains('Rajma Chawal (Home Plate)'),
+    );
+    // Exact spellings still come before loose ones.
+    expect(await first('aloo paratha'), 'Aloo Paratha');
+  });
+
+  test('dishes made of eggs or pieces are counted by them', () async {
+    await repo.ensureSeeded();
+    Future<FoodItem> food(String query) async =>
+        (await repo.search(query)).first;
+
+    final curry = await food('egg curry');
+    expect(curry.portions.first.unit, 'egg + gravy');
+    final twoEggs = curry.calculate(
+      unit: 'egg + gravy',
+      count: 2,
+      oilLevel: curry.defaultOil,
+    );
+    expect(twoEggs.grams, 200);
+
+    expect((await food('egg bhurji')).portions.first.unit, 'egg');
+    expect(
+      (await food('chicken curry')).portions.map((p) => p.unit),
+      contains('piece + gravy'),
+    );
+    expect((await food('chicken curry')).name, 'Home-Style Chicken Curry');
+    for (final name in ['chole bhature', 'malai kofta', 'momos', 'jalebi']) {
+      expect(await repo.search(name), isNotEmpty, reason: name);
+    }
+  });
 }

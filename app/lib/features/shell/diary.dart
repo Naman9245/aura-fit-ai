@@ -5,6 +5,7 @@ import 'package:aurafit/data/log_repository.dart';
 import 'package:aurafit/features/nutrition/log_meal_screen.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -54,6 +55,8 @@ void showUndo(BuildContext context, UndoAction action) =>
     _showUndoOn(ScaffoldMessenger.of(context), action);
 
 void _showUndoOn(ScaffoldMessengerState messenger, UndoAction action) {
+  // A small tap in the hand for every log, as well as the bar.
+  HapticFeedback.lightImpact().ignore();
   messenger
     ..hideCurrentSnackBar()
     ..showSnackBar(

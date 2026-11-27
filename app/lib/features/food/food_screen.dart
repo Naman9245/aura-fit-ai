@@ -11,12 +11,11 @@ import 'package:aurafit/models/options.dart';
 import 'package:aurafit/services/meal_text_parser.dart';
 import 'package:aurafit/widgets/bright_card.dart';
 import 'package:aurafit/widgets/josh.dart';
+import 'package:aurafit/widgets/motion.dart';
+import 'package:aurafit/widgets/portion_wheel_picker.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-/// The meals in the order they're eaten.
-const _mealsInOrder = [Meal.breakfast, Meal.lunch, Meal.snack, Meal.dinner];
 
 /// Logging food (PRD N1, N2, N3, N11, N12): type a meal for AI to read,
 /// search the food list, saved meals and quick add, the last few dishes in
@@ -98,31 +97,31 @@ class _FoodScreenState extends ConsumerState<FoodScreen> {
       bottom: false,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        children: [
-          Text(
-            formatDate(day),
-            style: text.bodyMedium?.copyWith(color: AuraColors.muted),
+        children: staggered([
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                formatDate(day),
+                style: text.bodyMedium?.copyWith(color: AuraColors.muted),
+              ),
+              Semantics(
+                header: true,
+                child: Text('FOOD', style: AuraType.display(40)),
+              ),
+            ],
           ),
-          Semantics(
-            header: true,
-            child: Text('FOOD', style: AuraType.display(40)),
-          ),
-          const SizedBox(height: 12),
           DaySwitch(isToday: !yesterday),
-          const SizedBox(height: 12),
           _MealPicker(
             meal: _meal,
             onPick: (meal) => setState(() => _picked = meal),
           ),
-          const SizedBox(height: 12),
           _TypeItCard(
             controller: _typed,
             stage: JoshStage.forStreak(streak),
             onRead: () => _open(day, LogMealMode.text),
           ),
-          const SizedBox(height: 12),
           _SearchPill(onTap: () => _open(day, LogMealMode.search)),
-          const SizedBox(height: 12),
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -149,32 +148,35 @@ class _FoodScreenState extends ConsumerState<FoodScreen> {
               ],
             ),
           ),
-          if (recents.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Text(
-              'AGAIN, IN ONE TAP',
-              style: AuraType.kicker(color: AuraColors.muted),
+          if (recents.isNotEmpty)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  'AGAIN, IN ONE TAP',
+                  style: AuraType.kicker(color: AuraColors.muted),
+                ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      for (final item in recents)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ActionChip(
+                            avatar: const Icon(Icons.add_rounded, size: 16),
+                            label: Text(item.name),
+                            tooltip: 'Add ${item.name} to ${_meal.label}',
+                            onPressed: () => _logAgain(day, item),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  for (final item in recents)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ActionChip(
-                        avatar: const Icon(Icons.add_rounded, size: 16),
-                        label: Text(item.name),
-                        tooltip: 'Add ${item.name} to ${_meal.label}',
-                        onPressed: () => _logAgain(day, item),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-          const SizedBox(height: 20),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -185,25 +187,22 @@ class _FoodScreenState extends ConsumerState<FoodScreen> {
                   style: AuraType.kicker(color: AuraColors.muted),
                 ),
               ),
-              Text(
-                '${formatWhole(entries.fold<double>(0, (s, e) => s + e.kcal).round())} KCAL',
+              CountUp(
+                value: entries.fold<double>(0, (s, e) => s + e.kcal),
+                format: (v) => '${formatWhole(v.round())} KCAL',
                 style: AuraType.display(22),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          for (final meal in _mealsInOrder)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: _MealSectionCard(
-                meal: meal,
-                day: day,
-                entries: summary?.entriesFor(meal) ?? const [],
-                onAdd: () =>
-                    openMealLogger(context, LogMealArgs(day: day, meal: meal)),
-              ),
+          for (final meal in Meal.inDayOrder)
+            _MealSectionCard(
+              meal: meal,
+              day: day,
+              entries: summary?.entriesFor(meal) ?? const [],
+              onAdd: () =>
+                  openMealLogger(context, LogMealArgs(day: day, meal: meal)),
             ),
-        ],
+        ]),
       ),
     );
   }
@@ -222,7 +221,7 @@ class _MealPicker extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          for (final option in _mealsInOrder)
+          for (final option in Meal.inDayOrder)
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
@@ -604,11 +603,11 @@ class _MealSectionCard extends ConsumerWidget {
 }
 
 /// An entry's portion, oil, where its numbers came from, and its protein:
-/// "2 piece · Home style · 6.9 g P".
+/// "2 pieces · Home style · 6.9 g P".
 String entrySubtitle(MealEntryRow e) {
   final parts = <String>[];
   if (e.portionUnit != null && e.portionCount != null) {
-    parts.add('${formatDecimal(e.portionCount!)} ${e.portionUnit}');
+    parts.add(portionLabel(e.portionCount!, e.portionUnit!));
   } else {
     parts.add('${formatDecimal(e.grams, places: 0)} g');
   }

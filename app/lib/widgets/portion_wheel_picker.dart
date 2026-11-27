@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:aurafit/core/format.dart';
 import 'package:aurafit/core/theme/aura_colors.dart';
+import 'package:aurafit/core/theme/aura_type.dart';
 import 'package:aurafit/data/food_repository.dart';
 import 'package:aurafit/models/options.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,10 @@ IconData iconForPortionUnit(String unit) {
   if (u == 'g' || u == 'grams' || u == 'ml') return Icons.scale_outlined;
   if (u.contains('egg') || u.contains('white') || u.contains('yolk')) {
     return Icons.egg_outlined;
+  }
+  if (u.contains('+ gravy')) return Icons.ramen_dining_outlined;
+  if (u.contains('roll') || u.contains('burger') || u.contains('momo')) {
+    return Icons.lunch_dining_outlined;
   }
   if (u.contains('katori')) return Icons.soup_kitchen_outlined;
   if (u.contains('bowl')) return Icons.rice_bowl_outlined;
@@ -353,13 +358,8 @@ class _PortionWheelPickerState extends State<PortionWheelPicker> {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text:
-                          '${_formatWheelNumber(widget.count)} '
-                          '${_pluralizeUnit(widget.selectedUnit, widget.count)}',
-                      style: text.titleMedium?.copyWith(
-                        color: AuraColors.accent,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      text: portionLabel(widget.count, widget.selectedUnit),
+                      style: AuraType.display(26, color: AuraColors.accent),
                     ),
                     if (widget.showGramsSubtitle && widget.selectedUnit != 'g')
                       TextSpan(
@@ -387,10 +387,9 @@ class _PortionWheelPickerState extends State<PortionWheelPicker> {
         const SizedBox(height: 6),
         Container(
           height: 76,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AuraColors.surfaceStrong,
-            borderRadius: const BorderRadius.all(Radius.circular(20)),
-            border: Border.all(color: AuraColors.border),
+            borderRadius: BorderRadius.all(Radius.circular(24)),
           ),
           child: Row(
             children: [
@@ -409,15 +408,9 @@ class _PortionWheelPickerState extends State<PortionWheelPicker> {
                       child: Container(
                         width: 68,
                         height: 54,
-                        decoration: BoxDecoration(
-                          color: const Color(0x24FF7A00),
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(14),
-                          ),
-                          border: Border.all(
-                            color: AuraColors.accent,
-                            width: 1.5,
-                          ),
+                        decoration: const BoxDecoration(
+                          color: AuraColors.accent,
+                          borderRadius: BorderRadius.all(Radius.circular(16)),
                         ),
                       ),
                     ),
@@ -462,9 +455,9 @@ class _PortionWheelPickerState extends State<PortionWheelPicker> {
                                         child: Text(
                                           _formatWheelNumber(val),
                                           style: isSelected
-                                              ? text.titleLarge?.copyWith(
-                                                  color: AuraColors.accent,
-                                                  fontWeight: FontWeight.w700,
+                                              ? AuraType.display(
+                                                  28,
+                                                  color: AuraColors.ink,
                                                 )
                                               : text.titleMedium?.copyWith(
                                                   color: AuraColors.muted,
@@ -503,22 +496,46 @@ class _PortionWheelPickerState extends State<PortionWheelPicker> {
     }
     return formatDecimal(val);
   }
+}
 
-  static String _pluralizeUnit(String unit, double count) {
-    if (count == 1 || unit == 'g' || unit == 'ml') return unit;
-    if (unit.endsWith('s') ||
-        unit.contains('katori') ||
-        unit.contains('roti') ||
-        unit.contains('pav') ||
-        unit.contains('dosa') ||
-        unit.contains('tbsp') ||
-        unit.contains('tsp')) {
-      return unit;
-    }
-    if (unit == 'glass') return 'glasses';
-    if (unit == 'sandwich') return 'sandwiches';
-    return '${unit}s';
+/// An amount and its unit, read naturally: "1 katori", "2 pieces",
+/// "2 eggs + gravy", "2 omelettes (2 eggs)", "150 g".
+String portionLabel(double count, String unit) {
+  final number = count >= 1000 && count == count.roundToDouble()
+      ? formatWhole(count.round())
+      : formatDecimal(count);
+  return '$number ${pluralUnit(unit, count)}';
+}
+
+/// [unit] for [count] of it. Only the first word changes, so "egg + gravy"
+/// becomes "eggs + gravy".
+String pluralUnit(String unit, double count) {
+  if (count == 1 || unit == 'g' || unit == 'ml') return unit;
+  final split = RegExp(r'^(.*?)(\s*[(+].*)?$').firstMatch(unit)!;
+  final head = split[1]!;
+  final tail = split[2] ?? '';
+  return '${_plural(head)}$tail';
+}
+
+String _plural(String unit) {
+  if (unit.endsWith('glass')) return '${unit}es';
+  if (unit.endsWith('sandwich')) return '${unit}es';
+  if (unit.endsWith('potato')) return '${unit}es';
+  const same = ['medium', 'small', 'large', 'handful'];
+  if (unit.endsWith('s') ||
+      same.any(unit.startsWith) ||
+      unit.contains('katori') ||
+      unit.contains('roti') ||
+      unit.contains('pav') ||
+      unit.contains('dosa') ||
+      unit.contains('tbsp') ||
+      unit.contains('tsp') ||
+      unit.contains('cubes') ||
+      unit.contains('chopped')) {
+    return unit;
   }
+  if (unit == 'half bird') return 'half birds';
+  return '${unit}s';
 }
 
 class _UnitIconCard extends StatelessWidget {
@@ -547,17 +564,12 @@ class _UnitIconCard extends StatelessWidget {
         borderRadius: const BorderRadius.all(Radius.circular(16)),
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: selected
-                ? const Color(0x24FF7A00)
-                : AuraColors.surfaceStrong,
-            borderRadius: const BorderRadius.all(Radius.circular(16)),
-            border: Border.all(
-              color: selected ? AuraColors.accent : AuraColors.border,
-              width: selected ? 1.5 : 1,
-            ),
+            color: selected ? AuraColors.paper : AuraColors.surfaceStrong,
+            borderRadius: const BorderRadius.all(Radius.circular(18)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -565,7 +577,7 @@ class _UnitIconCard extends StatelessWidget {
               Icon(
                 iconForPortionUnit(portion.unit),
                 size: 20,
-                color: selected ? AuraColors.accent : AuraColors.muted,
+                color: selected ? AuraColors.ink : AuraColors.muted,
               ),
               const SizedBox(width: 8),
               Column(
@@ -575,18 +587,14 @@ class _UnitIconCard extends StatelessWidget {
                   Text(
                     label,
                     style: text.labelLarge?.copyWith(
-                      color: selected
-                          ? AuraColors.foreground
-                          : AuraColors.muted,
+                      color: selected ? AuraColors.ink : AuraColors.foreground,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),
                   Text(
                     sub,
                     style: text.bodySmall?.copyWith(
-                      color: selected
-                          ? AuraColors.accentSoft
-                          : AuraColors.muted,
+                      color: selected ? AuraColors.ink : AuraColors.muted,
                       fontSize: 11,
                     ),
                   ),
@@ -647,22 +655,17 @@ class OilSelectorBar extends StatelessWidget {
                   onChanged(items[i].$1);
                 },
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 140),
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOut,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
                     color: selected == items[i].$1
-                        ? const Color(0x24FF7A00)
+                        ? AuraColors.paper
                         : AuraColors.surfaceStrong,
-                    borderRadius: const BorderRadius.all(Radius.circular(14)),
-                    border: Border.all(
-                      color: selected == items[i].$1
-                          ? AuraColors.accent
-                          : AuraColors.border,
-                      width: selected == items[i].$1 ? 1.5 : 1,
-                    ),
+                    borderRadius: const BorderRadius.all(Radius.circular(18)),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -671,7 +674,7 @@ class OilSelectorBar extends StatelessWidget {
                         items[i].$4,
                         size: 18,
                         color: selected == items[i].$1
-                            ? AuraColors.accent
+                            ? AuraColors.ink
                             : AuraColors.muted,
                       ),
                       const SizedBox(height: 4),
@@ -681,8 +684,8 @@ class OilSelectorBar extends StatelessWidget {
                           items[i].$3,
                           style: text.labelMedium?.copyWith(
                             color: selected == items[i].$1
-                                ? AuraColors.foreground
-                                : AuraColors.muted,
+                                ? AuraColors.ink
+                                : AuraColors.foreground,
                             fontWeight: selected == items[i].$1
                                 ? FontWeight.w700
                                 : FontWeight.w500,

@@ -1,4 +1,5 @@
 import 'package:aurafit/core/theme/aura_colors.dart';
+import 'package:aurafit/widgets/motion.dart';
 import 'package:flutter/material.dart';
 
 /// A rounded card in one of the design's colours. Text and icons inside take
@@ -37,7 +38,7 @@ class BrightCard extends StatelessWidget {
         ),
       ),
     );
-    return Material(
+    final card = Material(
       color: color,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
@@ -45,6 +46,7 @@ class BrightCard extends StatelessWidget {
       ),
       child: onTap == null ? inner : InkWell(onTap: onTap, child: inner),
     );
+    return onTap == null ? card : Pressable(child: card);
   }
 }
 
@@ -74,18 +76,21 @@ class InkPillButton extends StatelessWidget {
       textStyle: Theme.of(context).textTheme.labelLarge
           ?.copyWith(fontWeight: FontWeight.w700),
     );
-    return switch (icon) {
-      final icon? => FilledButton.icon(
-        style: style,
-        onPressed: onPressed,
-        icon: Icon(icon, size: 18),
-        label: Text(label),
-      ),
-      null => FilledButton(
-        style: style,
-        onPressed: onPressed,
-        child: Text(label),
-      ),
-    };
+    return Pressable(
+      enabled: onPressed != null,
+      child: switch (icon) {
+        final icon? => FilledButton.icon(
+          style: style,
+          onPressed: onPressed,
+          icon: Icon(icon, size: 18),
+          label: Text(label),
+        ),
+        null => FilledButton(
+          style: style,
+          onPressed: onPressed,
+          child: Text(label),
+        ),
+      },
+    );
   }
 }

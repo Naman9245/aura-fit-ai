@@ -18,6 +18,7 @@ import 'package:aurafit/services/coach_rules.dart';
 import 'package:aurafit/services/targets.dart';
 import 'package:aurafit/widgets/bright_card.dart';
 import 'package:aurafit/widgets/josh.dart';
+import 'package:aurafit/widgets/motion.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -120,12 +121,12 @@ class _TodayBody extends ConsumerWidget {
       bottom: false,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        children: [
+        children: staggered([
           _Header(day: day, isToday: isToday),
-          const SizedBox(height: 12),
           DaySwitch(isToday: isToday),
-          const SizedBox(height: 14),
           _JoshCard(
+            // He moves again whenever something is logged.
+            wakeKey: (summary.entries.length, summary.waterMl, summary.steps),
             streak: streak,
             greeting: todayGreeting(isToday: isToday, hour: now.hour),
             feedback: feedback,
@@ -138,7 +139,6 @@ class _TodayBody extends ConsumerWidget {
               proteinTargetG: goal.proteinG,
             ),
           ),
-          const SizedBox(height: 12),
           _CaloriesCard(
             summary: summary,
             goal: goal,
@@ -148,7 +148,6 @@ class _TodayBody extends ConsumerWidget {
               LogMealArgs(day: day, meal: defaultMealForHour(now.hour)),
             ),
           ),
-          const SizedBox(height: 12),
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -179,7 +178,6 @@ class _TodayBody extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 12),
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -188,8 +186,9 @@ class _TodayBody extends ConsumerWidget {
                   child: _DarkStat(
                     kicker: 'STEPS',
                     icon: Icons.directions_walk_rounded,
-                    value:
-                        '${formatWhole(summary.steps)} / '
+                    value: summary.steps.toDouble(),
+                    format: (v) =>
+                        '${formatWhole(v.round())} / '
                         '${formatWhole(goal.steps)}',
                     onTap: () => showStepsSheet(
                       context,
@@ -205,11 +204,10 @@ class _TodayBody extends ConsumerWidget {
                   child: _DarkStat(
                     kicker: 'WEIGHT',
                     icon: Icons.monitor_weight_outlined,
-                    value: switch (summary.weightLog) {
-                      final log? =>
-                        '${formatDecimal(log.weightKg, places: 1)} KG',
-                      null => 'Log kg',
-                    },
+                    value: summary.weightLog?.weightKg,
+                    fromZero: false,
+                    format: (v) => '${formatDecimal(v, places: 1)} KG',
+                    empty: 'LOG KG',
                     onTap: () => showWeightSheet(
                       context,
                       ref,
@@ -223,8 +221,7 @@ class _TodayBody extends ConsumerWidget {
               ],
             ),
           ),
-          if (proteinGuidance.ideas.isNotEmpty) ...[
-            const SizedBox(height: 12),
+          if (proteinGuidance.ideas.isNotEmpty)
             _ProteinIdeasCard(
               guidance: proteinGuidance,
               diet: profile?.dietType,
@@ -237,8 +234,7 @@ class _TodayBody extends ConsumerWidget {
                 ),
               ),
             ),
-          ],
-        ],
+        ]),
       ),
     );
   }
@@ -317,8 +313,10 @@ class _JoshCard extends StatelessWidget {
     required this.greeting,
     required this.feedback,
     required this.mood,
+    required this.wakeKey,
   });
 
+  final Object wakeKey;
   final int streak;
   final String greeting;
   final CalmFeedback feedback;
@@ -364,6 +362,7 @@ class _JoshCard extends StatelessWidget {
               stage: JoshStage.forStreak(streak),
               width: joshWidth,
               playFor: joshPlayFor,
+              wakeKey: wakeKey,
             ),
           ),
         ],
@@ -412,8 +411,12 @@ class _CaloriesCard extends StatelessWidget {
                 excludeSemantics: true,
                 child: SizedBox.square(
                   dimension: 104,
-                  child: CustomPaint(
-                    painter: _RingPainter(progress: progress),
+                  child: FillUp(
+                    value: progress,
+                    builder: (context, fill, child) => CustomPaint(
+                      painter: _RingPainter(progress: fill),
+                      child: child,
+                    ),
                     child: Center(
                       child: Padding(
                         padding: const EdgeInsets.all(14),
@@ -422,8 +425,9 @@ class _CaloriesCard extends StatelessWidget {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                formatWhole((target - eaten).abs()),
+                              CountUp(
+                                value: (target - eaten).abs().toDouble(),
+                                format: (v) => formatWhole(v.round()),
                                 style: AuraType.display(26),
                               ),
                               Text(
@@ -449,8 +453,11 @@ class _CaloriesCard extends StatelessWidget {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
-                      child: Text(
-                        '${formatWhole(eaten)} / ${formatWhole(target)} KCAL',
+                      child: CountUp(
+                        value: eaten.toDouble(),
+                        format: (v) =>
+                            '${formatWhole(v.round())} / '
+                            '${formatWhole(target)} KCAL',
                         style: AuraType.display(26),
                         maxLines: 1,
                         softWrap: false,
@@ -611,8 +618,9 @@ class _ProteinCard extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
-              child: Text(
-                '${eatenG.round()} / $targetG G',
+              child: CountUp(
+                value: eatenG,
+                format: (v) => '${v.round()} / $targetG G',
                 style: AuraType.display(30),
                 maxLines: 1,
                 softWrap: false,
@@ -630,7 +638,10 @@ class _ProteinCard extends StatelessWidget {
             ),
             const Spacer(),
             const SizedBox(height: 10),
-            _InkBar(ratio: targetG > 0 ? eatenG / targetG : 0),
+            FillUp(
+              value: targetG > 0 ? (eatenG / targetG).clamp(0.0, 1.0) : 0,
+              builder: (context, fill, _) => _InkBar(ratio: fill),
+            ),
           ],
         ),
       ),
@@ -664,9 +675,11 @@ class _WaterCard extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(
-              '${formatLitres(summary.waterMl)} / '
-              '${formatLitres(goal.waterMl)}',
+            child: CountUp(
+              value: summary.waterMl.toDouble(),
+              format: (v) =>
+                  '${formatLitres(v.round())} / '
+                  '${formatLitres(goal.waterMl)}',
               style: AuraType.display(30),
               maxLines: 1,
               softWrap: false,
@@ -695,12 +708,20 @@ class _DarkStat extends StatelessWidget {
     required this.kicker,
     required this.icon,
     required this.value,
+    required this.format,
     required this.onTap,
+    this.fromZero = true,
+    this.empty = '',
   });
 
   final String kicker;
   final IconData icon;
-  final String value;
+
+  /// Null shows [empty] instead.
+  final double? value;
+  final String Function(double value) format;
+  final bool fromZero;
+  final String empty;
   final VoidCallback onTap;
 
   @override
@@ -727,12 +748,22 @@ class _DarkStat extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: AuraType.display(26),
-              maxLines: 1,
-              softWrap: false,
-            ),
+            child: switch (value) {
+              final value? => CountUp(
+                value: value,
+                format: format,
+                fromZero: fromZero,
+                style: AuraType.display(26),
+                maxLines: 1,
+                softWrap: false,
+              ),
+              null => Text(
+                empty,
+                style: AuraType.display(26),
+                maxLines: 1,
+                softWrap: false,
+              ),
+            },
           ),
         ],
       ),

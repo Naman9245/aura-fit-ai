@@ -20,6 +20,8 @@ Android first, offline first: every screen reads and writes the phone's own data
 | `lib/features/food/` | Food: type a meal for AI, search, saved meals, quick add, and the day's meals to edit |
 | `lib/features/progress/` | Progress: Josh's streak, the calendar of days logged, the weight trend |
 | `lib/features/train/` | Train: Josh until workouts arrive, and today's steps |
+| `lib/widgets/motion.dart` | The shared motion: cards that rise in, numbers that count, presses; all still when the phone asks for less motion |
+| `tool/build_food_catalogue.py` | The food list: the seed, later fixes (`LATER_FIXES`) and added foods (`ADDED_FOODS`), written to `assets/foods.json` |
 | `tool/render_josh_test.dart` | Draws every stage and mood of Josh to `build/josh/sheet.png` |
 
 ## Commands

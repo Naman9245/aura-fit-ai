@@ -247,9 +247,14 @@ class FoodRepository {
         .where((t) => t.isNotEmpty)
         .toList();
 
+    final folded = foldSpelling(trimmed);
+    final foldedTokens = [
+      for (final t in folded.split(' '))
+        if (t.isNotEmpty) t,
+    ];
     final scored = <(int, FoodItem)>[];
     for (final food in all) {
-      final score = _scoreFood(food, trimmed, tokens);
+      final score = _scoreFood(food, trimmed, tokens, folded, foldedTokens);
       if (score != null) scored.add((score, food));
     }
     scored.sort((a, b) {
@@ -309,13 +314,21 @@ class FoodRepository {
     }
   }
 
-  static int? _scoreFood(FoodItem food, String fullQuery, List<String> tokens) {
+  static int? _scoreFood(
+    FoodItem food,
+    String fullQuery,
+    List<String> tokens,
+    String foldedQuery,
+    List<String> foldedTokens,
+  ) {
     final name = food.name.toLowerCase();
     final aliases = [for (final a in food.aliases) a.toLowerCase()];
     final haystack = [name, ...aliases].join(' ');
 
     for (final token in tokens) {
-      if (!haystack.contains(token)) return null;
+      if (!haystack.contains(token)) {
+        return _scoreLoosely(food, foldedQuery, foldedTokens);
+      }
     }
     if (name == fullQuery || aliases.contains(fullQuery)) return 0;
     if (name.startsWith(fullQuery)) return 1;
@@ -323,11 +336,88 @@ class FoodRepository {
     if (name.split(RegExp(r'[\s()/,-]+')).any((w) => w.startsWith(fullQuery))) {
       return 3;
     }
+    // "chicken curry" in "Home-Style Chicken Curry".
+    if (name.contains(fullQuery)) return 4;
     if (aliases.any(
       (a) => a.split(RegExp(r'[\s()/,-]+')).any((w) => w.startsWith(fullQuery)),
     )) {
-      return 4;
+      return 5;
     }
-    return 5;
+    return 6;
   }
+
+  // Each food's name, and its name and aliases, with the spelling folded,
+  // worked out once.
+  static final _foldedName = Expando<String>();
+  static final _foldedAll = Expando<String>();
+
+  /// A match only once spelling is folded, like "parantha" for "paratha":
+  /// after every exact match.
+  static int? _scoreLoosely(
+    FoodItem food,
+    String foldedQuery,
+    List<String> foldedTokens,
+  ) {
+    if (foldedTokens.isEmpty) return null;
+    final haystack = _foldedAll[food] ??= foldSpelling(
+      [food.name, ...food.aliases].join(' '),
+    );
+    for (final token in foldedTokens) {
+      if (!haystack.contains(token)) return null;
+    }
+    final name = _foldedName[food] ??= foldSpelling(food.name);
+    return name.startsWith(foldedQuery) ? 7 : 8;
+  }
+}
+
+/// [text] with the ways Hinglish spellings vary folded away, so "parantha"
+/// finds "paratha", "gobhi" finds "gobi", "daal" finds "dal", "panner"
+/// finds "paneer" and "chaval" finds "chawal". Search folds the query and
+/// the foods the same way, so it only needs to be consistent, not right.
+String foldSpelling(String text) {
+  // One pass over the letters, no regular expressions: search folds every
+  // food once, so this has to be quick.
+  const aspirated = 'bcdgjkpt';
+  const nasalBefore = 'bcdgjkpstzfq';
+  final s = text.toLowerCase();
+  final out = StringBuffer();
+  var last = ' ';
+  var previous = ' ';
+  for (var i = 0; i < s.length; i++) {
+    final letter = s[i];
+    final code = letter.codeUnitAt(0);
+    var c = letter;
+    if (!((code >= 97 && code <= 122) || (code >= 48 && code <= 57))) {
+      c = ' ';
+    } else if (letter == 'h' && aspirated.contains(previous)) {
+      // bh, chh, dh, gh, jh, kh, ph, th: "gobhi" is "gobi".
+      continue;
+    } else if (letter == 'o' && i + 1 < s.length && s[i + 1] == 'o') {
+      // "aloo" is "alu", "moong" is "mung".
+      c = 'u';
+      i++;
+    } else if (letter == 'n' &&
+        i + 1 < s.length &&
+        nasalBefore.contains(s[i + 1])) {
+      // A nasal n before a consonant: "parantha" is "paratha".
+      previous = letter;
+      continue;
+    } else {
+      // e and i alike ("panner", "paneer"), w and v ("chawal", "chaval").
+      c = switch (letter) {
+        'e' || 'y' => 'i',
+        'w' => 'v',
+        'z' => 'j',
+        'f' => 'p',
+        'q' => 'k',
+        _ => letter,
+      };
+    }
+    previous = letter;
+    // Doubled letters, and runs of spaces: "chapatti", "daal".
+    if (c == last) continue;
+    out.write(c);
+    last = c;
+  }
+  return out.toString().trim();
 }
