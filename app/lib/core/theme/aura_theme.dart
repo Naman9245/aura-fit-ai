@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 
 /// The app's one theme: always dark, like the website.
 ///
-/// Text is the phone's own font (Roboto on Android), which is what the
-/// website shows too, and it keeps the app small. Sizes come from the
-/// Material type scale, so they follow the phone's font size setting.
+/// Text is DM Sans, bundled, so the app looks the same on every phone (some
+/// phones' own font is a serif). Sizes come from the Material type scale,
+/// so they follow the phone's font size setting.
 ThemeData buildAuraTheme() {
   const radius = BorderRadius.all(Radius.circular(16));
   const scheme = ColorScheme.dark(
@@ -28,6 +28,7 @@ ThemeData buildAuraTheme() {
   );
   final base = ThemeData(
     useMaterial3: true,
+    fontFamily: 'DMSans',
     colorScheme: scheme,
     scaffoldBackgroundColor: AuraColors.black,
   );

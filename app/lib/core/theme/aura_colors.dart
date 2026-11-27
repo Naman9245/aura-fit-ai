@@ -36,4 +36,26 @@ abstract final class AuraColors {
 
   /// Field errors: 8.7:1 on [black].
   static const error = Color(0xFFFF8A80);
+
+  // The bright cards from the trainer design. Text on any of them is [ink]:
+  // 9.95:1 on [sky], 6.5:1 on [lilac], 11.5:1 on [mint], 13:1 on [yellow].
+
+  /// Text and buttons on a bright card.
+  static const ink = Color(0xFF17151F);
+
+  /// Text on [ink]: 16:1.
+  static const paper = Color(0xFFF4F1EA);
+
+  /// The card behind Josh when it isn't dark: his fur stands out on it.
+  static const sky = Color(0xFF8EC5FF);
+
+  /// Lilac cards with no Josh on them.
+  static const lilac = Color(0xFF9B8CFF);
+
+  /// Lilac behind Josh: his fur gets lost on [lilac].
+  static const lilacLight = Color(0xFFCDC4FF);
+
+  static const mint = Color(0xFF7EE0C3);
+
+  static const yellow = Color(0xFFFFD66B);
 }

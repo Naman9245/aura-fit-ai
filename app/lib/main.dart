@@ -6,6 +6,7 @@ import 'package:aurafit/core/router.dart';
 import 'package:aurafit/data/account.dart';
 import 'package:aurafit/data/providers.dart';
 import 'package:aurafit/features/account/sign_in_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   installErrorHooks();
+  LicenseRegistry.addLicense(_fontLicences);
   await startCrashReports();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   // Light status-bar icons on the dark background.
@@ -29,8 +31,8 @@ Future<void> main() async {
 }
 
 /// The first screen and its arguments, decided before the first frame from
-/// the phone alone, so it never waits on the network: onboarding with no
-/// plan yet, sign-in for a plan kept only here, else the targets.
+/// the phone alone, so it never waits on the network: Josh's intro with
+/// no plan yet, sign-in for a plan kept only here, else the targets.
 Future<(String, Object?)> startingPoint(ProviderContainer container) async {
   final hasProfile = await container
       .read(profileRepositoryProvider)
@@ -39,7 +41,8 @@ Future<(String, Object?)> startingPoint(ProviderContainer container) async {
   if (account != null) {
     return (hasProfile ? Routes.today : Routes.onboarding, null);
   }
-  if (!hasProfile) return (Routes.onboarding, null);
+  // Someone new meets Josh first; his intro ends at onboarding.
+  if (!hasProfile) return (Routes.intro, null);
   if (!container.read(accountServiceProvider).canSignIn) {
     return (Routes.today, null);
   }
@@ -68,5 +71,17 @@ Future<Account?> _savedSignIn(ProviderContainer container) async {
       'AURA: the saved sign-in couldn\'t be read (${error.runtimeType})',
     );
     return null;
+  }
+}
+
+/// The bundled fonts' licences, for the app's licence page.
+Stream<LicenseEntry> _fontLicences() async* {
+  for (final (family, file) in [
+    ('DM Sans', 'OFL-DMSans.txt'),
+    ('Barlow Condensed', 'OFL-BarlowCondensed.txt'),
+  ]) {
+    yield LicenseEntryWithLineBreaks([
+      family,
+    ], await rootBundle.loadString('assets/fonts/$file'));
   }
 }

@@ -36,6 +36,25 @@ flutter:
   uses-material-design: true
   assets:
     - assets/foods.json
+    - assets/fonts/OFL-BarlowCondensed.txt
+    - assets/fonts/OFL-DMSans.txt
+
+  # Both under the SIL Open Font License (the OFL files above, shown on the
+  # app's licence page). DM Sans for reading; Barlow Condensed ExtraBold for
+  # big capital headings and numbers (AuraType.display).
+  fonts:
+    - family: DMSans
+      fonts:
+        - asset: assets/fonts/DMSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/DMSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/DMSans-Bold.ttf
+          weight: 700
+    - family: BarlowCondensed
+      fonts:
+        - asset: assets/fonts/BarlowCondensed-ExtraBold.ttf
+          weight: 800
 
 # The launcher icons, from the images tool/render_icon_test.dart draws:
 #   dart run flutter_launcher_icons

@@ -571,8 +571,8 @@ void main() {
       return startingPoint(container);
     }
 
-    test('is onboarding with no plan yet', () async {
-      expect((await startFor()).$1, Routes.onboarding);
+    test('is the intro with no plan yet', () async {
+      expect((await startFor()).$1, Routes.intro);
     });
 
     test('is sign-in for a plan kept only on this phone', () async {
